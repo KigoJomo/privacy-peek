@@ -1,36 +1,37 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🕵️‍♂️ Privacy Peek
 
-## Getting Started
+**Privacy Peek** is an open-source initiative aimed at enhancing digital transparency. It comprises a browser extension and a web dashboard that provide users with clear, concise insights into how websites handle personal data.
 
-First, run the development server:
+## 🔍 Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+* **Real-Time Analysis**: Automatically detects and summarizes privacy policies and terms of service on visited websites.
+* **Privacy Nutrition Labels**: Presents an overall privacy score along with category-specific ratings (e.g., data collection, sharing, user rights).
+* **On-Demand Checks**: Allows users to manually trigger analyses on any website, even post-login.
+* **Historical Data**: Access previously analyzed reports and track changes over time.
+* **Community Feedback**: Users can contribute insights and flag concerns, fostering a collaborative approach to digital privacy.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🧠 How It Works
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **Detection**: The browser extension identifies relevant pages or allows manual activation.
+2. **Extraction**: It extracts the site's privacy-related content.
+3. **Analysis**: Utilizes AI and rule-based NLP techniques to assess and score the content.
+4. **Presentation**: Displays a user-friendly summary and detailed breakdown on both the extension and the web dashboard.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🌐 Web Dashboard
 
-## Learn More
+The companion website serves as a centralized hub where users can:
 
-To learn more about Next.js, take a look at the following resources:
+* Search and view detailed privacy reports of various websites.
+* Compare privacy practices across different platforms.
+* Submit new websites for analysis.
+* Engage with the community through feedback and discussions.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🛠️ Technologies Used
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+* **Frontend & Backend**: Next.js (App Router), TypeScript
+* **NLP & AI**: Integration with language models for content analysis
+* **Browser Extension**: Built using WebExtension APIs for cross-browser compatibility
 
-## Deploy on Vercel
+## 📄 License
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project is licensed under the [MIT License](LICENSE), promoting open collaboration and transparency.

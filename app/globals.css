@@ -1,26 +1,245 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+@plugin "@tailwindcss/typography";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #202020;
+  --background-light: #363636;
+  --background-dark: #121212;
+
+  --foreground: #ededed;
+  --foreground-light: #b3b2b2;
+
+  --accent: #2b83fd;
+
+  --font-size: 1.1rem;
+  --font-ratio: 1.65;
+}
+
+[data-theme='light'] {
+  --foreground: #202020;
+  --foreground-light: #363636;
+
+  --background: #ededed;
+  --background-light: #b3b2b2;
+}
+
+@media (max-width: 768px) {
+  :root {
+    --font-ratio: 1.25;
+    --font-size: 1rem;
+  }
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-background-light: var(--background-light);
+  --color-background-dark: var(--background-dark);
+
   --color-foreground: var(--foreground);
+  --color-foreground-light: var(--foreground-light);
+  --color-accent: var(--accent);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+h1,
+h2,
+h3,
+h4 {
+  text-transform: capitalize;
+}
+
+h1 {
+  font-size: calc(
+    var(--font-size) * var(--font-ratio) * var(--font-ratio) * var(--font-ratio)
+  );
+}
+
+h2 {
+  font-size: calc(var(--font-size) * var(--font-ratio) * var(--font-ratio));
+}
+
+h3 {
+  font-size: calc(var(--font-size) * var(--font-ratio));
+}
+
+h4,
+p,
+li,
+a,
+td {
+  font-size: calc(var(--font-size));
+}
+
+p,
+li {
+  color: var(--foreground-light);
+}
+
+button {
+  cursor: pointer;
+}
+
+strong {
+  font-weight: 400;
+}
+
+input[type='checkbox']:not(:checked) {
+  background-color: transparent;
+}
+
+input,
+textarea {
+  font-size: 0.875rem;
+
+  &::placeholder {
+    font-size: 0.875rem;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+img {
+  object-fit: cover;
+  object-position: center;
+}
+
+hr {
+  width: 100%;
+  border-color: var(--foreground);
+  opacity: 0.25;
+}
+
+* {
+  box-sizing: border-box;
+  & *::selection {
+    @apply bg-foreground-light/30;
+  }
+  &::selection {
+    @apply bg-foreground-light/30;
+  }
+}
+
+body
+  > main
+  > section
+  > div.w-full.md\:max-w-\[48rem\].flex.flex-col.gap-8.pb-24.transition-all.duration-300
+  > div:nth-child(7)
+  > div
+  > div.max-w-full.prose.dark\:prose-invert
+  > pre {
+  padding: 0rem 1rem;
+}
+
+pre {
+  padding: 0 0;
+  background-color: transparent;
+
+  div {
+    div:has(> code) {
+      background: #0c0c0c !important;
+      margin: 0 !important;
+      &::-webkit-scrollbar {
+        display: none;
+      }
+    }
+
+    div {
+      code {
+        background: transparent !important;
+        span {
+          background: transparent !important;
+          background-color: transparent !important;
+        }
+      }
+    }
+  }
+}
+
+html {
+  width: 100vw;
+  height: 100dvh;
+  transition: height 0.3s ease-in-out;
+  padding: 0;
+
+  body {
+    height: 100dvh;
+    transition: height 0.3s ease-in-out;
+
+    background: var(--background-dark);
+    color: var(--foreground);
+    font-family: var(--font-geist-sans);
+
+    main {
+      width: 100%;
+      height: 100%;
+
+      /* header{} */
+
+      section {
+        width: 100%;
+        padding: 0rem 2rem;
+      }
+
+      @media (width < 40rem) {
+        section {
+          /* padding: y x */
+          padding: 1rem 1.2rem;
+        }
+      }
+
+      @media (width >= 48rem /* md */) {
+        section {
+          padding: 1rem 6rem;
+        }
+      }
+
+      @media (width >= 64rem /* lg */) {
+        section {
+          padding: 1rem 6rem;
+        }
+      }
+
+      @media (width >= 80rem /* xl */) {
+        section {
+          padding: 1rem 6rem;
+        }
+      }
+    }
+  }
+}
+
+@media (width < 40rem) {
+  .custom-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 0.35rem;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: var(--foreground-light);
+  border-radius: 12px;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.radial-gradient{
+  background: radial-gradient(
+    circle at center,
+    #2b82fd50 0%,
+    transparent 100%
+  );
 }
