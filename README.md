@@ -2,6 +2,45 @@
 
 **Privacy Peek** is an open-source initiative aimed at enhancing digital transparency. It comprises a browser extension and a web dashboard that provide users with clear, concise insights into how websites handle personal data.
 
+## Objectives Summary
+
+1. Privacy Peek (Overall Project)
+
+Analyze and rate websites’ data privacy practices using AI.
+
+Present privacy information in a simplified, accessible format.
+
+Empower users to make informed choices about which sites they trust.
+
+
+
+---
+
+2. Browser Extension
+
+Instantly analyze privacy policies and terms on any website.
+
+Display a summarized privacy score and key flags during signup or browsing.
+
+Allow users to request or trigger updated scans for outdated sites.
+
+
+
+---
+
+3. Website Platform
+
+Provide a searchable dashboard of analyzed websites with their scores.
+
+Show detailed breakdowns, category-wise scores, and report history.
+
+Act as the open-source home and public face of the Privacy Peek project.
+
+
+
+---
+
+
 ## 🔍 Features
 
 * **Real-Time Analysis**: Automatically detects and summarizes privacy policies and terms of service on visited websites.
