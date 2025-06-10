@@ -4,7 +4,7 @@
 
 ## Objectives Summary
 
-1. Privacy Peek (Overall Project)
+### Privacy Peek (Overall Project)
 
 Analyze and rate websites’ data privacy practices using AI.
 
@@ -16,7 +16,7 @@ Empower users to make informed choices about which sites they trust.
 
 ---
 
-2. Browser Extension
+### Browser Extension
 
 Instantly analyze privacy policies and terms on any website.
 
@@ -28,7 +28,7 @@ Allow users to request or trigger updated scans for outdated sites.
 
 ---
 
-3. Website Platform
+### Website Platform
 
 Provide a searchable dashboard of analyzed websites with their scores.
 
