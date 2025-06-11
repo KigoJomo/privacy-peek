@@ -16,6 +16,7 @@ export async function POST(req: NextRequest) {
     console.log(chalk.blue('>>> Attempting to analyze URL:'), url);
     const {
       urls: { privacy, terms, data_handling },
+      clauses,
     } = await scoreWebsitePractices(url);
 
     console.log(chalk.gray(`>>> ${privacy}`));
@@ -23,13 +24,18 @@ export async function POST(req: NextRequest) {
     console.log(chalk.gray(`>>> ${data_handling}`));
 
     return NextResponse.json(
-      { data: { privacy, terms, data_handling } },
+      {
+        privacy_url: privacy,
+        terms_url: terms,
+        data_handling_url: data_handling,
+        clauses,
+      },
       { status: 200 }
     );
   } catch (error) {
     console.error(chalk.red('Error in analyze route:'), error);
     return NextResponse.json(
-      { error: 'Failed to fetch policies' },
+      { error: 'Failed to analyze website practices' },
       { status: 500 }
     );
   }
