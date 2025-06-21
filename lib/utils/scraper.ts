@@ -29,7 +29,7 @@ async function discoverPolicyUrls(baseUrl: string) {
     {
       "privacy": "full_url",
       "terms": "full_url",
-      "data-handling": "full_url" // or empty string if not separate
+      "data_handling": "full_url" // or empty string if not separate
     }
     
     Important:
