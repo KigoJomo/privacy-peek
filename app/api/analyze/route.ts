@@ -1,6 +1,6 @@
-import { scoreWebsitePractices } from '@/lib/utils/scraper';
 import chalk from 'chalk';
 import { NextRequest, NextResponse } from 'next/server';
+import analyzeWebsitePrivacy from './actions';
 
 export async function POST(req: NextRequest) {
   const { url } = await req.json();
@@ -14,24 +14,9 @@ export async function POST(req: NextRequest) {
 
   try {
     console.log(chalk.blue('>>> Attempting to analyze URL:'), url);
-    const {
-      urls: { privacy, terms, data_handling },
-      clauses,
-    } = await scoreWebsitePractices(url);
+    const score = await analyzeWebsitePrivacy({ url });
 
-    console.log(chalk.gray(`>>> ${privacy}`));
-    console.log(chalk.gray(`>>> ${terms}`));
-    console.log(chalk.gray(`>>> ${data_handling}`));
-
-    return NextResponse.json(
-      {
-        privacy_url: privacy,
-        terms_url: terms,
-        data_handling_url: data_handling,
-        clauses,
-      },
-      { status: 200 }
-    );
+    return NextResponse.json({ score }, { status: 200 });
   } catch (error) {
     console.error(chalk.red('Error in analyze route:'), error);
     return NextResponse.json(
