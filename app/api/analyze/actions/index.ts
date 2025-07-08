@@ -1,7 +1,8 @@
+import { insertWebsite } from './data_sync';
 import { analyzeWebsitePolicies } from './policy-analyzer';
 import { scorePractices } from './privacy-scorer';
 
-export type PolicyType = 'privacy' | 'terms' | 'data_handling';
+export type PolicyType = 'privacy' | 'terms';
 
 export interface Clause {
   clause: string;
@@ -18,6 +19,7 @@ export type CategoryName =
 export interface CategoryScore {
   score: number;
   reasoning: string;
+  supporting_clauses: string[];
 }
 
 export interface Rubric {
@@ -83,18 +85,38 @@ export const scoringcategories: ScoringCategory[] = [
 ];
 
 export interface CalculatedScore {
-  full_website_url: string;
   overall_score: number;
   reasoning: string;
   category_scores: Record<CategoryName, CategoryScore>;
 }
 
 export default async function analyzeWebsitePrivacy({ url }: { url: string }) {
-  const { full_website_url, clauses } = await analyzeWebsitePolicies({ url });
-  const calculatedScore = await scorePractices({
-    full_website_url,
-    clauses,
-  });
+  if (!url || typeof url !== 'string') {
+    throw new Error('Invalid URL provided');
+  }
 
-  return calculatedScore;
+  try {
+    const { site_name, normalized_url, tags, clauses } =
+      await analyzeWebsitePolicies({ url });
+
+    const { overall_score, reasoning, category_scores } = await scorePractices({
+      clauses,
+    });
+
+    const newWebsiteId = await insertWebsite({
+      site_name,
+      normalized_url,
+      tags,
+      overall_score,
+      reasoning,
+      category_scores,
+    });
+
+    return { newWebsiteId, overall_score, reasoning, category_scores };
+  } catch (error) {
+    console.error('Error in analyzeWebsitePrivacy:', error);
+    throw new Error(
+      `Privacy analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+  }
 }

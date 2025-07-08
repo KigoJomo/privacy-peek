@@ -1,6 +1,6 @@
 'use server';
 
-import { google, GoogleGenerativeAIProviderMetadata } from '@ai-sdk/google';
+import { google } from '@ai-sdk/google';
 import { generateText } from 'ai';
 import chalk from 'chalk';
 import {
@@ -17,7 +17,7 @@ import {
  * @param params - The analysis parameters
  * @param params.url - The base website URL to analyze policies for
  * @returns A promise that resolves to an object containing:
- *   - `urls`: Record of discovered policy URLs by type (privacy, terms, data_handling)
+ *   - `urls`: Record of discovered policy URLs by type (privacy, terms)
  *   - `clauses`: Record of extracted clauses organized by scoring category
  *
  * @example
@@ -31,43 +31,62 @@ import {
  */
 export async function analyzeWebsitePolicies({ url }: { url: string }) {
   const { urls } = await discoverPolicyUrls(url);
-  const fullWebsiteUrl = await getFullWebsiteUrl({ url });
+  const { site_name, normalized_url, tags } = await getWebsiteMetadata({ url });
   const clauses = await analyzePolicies({ urls });
 
   return {
+    site_name,
+    normalized_url,
+    tags,
     urls,
-    full_website_url: fullWebsiteUrl,
     clauses,
   };
 }
 
-async function getFullWebsiteUrl({ url }: { url: string }) {
-  if (!url) throw new Error('Invalid URL');
+async function getWebsiteMetadata({
+  url,
+}: {
+  url: string;
+}): Promise<{ site_name: string; normalized_url: string; tags: string[] }> {
+  if (!url) throw new Error('Invalid Url');
 
-  const prompt = `You are a web researcher. Given the base URL "${url}", return the full website URL including
-    the protocol (http or https).
-    Return ONLY the full URL without any additional text.
-    Example:
-    Input: "example.com"
-    Output: "https://example.com"
+  const prompt = `
+    You are a web researcher. Given the base URL "${url}", return the following metadata:
+    1. site_name: The name of the website (e.g., "Example Site")
+    2. normalized_url: The full URL including protocol (http or https) (e.g., "https://www.example.com")
+    3. tags: An array of relevant tags or keywords that relate to the site, based on the site's name and key topics associated with it.
+
+    Return ONLY a JSON object in this exact structure without any additional text:
+    {
+      "site_name": "Example Site",
+      "normalized_url": "https://www.example.com",
+      "tags": ["Site Name", "Site Topic 1", "Site Topic 2", "Site Service 1", "Site Service 2"]
+    }
+
+    Important:
+    - Use official sources only
+    - Prioritize the most current versions
+    - Verify URLs actually exist
+    - Never hallucinate - return empty strings or empty arrays if uncertain
   `;
 
   const { text } = await generateText({
-    model: google('gemini-2.0-flash-lite', {
+    model: google('gemini-2.0-flash', {
       useSearchGrounding: true,
     }),
     prompt: prompt,
     temperature: 0.2,
-    maxTokens: 100,
+    maxTokens: 500,
   });
 
-  const fullUrlMatch = text.match(/https?:\/\/[^\s]+/);
-  if (!fullUrlMatch) throw new Error('AI response format invalid');
-  const fullUrl = fullUrlMatch[0].trim();
-  if (!fullUrl.startsWith('http://') && !fullUrl.startsWith('https://')) {
-    throw new Error('Invalid URL format returned by AI');
-  }
-  return fullUrl;
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) throw new Error('AI response format invalid');
+  const metadata = JSON.parse(jsonMatch[0]);
+  return metadata as {
+    site_name: string;
+    normalized_url: string;
+    tags: string[];
+  };
 }
 
 async function discoverPolicyUrls(baseUrl: string) {
@@ -75,13 +94,11 @@ async function discoverPolicyUrls(baseUrl: string) {
     You are an expert web researcher. For the website at ${baseUrl}, find these policy URLs:
     1. Privacy Policy (explicit data handling practices)
     2. Terms of Service (user agreements)
-    3. Data Handling Policy (specific data practices if separate)
     
     Return ONLY a JSON object in this exact structure:
     {
       "privacy": "full_url",
       "terms": "full_url",
-      "data_handling": "full_url" // or empty string if not separate
     }
     
     Important:
@@ -91,7 +108,7 @@ async function discoverPolicyUrls(baseUrl: string) {
     - Never hallucinate - return empty string if uncertain
   `;
 
-  const { text, providerMetadata } = await generateText({
+  const { text } = await generateText({
     model: google('gemini-2.0-flash', {
       useSearchGrounding: true,
     }),
@@ -103,17 +120,8 @@ async function discoverPolicyUrls(baseUrl: string) {
   const jsonMatch = text.match(/\{[\s\S]*\}/);
   if (!jsonMatch) throw new Error('AI response format invalid');
 
-  const metadata = providerMetadata?.google as
-    | GoogleGenerativeAIProviderMetadata
-    | undefined;
-
-  const groundingMetadata = metadata?.groundingMetadata;
-  const safetyRatings = metadata?.safetyRatings;
-
   return {
     urls: JSON.parse(jsonMatch[0]) as Record<PolicyType, string>,
-    groundingMetadata,
-    safetyRatings,
   };
 }
 
@@ -225,7 +233,6 @@ async function analyzePolicies({ urls }: { urls: Record<PolicyType, string> }) {
   for (const category of scoringcategories) {
     const categoryResults: Record<PolicyType, Clause[]> = {
       privacy: [],
-      data_handling: [],
       terms: [],
     };
 
@@ -254,7 +261,6 @@ async function analyzePolicies({ urls }: { urls: Record<PolicyType, string> }) {
     allClauses[category.category_name] = [
       ...categoryResults.privacy,
       ...categoryResults.terms,
-      ...categoryResults.data_handling,
     ];
   }
 

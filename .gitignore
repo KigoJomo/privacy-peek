@@ -41,4 +41,5 @@ yarn-error.log*
 next-env.d.ts
 rough.json
 rough.txt
+rough.md
 app/api/chat/test

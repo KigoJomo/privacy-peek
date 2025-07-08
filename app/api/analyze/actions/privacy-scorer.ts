@@ -10,7 +10,6 @@ import {
 } from './index';
 import { google } from '@ai-sdk/google';
 
-
 /**
  * Analyzes privacy policy clauses across multiple categories and calculates comprehensive privacy scores.
  *
@@ -20,12 +19,11 @@ import { google } from '@ai-sdk/google';
  *  - Data Retention and Security
  *  - User Rights and Controls
  *  - Transparency and Clarity
- * 
+ *
  * It filters clauses by relevance, applies category-specific
  * rubrics, and generates both individual category scores and an overall weighted score.
  *
  * @param params - Configuration object for scoring
- * @param params.full_website_url - The complete URL of the website being analyzed
  * @param params.clauses - Record mapping category names to arrays of extracted privacy clauses
  * @returns Promise resolving to a complete scoring result including overall score,
  *          reasoning, and detailed category breakdowns
@@ -33,7 +31,6 @@ import { google } from '@ai-sdk/google';
  * @example
  * ```typescript
  * const result = await scorePractices({
- *   full_website_url: "https://example.com",
  *   clauses: {
  *     "Data Collection": [
  *       { clause: "We collect personal information", relevance: 0.8 }
@@ -46,18 +43,28 @@ import { google } from '@ai-sdk/google';
  * @throws Error if AI response format is invalid or scores are out of expected range
  */
 export async function scorePractices({
-  full_website_url,
   clauses,
 }: {
-  full_website_url: string;
   clauses: Record<CategoryName, Clause[]>;
 }): Promise<CalculatedScore> {
   const category_scores: Record<CategoryName, CategoryScore> = {
-    'Data Collection': { score: 0, reasoning: '' },
-    'Data Sharing': { score: 0, reasoning: '' },
-    'Data Retention and Security': { score: 0, reasoning: '' },
-    'User Rights and Controls': { score: 0, reasoning: '' },
-    'Transparency and Clarity': { score: 0, reasoning: '' },
+    'Data Collection': { score: 0, reasoning: '', supporting_clauses: [] },
+    'Data Sharing': { score: 0, reasoning: '', supporting_clauses: [] },
+    'Data Retention and Security': {
+      score: 0,
+      reasoning: '',
+      supporting_clauses: [],
+    },
+    'User Rights and Controls': {
+      score: 0,
+      reasoning: '',
+      supporting_clauses: [],
+    },
+    'Transparency and Clarity': {
+      score: 0,
+      reasoning: '',
+      supporting_clauses: [],
+    },
   };
 
   // Iterate over each category and score them
@@ -102,7 +109,6 @@ export async function scorePractices({
   });
 
   return {
-    full_website_url,
     overall_score,
     reasoning,
     category_scores,
@@ -163,7 +169,7 @@ async function scoreByCategory({
   const jsonMatch = text.match(/\{[\s\S]*\}/);
   if (!jsonMatch) {
     console.warn(`No valid JSON object found in response for ${categoryName}`);
-    return { score: 0, reasoning: '' };
+    return { score: 0, reasoning: '', supporting_clauses: [] };
   }
 
   const result = JSON.parse(jsonMatch[0]) as CategoryScore;
@@ -180,6 +186,7 @@ async function scoreByCategory({
   return {
     score: result.score,
     reasoning: result.reasoning,
+    supporting_clauses: clauses.map(c => c.clause)
   };
 }
 
@@ -211,7 +218,7 @@ async function getOverallScore({
     .reduce((sum, product) => sum + product, 0);
 
   const result = 10 * (weight_x_score_sum / weightsTotal);
-  const overall_score = Math.round(result * 100) / 100
+  const overall_score = Math.round(result * 100) / 100;
 
   // pass calculated score and the category_scores object and prompt the model to give a brief reasoning.
   const prompt = `
