@@ -1,12 +1,31 @@
-# 1. Introduction
-  This project focuses on the current state of online data ownership, privacy, and the rules and standards around that. Ownership and privacy of data is important as it allows individuals to control their personal information, prevent misuse (like identity theft and fraud) and build trust with other people and businesses.
+## 1. Introduction
 
-  The current state of online data privacy presents a gap in how individuals are able to control their data. Majority of online services and platforms are able to take advantage of the data literacy gap on the internet. Everyday average users are presented with complex _Terms of Service_ and _Privacy Policy_ statements.These are usually lengthy and contain a lot of technical and legal jargon that makes it difficult for individuals to understand or even read in some cases. This creates the illusion of informed consent - a loophole that many platforms are able and ready to exploit.
+In the modern digital age, internet users are constantly required to share personal data with various online services. This exchange is typically governed by privacy policies and terms of service agreements, which are often lengthy, legally complex, and difficult for the average person to understand. Consequently, a significant gap exists between the data rights users have and their practical ability to exercise them. Many users consent to data practices without full awareness of the implications, leading to potential misuse of their personal information and a general erosion of digital trust.
 
-  Without proper informed consent, individuals find themselves giving away their personal data. This data takes on a life of its own from that point - it goes through multiple third parties, at which point the original owner has no control over it and how it is used. Such unethical intentions are usually written vaguely and in the fine-print of the long and complex policy documents - in other words, **hidden in plain sight**.
+This project, Privacy Peek, aims to address this knowledge gap. By providing tools that automatically analyze and simplify privacy policies, we can empower users to make informed decisions about their data. The goal is to enhance digital transparency and equip users with clear, accessible insights into how their personal information is managed by the websites they visit, fostering a safer and more transparent online environment.
 
-  In essence, the state of data privacy and ownership is not all sunshine and rainbows as may be presented to us by the very authors of the policies we blindly agree to. There exists a critical gap in public awareness, a gap which if not bridged, will make it forever impossible to improve online data practices.
+---
 
-# 2. Problem Statement
-  Online data practices is a complex topic, but does not need to be presented as such to the people that matter - but unfortunately, that is exactly how it is presented. There is little effort to interpret the topic for all individuals to get a clear understanding of it.
-  Web platforms, data brokers, third-party advertisers and other entities use this complexity as a shield for their practices, making it difficult for individuals to challenge or question them.
+## 2. Problem Statement
+
+The core problem is that the average internet user lacks the time, resources, and legal expertise to navigate the complex world of online data privacy. Users are frequently confronted with lengthy and convoluted policy documents that they must accept to access services. This practice creates a significant barrier to informed consent, as most users either do not read these documents or cannot fully comprehend their content.
+
+This information asymmetry affects nearly every internet user and leads to a lack of awareness regarding their data rights and options. The consequence is uninformed consent, which can result in the misuse of personal data and a diminished ability for users to control their digital footprint. The key issue to be addressed is this critical knowledge gap; bridging it will enable users to make conscious choices, promoting better data privacy practices across the web.
+
+---
+
+## 3. Objectives
+
+The primary objective of this project is to develop a comprehensive system that analyzes, scores, and presents website privacy policies in an easily understandable format. This will be achieved through the following primary objectives, which are designed to be SMART (Specific, Measurable, Achievable, Relevant, and Time-bound).
+
+**Primary Objectives:**
+
+1.  **Develop an AI-Enabled Policy Analysis Engine:** To create an AI-powered engine that discovers, parses, and extracts key metadata from privacy policy documents across five distinct privacy categories (Data Collection, Sharing, Retention, User Rights/Controls, and Transparency). The engine will be considered successful when it processes policies and achieves relevance scores greater than 0.3 for each category. This is to be completed within the first three weeks of the project.
+
+2.  **Implement a Privacy Scoring Mechanism:** To design and implement a privacy scoring algorithm that evaluates the extracted policy clauses using a weighted rubric. This will generate category-specific scores (0-10) and an overall privacy score (0-100), accompanied by simple reasoning statements. This objective builds on the output of the analysis engine and is scheduled for completion within three weeks following the engine's completion.
+
+**Secondary Objectives:**
+
+3.  **Create a Functional Browser Extension:** To build a Chrome extension that integrates with the scoring engine to display privacy scores in a simple popup interface. The extension will activate on login pages, policy page visits, or manual user interaction, providing real-time insights. The extension is to be published on the Chrome Web Store within three weeks of the scoring engine's completion.
+
+4.  **Build a Web-Based Dashboard:** To develop a responsive web dashboard that allows users to search for websites, compare their privacy scores, and view detailed report breakdowns. The dashboard will be launched with an MVP featuring 30 pre-analyzed websites and will include automated bi-weekly re-analysis of sites. The MVP is to be presented within three weeks of the scoring engine's completion.
