@@ -79,3 +79,40 @@ By November 2025, I will have completed the following milestones:
 **Relevant**: Provides comprehensive privacy research and comparison capabilities for informed decision-making.
 
 **Time-bound**: Present MVP within 3 weeks of completing the scoring engine, with ongoing bi-weekly updates.
+
+---
+
+# Project Schedule
+
+**Project Start Date: July 1, 2025**  
+**Project End Date: November 30, 2025 (Total: 22 weeks)**
+
+| Task ID | Objective/Activity | Start Date | End Date | Duration (Weeks) | Dependencies | Notes |
+|---------|-------------------|------------|----------|------------------|--------------|-------|
+| **O1** | **Objective 1: AI-Enabled Policy Analysis Engine** | | | | | |
+| 1.1 | Set up AI/ML infrastructure and Google Gemini integration | July 1, 2025 | July 8, 2025 | 1 | - | Configure AI SDK, API keys, and testing framework |
+| 1.2 | Develop URL discovery functionality | July 8, 2025 | July 15, 2025 | 1 | 1.1 | Implement web scraping for privacy policy and terms URLs |
+| 1.3 | Build website metadata extraction | July 15, 2025 | July 22, 2025 | 1 | 1.2 | Extract site name, normalized URL, and tags |
+| 1.4 | Implement policy content analysis and clause extraction | July 22, 2025 | Aug 5, 2025 | 2 | 1.3 | Extract clauses across 5 privacy categories with relevance ≥0.3 |
+| 1.5 | Testing and validation of analysis engine | Aug 5, 2025 | Aug 12, 2025 | 1 | 1.4 | Ensure accurate clause extraction and metadata generation |
+| **O2** | **Objective 2: Privacy Scoring Mechanism** | | | | | |
+| 2.1 | Design scoring rubrics and category weights | Aug 12, 2025 | Aug 19, 2025 | 1 | 1.5 | Define weighted scoring criteria for 5 privacy categories |
+| 2.2 | Implement category-specific scoring | Aug 19, 2025 | Aug 26, 2025 | 1 | 2.1 | Score individual categories (0-10) with AI-generated reasoning |
+| 2.3 | Develop overall scoring algorithm | Aug 26, 2025 | Sep 2, 2025 | 1 | 2.2 | Calculate weighted average and generate user-friendly explanations |
+| 2.4 | Integrate scoring with analysis engine | Sep 2, 2025 | Sep 9, 2025 | 1 | 2.3 | Complete end-to-end analysis and scoring pipeline |
+| 2.5 | Testing and calibration of scoring system | Sep 9, 2025 | Sep 16, 2025 | 1 | 2.4 | Validate scores against manual analysis and adjust weights |
+| **O3** | **Objective 3: Browser Extension** | | | | | |
+| 3.1 | Design extension architecture and manifest | Sep 16, 2025 | Sep 23, 2025 | 1 | 2.5 | Plan popup UI, background scripts, and API integration |
+| 3.2 | Develop popup interface with privacy score display | Sep 23, 2025 | Sep 30, 2025 | 1 | 3.1 | Create TailwindCSS-styled popup showing scores and breakdowns |
+| 3.3 | Implement page detection (login pages, policy pages) | Sep 30, 2025 | Oct 7, 2025 | 1 | 3.2 | Detect policy-related pages and trigger analysis |
+| 3.4 | Integrate extension with scoring API | Oct 7, 2025 | Oct 14, 2025 | 1 | 3.3 | Connect extension to `analyzeWebsitePrivacy` endpoint |
+| 3.5 | Testing and Chrome Web Store submission | Oct 14, 2025 | Oct 21, 2025 | 1 | 3.4 | Complete testing and publish to Chrome Web Store |
+| **O4** | **Objective 4: Web-Based Dashboard** | | | | | |
+| 4.1 | Design responsive dashboard UI/UX | Oct 21, 2025 | Oct 28, 2025 | 1 | 3.5 | Create search, comparison, and detailed view interfaces |
+| 4.2 | Implement search functionality and database integration | Oct 28, 2025 | Nov 4, 2025 | 1 | 4.1 | Build search with filtering and sorting capabilities |
+| 4.3 | Develop comparative analysis tools | Nov 4, 2025 | Nov 11, 2025 | 1 | 4.2 | Enable side-by-side privacy score comparisons |
+| 4.4 | Create detailed score breakdown pages | Nov 11, 2025 | Nov 18, 2025 | 1 | 4.3 | Show category scores, reasoning, and supporting clauses |
+| 4.5 | Implement automated re-analysis system | Nov 18, 2025 | Nov 25, 2025 | 1 | 4.4 | Set up bi-weekly re-analysis jobs and update tracking |
+| 4.6 | Pre-populate database with 30 analyzed websites | Nov 25, 2025 | Nov 30, 2025 | 1 | 4.5 | Analyze popular websites and populate dashboard |
+| **P.M.** | **Project Management & Documentation (Ongoing)** | July 1, 2025 | Nov 30, 2025 | 22 | - | Regular progress meetings, documentation, testing, and risk management |
+
