@@ -1,3 +1,4 @@
+import { formatRelativeTime } from '@/lib/utils/utils';
 import { insertWebsite } from './data_sync';
 import { analyzeWebsitePolicies } from './policy-analyzer';
 import { scorePractices } from './privacy-scorer';
@@ -96,23 +97,50 @@ export default async function analyzeWebsitePrivacy({ url }: { url: string }) {
   }
 
   try {
-    const { site_name, normalized_url, tags, clauses } =
-      await analyzeWebsitePolicies({ url });
-
-    const { overall_score, reasoning, category_scores } = await scorePractices({
-      clauses,
-    });
-
-    const newWebsiteId = await insertWebsite({
+    const {
       site_name,
       normalized_url,
       tags,
-      overall_score,
-      reasoning,
-      category_scores,
-    });
+      clauses,
+      recentlyAnalyzed,
+      existingSite,
+    } = await analyzeWebsitePolicies({ url });
 
-    return { newWebsiteId, overall_score, reasoning, category_scores };
+    if ((!recentlyAnalyzed || !existingSite) && clauses) {
+      const { overall_score, reasoning, category_scores } =
+        await scorePractices({
+          clauses,
+        });
+
+      const websiteId = await insertWebsite({
+        site_name,
+        normalized_url,
+        tags,
+        overall_score,
+        reasoning,
+        category_scores,
+      });
+
+      return {
+        websiteId,
+        site_name,
+        full_url: normalized_url,
+        last_analyzed: formatRelativeTime(new Date().toISOString()),
+        overall_score,
+        reasoning,
+        category_scores,
+      };
+    } else if (recentlyAnalyzed && existingSite) {
+      return {
+        websiteId: existingSite._id,
+        site_name: existingSite.site_name,
+        full_url: existingSite.normalized_url,
+        last_analyzed: formatRelativeTime(existingSite.last_analyzed),
+        overall_score: existingSite.overall_score,
+        reasoning: existingSite.reasoning,
+        category_scores: existingSite.category_scores,
+      };
+    }
   } catch (error) {
     console.error('Error in analyzeWebsitePrivacy:', error);
     throw new Error(

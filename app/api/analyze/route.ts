@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    console.log(chalk.blue('>>> Attempting to analyze URL:'), url);
+    console.log(chalk.blueBright('\n>>> Analyzing -> '), url);
     const score = await analyzeWebsitePrivacy({ url });
 
     return NextResponse.json({ score }, { status: 200 });

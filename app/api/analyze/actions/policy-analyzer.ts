@@ -9,6 +9,9 @@ import {
   PolicyType,
   scoringcategories,
 } from '@/app/api/analyze/actions/index';
+import { fetchQuery } from 'convex/nextjs';
+import { api } from '@/convex/_generated/api';
+import { isAnalysisStale } from '@/lib/utils/utils';
 
 /**
  * Analyzes website privacy policies and terms of service by discovering relevant policy URLs
@@ -30,17 +33,39 @@ import {
  * @throws {Error} When AI response format is invalid or JSON parsing fails
  */
 export async function analyzeWebsitePolicies({ url }: { url: string }) {
-  const { urls } = await discoverPolicyUrls(url);
   const { site_name, normalized_url, tags } = await getWebsiteMetadata({ url });
-  const clauses = await analyzePolicies({ urls });
 
-  return {
-    site_name,
+  const existingSite = await fetchQuery(api.websites.getWebsiteByUrl, {
     normalized_url,
-    tags,
-    urls,
-    clauses,
-  };
+  });
+
+  if (existingSite === null || isAnalysisStale(existingSite.last_analyzed)) {
+    console.log(
+      !existingSite
+        ? chalk.bgGray(`>>> No existing entry found for ${normalized_url}`)
+        : isAnalysisStale(existingSite.last_analyzed) &&
+            chalk.bgYellow(
+              `>>> Existing entry is stale, re-analyzing ${normalized_url}`
+            )
+    );
+    const { urls } = await discoverPolicyUrls(normalized_url);
+    const clauses = await analyzePolicies({ urls });
+
+    return {
+      site_name,
+      normalized_url,
+      tags,
+      urls,
+      clauses,
+      recentlyAnalyzed: false,
+    };
+  } else {
+    // If it exists and is not stale, return existing data
+    console.log(
+      chalk.bgBlue(`>>> Found existing entry for ${normalized_url}`)
+    );
+    return { existingSite: existingSite, recentlyAnalyzed: true };
+  }
 }
 
 async function getWebsiteMetadata({
@@ -53,7 +78,7 @@ async function getWebsiteMetadata({
   const prompt = `
     You are a web researcher. Given the base URL "${url}", return the following metadata:
     1. site_name: The name of the website (e.g., "Example Site")
-    2. normalized_url: The full URL including protocol (http or https) (e.g., "https://www.example.com")
+    2. normalized_url: The full URL including protocol (http or https) (e.g., "https://www.example.com") with no trailing slashes.
     3. tags: An array of relevant tags or keywords that relate to the site, based on the site's name and key topics associated with it.
 
     Return ONLY a JSON object in this exact structure without any additional text:
