@@ -1,7 +1,3 @@
-export function cn(...inputs: Array<string | boolean | undefined | null>) {
-  return inputs.filter(Boolean).join(' ');
-}
-
 export const isAnalysisStale = (lastAnalyzed: string): boolean => {
   const twoWeeksInMs = 14 * 24 * 60 * 60 * 1000; // 2 weeks in milliseconds
   const lastAnalyzedDate = new Date(lastAnalyzed);
@@ -41,3 +37,4 @@ export function formatRelativeTime(dateString: string): string {
     return '';
   }
 }
+

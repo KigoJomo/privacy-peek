@@ -17,5 +17,5 @@ export default defineSchema({
         supporting_clauses: v.array(v.string()),
       })
     ),
-  }).index('by_url', ['normalized_url']),
+  }).index('by_url', ['normalized_url']).index('by_last_analyzed', ['last_analyzed']),
 });

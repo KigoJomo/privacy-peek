@@ -78,7 +78,7 @@ async function getWebsiteMetadata({
   const prompt = `
     You are a web researcher. Given the base URL "${url}", return the following metadata:
     1. site_name: The name of the website (e.g., "Example Site")
-    2. normalized_url: The full URL including protocol (http or https) (e.g., "https://www.example.com") with no trailing slashes.
+    2. normalized_url: The full URL including protocol (http or https) and www. subdomain (e.g., "https://www.example.com") with no trailing slashes.
     3. tags: An array of relevant tags or keywords that relate to the site, based on the site's name and key topics associated with it.
 
     Return ONLY a JSON object in this exact structure without any additional text:
@@ -92,6 +92,7 @@ async function getWebsiteMetadata({
     - Use official sources only
     - Prioritize the most current versions
     - Verify URLs actually exist
+    - Always include www. in the normalized_url
     - Never hallucinate - return empty strings or empty arrays if uncertain
   `;
 

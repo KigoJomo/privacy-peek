@@ -42,4 +42,5 @@ next-env.d.ts
 rough.json
 rough.txt
 rough.md
+rough.tsx
 app/api/chat/test

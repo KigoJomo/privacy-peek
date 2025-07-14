@@ -1,18 +1,9 @@
 import type { Metadata, Viewport } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Funnel_Display } from 'next/font/google';
 import './globals.css';
 import { ConvexClientProvider } from './ConvexClientProvider';
-import Sidebar from '@/lib/components/navigation/Sidebar';
-
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
-});
-
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
-});
+import { ThemeProvider } from '@/components/theme-provider';
+import { NavBar } from '@/components/global/Navbar';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://privacy-peek.vercel.app'),
@@ -28,6 +19,11 @@ export const metadata: Metadata = {
   },
 };
 
+const funnel = Funnel_Display({
+  variable: '--font-funnel',
+  subsets: ['latin'],
+});
+
 export const viewport: Viewport = {
   interactiveWidget: 'resizes-content',
 };
@@ -38,15 +34,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="hide-scrollbar">
+    <html lang="en" suppressHydrationWarning className="hide-scrollbar overflow-hidden">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased overflow-x-hidden flex`}>
-        <ConvexClientProvider>
-          <Sidebar />
-          <main className="flex flex-col">
+        className={`${funnel.variable} antialiased overflow-x-hidden overflow-y-scroll`}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange>
+          <ConvexClientProvider>
+            <NavBar />
             {children}
-          </main>
-        </ConvexClientProvider>
+          </ConvexClientProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

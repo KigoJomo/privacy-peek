@@ -36,3 +36,16 @@ export const getWebsiteByUrl = query({
       .first();
   },
 });
+
+export const getRecentWebsites = query({
+  args: {
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, { limit }) => {
+    return await ctx.db
+      .query('websites')
+      .withIndex('by_last_analyzed')
+      .order('desc')
+      .take(limit || 10);
+  },
+});
