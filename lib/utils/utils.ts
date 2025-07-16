@@ -2,8 +2,8 @@ export const isAnalysisStale = (lastAnalyzed: string): boolean => {
   const twoWeeksInMs = 14 * 24 * 60 * 60 * 1000; // 2 weeks in milliseconds
   const lastAnalyzedDate = new Date(lastAnalyzed);
   const currentDate = new Date();
-  
-  return (currentDate.getTime() - lastAnalyzedDate.getTime()) > twoWeeksInMs;
+
+  return currentDate.getTime() - lastAnalyzedDate.getTime() > twoWeeksInMs;
   // for testing - always return true;
   // return true;
 };
@@ -38,3 +38,12 @@ export function formatRelativeTime(dateString: string): string {
   }
 }
 
+export function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/&/g, '-and-')
+    .replace(/[^w\-]+/g, '')
+    .replace(/\-\-+/g, '-');
+}

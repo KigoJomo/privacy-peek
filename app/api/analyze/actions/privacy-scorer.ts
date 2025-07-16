@@ -155,7 +155,7 @@ async function scoreByCategory({
 
     Important:
     - Focus on the most relevant clauses and their implications for user privacy.
-    - For reasoning, use simple language, understandable by a non-technical user.
+    - For reasoning, use simple language, understandable by a non-technical user and keep it to a maximum of three short sentences.
     - Do not include any additional text or explanations outside the JSON object.
   `;
 

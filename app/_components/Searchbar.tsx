@@ -43,7 +43,7 @@ export function Searchbar({ onSearchResult }: SearchBarProps) {
 
   return (
     <Form {...form}>
-      <form action={formAction} className="w-full flex items-end gap-2">
+      <form action={formAction} className="w-full max-w-2xl flex items-end gap-2">
         <FormField
           control={form.control}
           name="search_term"

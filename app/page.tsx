@@ -12,7 +12,7 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="w-full max-w-2xl">
+        <div className="w-full flex flex-col items-center">
           <SearchComponent />
         </div>
 
