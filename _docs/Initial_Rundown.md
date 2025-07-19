@@ -1,9 +1,9 @@
 # Problem statement
-  The problem is that the average internet user does not have the time, resources or expertise to navigate the complex world of online data ownership and privacy. This leads to a lack of understanding and awareness of their rights and options, resulting in uninformed consent and potential misuse of their personal data.
+  The average internet user does not have the time, resources or expertise to navigate the complex world of online data ownership and privacy. This leads to a lack of understanding and awareness of their rights and options, resulting in uninformed consent and potential misuse of their personal data.
 
   Users are often required to agree to lengthy and complex policy documents. This creates a barrier to informed consent, as many users do not read or fully understand these documents.
 
-  That being said, the key issue to address is the knowledge gap in data ownership and privacy practices. Bridging this gap would result in users making informed decisions about their data, leading to better data practices and improved online privacy.
+  The key issue to address is the knowledge gap in data ownership and privacy practices. Bridging this gap by presenting data privacy information in a simple and easy-to-understand way would result in users making informed decisions about their data, leading to better data practices and improved online privacy.
 
 # Objectives
 By November 2025, I will have completed the following milestones:
