@@ -34,138 +34,215 @@ To develop an AI-powered privacy analysis platform that automatically evaluates 
 
 4. Build a responsive web-based dashboard featuring search functionality, comparative analysis tools, detailed score breakdowns, and automated bi-weekly re-analysis, delivering an MVP with 30 pre-analyzed websites using standard web development practices.
 
-
 ## 4. Literature Review
 
-### 4.1 Privacy Policy Complexity and User Comprehension
+### 4.1 Privacy Policy Complexity and User Behavior
 
-Privacy policies remain a significant barrier to informed user consent due to their complexity and length. Steinfeld (2016) conducted eye-tracking experiments revealing that users rarely read privacy policies entirely, with most spending less than 30 seconds scanning these documents before agreeing. This finding aligns with Ermakova et al. (2014), who demonstrated that policy readability directly impacts user trust, yet most policies are written at graduate-level reading comprehension despite serving general audiences.
+Privacy policies create significant barriers to informed user consent. Steinfeld (2016) found through eye-tracking experiments that users spend less than 30 seconds scanning privacy policies before agreeing to them, with most never reading them completely. This problem has worsened over time, as Milne et al. (2006) showed that privacy policies have become increasingly lengthy and complex, creating what is now recognized as a fundamental usability crisis in digital consent.
 
-The scale of this problem has grown substantially. Milne et al. (2006) found that privacy policies became increasingly lengthy and complex over time, creating what researchers now recognize as a fundamental usability crisis in digital consent mechanisms.
+### 4.2 Existing Privacy Analysis Tools
 
-### 4.2 Automated Privacy Policy Analysis Tools
+Current automated solutions have significant limitations. Zaeem et al. (2022) developed PrivacyCheck v3, a browser extension that summarizes policies using machine learning, but focuses mainly on summarization rather than actionable scoring. Harkous et al. (2018) created Polisis for automated policy analysis using deep learning, but their system requires substantial computational resources and lacks real-time integration with user browsing experiences.
 
-Several attempts have been made to automate privacy policy analysis, though with significant limitations. Zaeem et al. (2022) developed PrivacyCheck v3, a browser extension that summarizes privacy policies using machine learning and provides competitor comparisons. While innovative, their approach focuses primarily on policy summarization rather than actionable scoring, limiting users' ability to make quick privacy decisions at critical moments.
+### 4.3 Gap in Current Solutions
 
-Harkous et al. (2018) created Polisis, which uses deep learning for automated policy analysis and visualization. However, their system requires significant computational resources and lacks real-time integration with user browsing experiences, making it impractical for everyday decision-making scenarios.
-
-### 4.3 Privacy Scoring and Assessment Frameworks
-
-Current privacy assessment approaches lack standardization and user-centered design. Tesfay et al. (2018) developed PrivacyGuide for GDPR compliance evaluation, but their framework targets legal professionals rather than end users. Similarly, existing privacy certification schemes focus on regulatory compliance rather than translating complex policy language into digestible insights for average users.
-
-The absence of real-time, contextual privacy scoring represents a critical gap in current solutions, particularly at decision-making points like account creation or service registration.
-
-### 4.4 Gap Analysis
-
-Existing tools mostly focus on policy summarization or legal compliance rather than empowering users with actionable privacy insights. Current solutions fail to address three key limitations: (1) lack of real-time integration at decision points, (2) absence of standardized scoring mechanisms that enable meaningful comparisons, and (3) limited accessibility for non-technical users looking for quick privacy assessments.
-
-This proposed AI-powered privacy analysis platform addresses these gaps by providing automated policy analysis across five privacy categories (Data Collection, Data Sharing, Data Retention and Security, User Rights and Controls, and Transparency and Clarity) with numerical scoring (0-100) and simple reasoning statements. Unlike existing tools, our approach integrates directly into user workflows through both a Chrome extension and web dashboard, delivering privacy insights precisely when users need them most—at the point of digital service engagement.
-
+Existing tools focus primarily on policy summarization or legal compliance rather than empowering users with practical privacy insights. Current solutions fail to provide: (1) real-time integration at decision points, (2) standardized scoring for meaningful comparisons, and (3) accessible information for non-technical users. This proposed AI-powered platform addresses these gaps by providing automated analysis across five privacy categories with numerical scoring and simple reasoning statements, integrated directly into user workflows through both a Chrome extension and web dashboard.
 
 ## 5. Proposed System Architecture
 
 ### 5.1 System Overview
 
-The Privacy Peek platform employs a modern serverless architecture centered around Convex as the primary backend infrastructure. The system consists of four main components: a Convex backend handling data storage and AI processing, a Next.js web dashboard for comprehensive analysis, a Plasmo-based Chrome extension for real-time privacy insights, and external AI services for policy analysis - primarily Google's Gemini AI.
+Privacy Peek's proposed design employs a serverless architecture centered around Convex as the backend infrastructure. The system consists of four main components: a Convex backend for data storage and AI processing, a Next.js web dashboard, a Plasmo Chrome extension, and Google's Gemini AI for policy analysis.
 
 ### 5.2 Core Components
 
-#### 5.2.1 Convex Backend
-The Convex backend serves as the central hub for all data operations and business logic. It manages two primary tables: `sites` for maintaining website metadata and privacy analysis results, and `tags` for categorization. The backend exposes HTTP actions that serve as API endpoints for both the web dashboard and Chrome extension, ensuring consistent data access patterns across all client applications.
+**Convex Backend**: Serves as the central hub managing `sites` and `tags` tables, exposing HTTP actions as API endpoints for consistent data access across applications.
 
-#### 5.2.2 AI Analysis Engine
-The analysis engine leverages Google's Gemini AI model through the AI SDK to process privacy policies across five categories: Data Collection, Data Sharing, Data Retention and Security, User Rights and Controls, and Transparency and Clarity. Each category uses a 10-point rubric system, generating both numerical scores and human-readable reasoning statements for user comprehension.
+**AI Analysis Engine**: Leverages Google Gemini to process privacy policies across five categories (Data Collection, Data Sharing, Data Retention and Security, User Rights and Controls, Transparency and Clarity) using 10-point rubrics, generating numerical scores and reasoning statements.
 
-#### 5.2.3 Web Dashboard (Next.js)
-The responsive web application provides comprehensive privacy analysis features including website search, comparative analysis tools, detailed score breakdowns, and automated re-analysis scheduling. Built with TypeScript and TailwindCSS, it offers an intuitive interface for users to explore privacy practices across different services.
+**Web Dashboard (Next.js)**: Responsive application built with TypeScript and TailwindCSS providing search functionality, comparative analysis, detailed score breakdowns, and automated re-analysis scheduling.
 
-#### 5.2.4 Chrome Extension (Plasmo)
-The Plasmo-based browser extension aims to integrate seamlessly into user browsing workflows, detecting login pages and policy visits to display contextual privacy scores. It communicates with the Convex backend through HTTP actions, providing real-time privacy insights at critical decision-making moments.
+**Chrome Extension (Plasmo)**: Browser extension detecting login pages and policy visits to display contextual privacy scores through popup interface, communicating with Convex via HTTP actions.
 
-### 5.3 Data Flow Architecture
+### 5.3 Data Flow and Technology Justification
 
 ![Privacy Peek System Architecture](system%20architecture.png)
 
-The system follows a unidirectional data flow pattern. When users request privacy analysis through either the web dashboard or browser extension, the request triggers a Convex action that initiates the AI analysis pipeline. The AI engine processes the website's privacy policy, generates category-specific scores and reasoning, then stores the results in the Convex database. Both client applications retrieve this data through Convex queries, ensuring real-time synchronization and consistent user experiences.
+The system follows unidirectional data flow: user requests trigger Convex actions that initiate AI analysis, generate scores, store results in the database, and serve data to both client applications through real-time queries.
 
-### 5.4 Technology Justification
+**Convex** provides real-time capabilities, automatic scaling, and TypeScript-first development without separate API management. **Plasmo** offers modern Chrome extension development with hot reloading. **Next.js** enables server-side rendering for performance, while **Google Gemini** delivers affordable, accurate natural language understanding. **TailwindCSS** ensures consistent styling across components.
 
-**Convex** was selected for its real-time capabilities, automatic scaling, and TypeScript-first approach, eliminating the need for separate API development and database management. **Plasmo** provides superior Chrome extension development experience with modern web technologies and hot reloading capabilities. **Next.js** offers server-side rendering for improved SEO and performance, while **Google Gemini** provides state-of-the-art, affordable natural language understanding for accurate policy analysis. **TailwindCSS** ensures consistent styling and rapid UI development across all components.
+The serverless architecture automatically scales based on demand, with Convex providing built-in authentication and real-time subscriptions for secure data access.
 
-### 5.5 Security and Scalability Considerations
+### 5.4 Security and Scalability Considerations
 
 The serverless architecture automatically handles scaling based on demand, while Convex's built-in authentication and real-time subscriptions ensure secure data access. The modular design allows independent scaling of different components, with the AI analysis engine designed to handle batch processing for efficient resource utilization during automated re-analysis cycles.
-
 
 ## 6. Methodology
 
 ### 6.1 Development Approach
 
-This project will follow an Agile development methodology with 2-week sprints, allowing for iterative development and continuous integration of feedback from classmates and peer testers. The Agile approach is particularly suitable for this project given the need to refine AI analysis accuracy based on testing results and user feedback throughout the development cycle.
+This project will follow an Agile development methodology with 2-week sprints, allowing for iterative development and continuous integration of feedback from classmates and peer testers. The Agile approach is particularly suitable given the need to refine AI analysis accuracy based on testing results and user feedback throughout the development cycle.
 
 ### 6.2 Development Phases
 
-#### 6.2.1 Phase 1: Foundation Setup (Weeks 1-3)
-- **Convex Backend Setup**: Initialize Convex project, define database schema for `sites`, and `tags` tables
-- **Technology Stack Configuration**: Set up Next.js dashboard and Plasmo extension development environments with TypeScript and TailwindCSS
-- **Basic API Structure**: Create initial Convex HTTP actions for data retrieval and storage
-- **Initial UI Wireframes**: Design basic interfaces for both web dashboard and browser extension
+#### Phase 1: Foundation Setup (Weeks 1-3)
 
-#### 6.2.2 Phase 2: Core AI Engine Development (Weeks 4-7)
-- **Policy Discovery Module**: Implement URL discovery functionality using Google Gemini with search grounding
-- **Content Analysis Engine**: Develop the clause extraction system across the 5 privacy categories with relevance scoring
-- **Privacy Scoring Algorithm**: Build the weighted rubric system that generates 0-10 category scores and 0-100 overall scores
-- **Data Sync Integration**: Connect AI analysis results to Convex database through mutations
+- Initialize Convex project with database schema for `sites` and `tags` tables
+- Set up Next.js dashboard and Plasmo extension environments with TypeScript and TailwindCSS
+- Create basic Convex HTTP actions and UI wireframes
 
-#### 6.2.3 Phase 3: Frontend Development (Weeks 8-10)
-- **Web Dashboard**: Build responsive Next.js interface with search functionality, detailed score breakdowns, and comparison tools
-- **Chrome Extension**: Develop Plasmo-based extension with popup interface and real-time privacy score display
-- **API Integration**: Connect both frontends to Convex HTTP actions for seamless data access
-- **User Testing**: Conduct testing sessions with 5-8 coursemates to gather initial feedback
+#### Phase 2: Core AI Engine Development (Weeks 4-7)
 
-#### 6.2.4 Phase 4: Integration and Deployment (Weeks 11-12)
-- **System Integration**: Ensure all components work together smoothly, test end-to-end functionality
-- **Performance Optimization**: Optimize Convex queries and AI processing for faster response times
-- **Final Testing**: Test with 30 diverse websites to validate MVP functionality
-- **Deployment**: Deploy web dashboard and prepare Chrome extension for store submission
+- Implement policy discovery and content parsing using Google Gemini
+- Develop privacy scoring algorithm across 5 categories with weighted rubrics
+- Connect AI analysis results to Convex database through mutations
+
+#### Phase 3: Frontend Development (Weeks 8-10)
+
+- Build responsive Next.js interface with search and comparison tools
+- Develop Plasmo Chrome extension with popup interface
+- Integrate both frontends with Convex backend and conduct user testing
+
+#### Phase 4: Integration and Deployment (Weeks 11-12)
+
+- System integration and performance optimization
+- Final testing with 30 diverse websites and deployment preparation
 
 ### 6.3 AI Implementation Strategy
 
-**Why AI is Appropriate**: Privacy policies contain complex legal language that requires natural language understanding to extract meaningful insights. Manual analysis would be time-consuming and inconsistent across different policy structures, making AI essential for scalable automated analysis.
+**Model Selection**: Google Gemini was chosen for its document analysis capabilities, providing both structured JSON output for scoring and natural language explanations. The focus is on prompt engineering and validation rather than model training.
 
-**Model Selection**: Google Gemini was chosen for its strong performance in document analysis and reasoning tasks. The model provides both structured JSON output for scoring and natural language explanations that users can understand. Gemini's search grounding capability is particularly valuable for discovering current policy URLs.
+**Testing Approach**: Validate scoring consistency across multiple analysis runs (target: <15% variance) and gather user feedback on score usefulness and clarity from coursemates.
 
-**Prompt Engineering and Testing**: Since I am using a pre-trained model, the focus is on prompt engineering and validation. I will:
-- Iterate on prompts and rubrics to improve consistency across the 5 privacy categories
-- Validate scoring reliability by comparing results across multiple analysis runs
-- Ensure relevance scores above 0.3 filter out irrelevant clauses effectively
+**Ethical Use**: The AI serves as an analysis tool, not legal advice. Clear disclaimers will communicate that scores are informational and encourage users to read full policies for critical decisions.
 
-**Ethical Use and Limitations**: The AI serves as an analysis tool, not a legal advisor. I will clearly communicate to users that scores are informational and should not replace professional privacy assessment. The system will include disclaimers about AI limitations and encourage users to read full policies for critical decisions.
+### 6.4 Progress Tracking
 
-### 6.4 Data Collection and Evaluation
-
-**Website Selection**: The initial dataset will include 30 popular websites across different categories (social media, e-commerce, productivity tools, news, entertainment) to ensure diverse privacy policy structures and practices.
-
-**Evaluation Metrics**:
-- **Consistency**: Measure score variance across multiple analysis runs of the same policy (target: <15% variance)
-- **User Satisfaction**: Collect feedback from coursemates and friends on score usefulness and clarity
-- **Performance**: Monitor Convex action response times and ensure analysis completes within 30 seconds
-
-### 6.5 Progress Tracking
-
-**Sprint Planning**: Each 2-week sprint will include:
-- Sprint planning session with defined deliverables and success criteria
-- Mid-sprint progress review to assess development velocity and adjust scope if needed
-- Sprint retrospective to evaluate completed work and plan improvements for the next iteration
+**Sprint Structure**: Each 2-week sprint includes planning sessions, mid-sprint progress reviews, and retrospectives to evaluate completed work.
 
 **Key Milestones**:
+
 - Week 3: Convex backend operational with basic AI integration
-- Week 7: AI engine functional with validated accuracy on test policies
+- Week 7: AI engine functional with validated accuracy
 - Week 10: Both web dashboard and Chrome extension operational
 - Week 12: Full system deployed and tested with 30 websites
 
-**Risk Management**: Identified risks include AI analysis inconsistency, Chrome extension store approval delays, and performance issues with large-scale analysis. Mitigation strategies include early AI testing with diverse policies, parallel development of both frontend applications, and performance optimization from the start of development.
+**Risk Management**: Early AI testing with diverse policies, parallel frontend development, and built-in buffer time for technical challenges.
 
-**Feedback Integration**: Regular feedback sessions with coursemates will help refine the user experience and identify usability issues early. This collaborative approach ensures the final product meets user needs while maintaining technical feasibility within the 12-week timeline.
+## 7. Timeline
 
-## Timeline
+### 7.1 Project Schedule Overview
+
+The Privacy Peek platform will be developed over a 12-week period using an Agile methodology with 2-week sprints. The timeline is structured around four main phases, each building upon the previous phase's deliverables while allowing for iterative feedback and refinement.
+
+### 7.2 Detailed Timeline
+
+| Week                                    | Objective                                                        | Start   | End     | Duration | Dependencies                   |
+| --------------------------------------- | ---------------------------------------------------------------- | ------- | ------- | -------- | ------------------------------ |
+| **Phase 1: Foundation Setup**           |
+| 1                                       | Initialize Convex backend and define database schema             | Week 1  | Week 1  | 1 week   | Project approval               |
+| 2                                       | Set up Next.js dashboard and Plasmo extension environments       | Week 2  | Week 2  | 1 week   | Convex setup complete          |
+| 3                                       | Create basic Convex HTTP actions and UI wireframes               | Week 3  | Week 3  | 1 week   | Development environments ready |
+| **Phase 2: Core AI Engine Development** |
+| 4-5                                     | Implement policy discovery and content parsing modules           | Week 4  | Week 5  | 2 weeks  | Backend foundation complete    |
+| 6-7                                     | Develop privacy scoring algorithm and category analysis          | Week 6  | Week 7  | 2 weeks  | AI integration functional      |
+| **Phase 3: Frontend Development**       |
+| 8                                       | Build Next.js web dashboard with search functionality            | Week 8  | Week 8  | 1 week   | AI engine operational          |
+| 9                                       | Develop Plasmo Chrome extension with popup interface             | Week 9  | Week 9  | 1 week   | Web dashboard complete         |
+| 10                                      | Integrate frontends with Convex backend and conduct user testing | Week 10 | Week 10 | 1 week   | Both frontends built           |
+| **Phase 4: Integration and Deployment** |
+| 11                                      | System integration, performance optimization, and testing        | Week 11 | Week 11 | 1 week   | All components functional      |
+| 12                                      | Final testing with 30 websites, deployment, and documentation    | Week 12 | Week 12 | 1 week   | System integration complete    |
+
+### 7.3 Key Milestones
+
+- **Week 3**: MVP Backend - Convex operational with basic schema and HTTP actions
+- **Week 7**: AI Engine Complete - Functional privacy analysis with 5-category scoring
+- **Week 10**: Frontend MVP - Both web dashboard and Chrome extension operational
+- **Week 12**: Production Ready - Full system deployed with 30 analyzed websites
+
+### 7.4 Critical Dependencies
+
+**External Dependencies:**
+
+- Google Gemini API access and rate limits
+- Chrome Web Store developer account setup
+- Convex hosting reliability and performance
+
+**Internal Dependencies:**
+
+- Successful AI prompt engineering for consistent analysis
+- User feedback integration from coursemate testing sessions
+- Performance optimization to meet 30-second analysis time targets
+
+**Risk Mitigation:**
+
+- Early AI testing with diverse policy structures (Week 4-5)
+- Parallel frontend development to reduce timeline pressure
+- Buffer time built into each phase for unexpected technical challenges
+
+## 8. Budget
+
+### 8.1 Project Cost Breakdown
+
+The Privacy Peek platform is designed to minimize development costs by leveraging free and low-cost services during the initial development and MVP phases.
+
+| Item                                    | Cost (KSh) | Justification                                                             |
+| --------------------------------------- | ---------- | ------------------------------------------------------------------------- |
+| Chrome Web Store Developer Registration | 645        | One-time fee ($5) required for publishing the browser extension           |
+| Domain Name Registration                | 1,500      | Annual cost for professional domain (truehost.co.ke or similar registrar) |
+| Documentation Printing                  | 300        | Final report printing and binding for submission                          |
+| **Total Estimated Cost**                | **2,445**  |                                                                           |
+
+### 8.2 Free Resources and Services
+
+**Hosting and Infrastructure:**
+
+- **Convex Backend**: Free tier provides sufficient database operations and serverless functions for development and initial testing
+- **Vercel Deployment**: Free hosting for the Next.js web dashboard with automatic deployments
+- **Google Gemini API**: Free tier includes generous rate limits suitable for MVP development and testing with 30 websites
+
+## 9. Ethical Considerations
+
+### 9.1 Data Privacy and Security
+
+Privacy Peek will process publicly available privacy policies and terms of service documents without collecting or storing personal user data. The system will store only website metadata, analysis results, and privacy scores in the Convex database. User browsing patterns and personal information will not be tracked or recorded by either the web dashboard or Chrome extension.
+
+All data processing will occur through secure HTTPS connections, and the Convex backend provides built-in authentication and data encryption. The AI analysis will operate on publicly accessible policy documents, ensuring no unauthorized access to private or sensitive information.
+
+### 9.2 AI Bias and Transparency
+
+The Google Gemini model(s) may exhibit inherent biases in interpreting privacy policies, particularly those from different legal jurisdictions or cultural contexts. To address this limitation, the system will provide clear disclaimers that scores are informational tools, not legal advice, and encourage users to read full policies for critical decisions.
+
+The platform will promote transparency by displaying simple reasoning statements alongside numerical scores, allowing users to understand the basis for each privacy assessment. Open-source components (Plasmo, Next.js, TailwindCSS) will be used responsibly under their respective licenses, with proper attribution maintained in project documentation.
+
+The system will be designed with accessibility in mind, using semantic HTML structures and ensuring keyboard navigation compatibility for users with disabilities.
+
+## 10. References
+
+Ermakova, T., Fabian, B., Bender, B., & Klimek, E. (2014). Privacy policies and users' trust: Does readability matter? _Proceedings of the 27th Bled eConference_, 445-456. Retrieved from https://www.academia.edu/31400592/Privacy_Policies_and_Users_Trust_Does_Readability_Matter
+
+Google AI. (2024). _Gemini API documentation_. Retrieved from https://ai.google.dev/gemini-api/docs
+
+Harkous, H., Fawaz, K., Lebret, R., Schaub, F., Shin, K. G., & Aberer, K. (2018). Polisis: Automated analysis and presentation of privacy policies using deep learning. _Proceedings of the 27th USENIX Security Symposium_, 531-548. Retrieved from https://www.usenix.org/system/files/conference/usenixsecurity18/sec18-harkous.pdf
+
+Plasmo Framework. (2024). _Plasmo browser extension framework_. Retrieved from https://www.plasmo.com
+
+Steinfeld, N. (2016). "I agree to the terms and conditions": (How) do users read privacy policies online? An eye-tracking experiment. _Computers in Human Behavior_, 55, 992-1000. Retrieved from https://cris.ariel.ac.il/en/publications/i-agree-to-the-terms-and-conditions-how-do-users-read-privacy-pol-3
+
+Zaeem, R. N., German, R. L., & Barber, K. S. (2022). PrivacyCheck v3: Empowering users with higher-level understanding of privacy policies. _ACM Transactions on Internet Technology_, 22(1), 1-24. Retrieved from https://dl.acm.org/doi/abs/10.1145/3488560.3502184
+
+---
+
+**AI Tool Usage Declaration:**
+
+Claude Sonnet 4 was used for:
+
+- Code autocompletion and syntax suggestions during prototype development
+- Debugging assistance and error resolution
+- Brainstorming architectural approaches and component design patterns
+- Text refinement and grammar checking in documentation
+- Prototype testing strategies and implementation guidance
+
+All AI-generated code suggestions were reviewed, modified, and integrated based on project-specific requirements. The core project concept, objectives, methodology, and technical decisions remain original work.
