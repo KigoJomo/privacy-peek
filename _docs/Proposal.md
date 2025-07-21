@@ -84,6 +84,8 @@ The Plasmo-based browser extension aims to integrate seamlessly into user browsi
 
 ### 5.3 Data Flow Architecture
 
+![Privacy Peek System Architecture](system%20architecture.png)
+
 The system follows a unidirectional data flow pattern. When users request privacy analysis through either the web dashboard or browser extension, the request triggers a Convex action that initiates the AI analysis pipeline. The AI engine processes the website's privacy policy, generates category-specific scores and reasoning, then stores the results in the Convex database. Both client applications retrieve this data through Convex queries, ensuring real-time synchronization and consistent user experiences.
 
 ### 5.4 Technology Justification
