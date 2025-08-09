@@ -13,25 +13,6 @@ import { fetchQuery } from 'convex/nextjs';
 import { api } from '@/convex/_generated/api';
 import { isAnalysisStale } from '@/lib/utils/utils';
 
-/**
- * Analyzes website privacy policies and terms of service by discovering relevant policy URLs
- * and extracting clauses categorized by privacy scoring criteria.
- *
- * @param params - The analysis parameters
- * @param params.url - The base website URL to analyze policies for
- * @returns A promise that resolves to an object containing:
- *   - `urls`: Record of discovered policy URLs by type (privacy, terms)
- *   - `clauses`: Record of extracted clauses organized by scoring category
- *
- * @example
- * ```typescript
- * const result = await analyzeWebsitePolicies({ url: 'https://example.com' });
- * console.log(result.urls.privacy); // Privacy policy URL
- * console.log(result.clauses['Data Collection']); // Array of relevant clauses
- * ```
- *
- * @throws {Error} When AI response format is invalid or JSON parsing fails
- */
 export async function analyzeWebsitePolicies({ url }: { url: string }) {
   const { site_name, normalized_url, tags } = await getWebsiteMetadata({ url });
 

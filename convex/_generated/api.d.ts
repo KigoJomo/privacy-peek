@@ -13,6 +13,8 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as actions from "../actions.js";
+import type * as internalQueries from "../internalQueries.js";
 import type * as websites from "../websites.js";
 
 /**
@@ -24,6 +26,8 @@ import type * as websites from "../websites.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  actions: typeof actions;
+  internalQueries: typeof internalQueries;
   websites: typeof websites;
 }>;
 export declare const api: FilterApi<

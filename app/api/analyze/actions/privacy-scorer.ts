@@ -10,38 +10,6 @@ import {
 } from './index';
 import { google } from '@ai-sdk/google';
 
-/**
- * Analyzes privacy policy clauses across multiple categories and calculates comprehensive privacy scores.
- *
- * This function evaluates privacy practices by scoring clauses in five key categories:
- *  - Data Collection
- *  - Data Sharing
- *  - Data Retention and Security
- *  - User Rights and Controls
- *  - Transparency and Clarity
- *
- * It filters clauses by relevance, applies category-specific
- * rubrics, and generates both individual category scores and an overall weighted score.
- *
- * @param params - Configuration object for scoring
- * @param params.clauses - Record mapping category names to arrays of extracted privacy clauses
- * @returns Promise resolving to a complete scoring result including overall score,
- *          reasoning, and detailed category breakdowns
- *
- * @example
- * ```typescript
- * const result = await scorePractices({
- *   clauses: {
- *     "Data Collection": [
- *       { clause: "We collect personal information", relevance: 0.8 }
- *     ]
- *   }
- * });
- * // Returns CalculatedScore with overall_score, reasoning, and category_scores
- * ```
- *
- * @throws Error if AI response format is invalid or scores are out of expected range
- */
 export async function scorePractices({
   clauses,
 }: {
@@ -115,18 +83,6 @@ export async function scorePractices({
   };
 }
 
-/**
- * Scores a privacy policy category based on extracted clauses and a scoring rubric.
- *
- * Uses AI to analyze privacy policy clauses for a specific category and assign a score
- * between 0-10 based on privacy protection standards.
- *
- * @param categoryName - The privacy category being scored (e.g., "Data Collection")
- * @param clauses - Array of relevant clauses extracted from privacy policy
- * @param rubric - Scoring criteria mapping score ranges to privacy standards
- * @returns Promise resolving to category score and reasoning
- * @throws Error if response format is invalid or score is out of range
- */
 async function scoreByCategory({
   categoryName,
   clauses,
@@ -190,15 +146,6 @@ async function scoreByCategory({
   };
 }
 
-/**
- * Calculates an overall privacy score based on weighted category scores and generates reasoning.
- *
- * Computes a weighted average of all category scores using predefined weights, then uses AI
- * to generate human-readable reasoning explaining the overall privacy score.
- *
- * @param category_scores - Record mapping category names to their scores and reasoning
- * @returns Promise resolving to object containing overall score (0-100) and AI-generated reasoning
- */
 async function getOverallScore({
   category_scores,
 }: {
