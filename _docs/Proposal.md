@@ -36,17 +36,21 @@ To develop an AI-powered privacy analysis platform that automatically evaluates 
 
 ## 4. Literature Review
 
-### 4.1 Privacy Policy Complexity and User Behavior
+### 4.1 AI-Enabled Policy Analysis Approaches
 
-Privacy policies create significant barriers to informed user consent. Steinfeld (2016) found through eye-tracking experiments that users spend less than 30 seconds scanning privacy policies before agreeing to them, with most never reading them completely. This problem has worsened over time, as Milne et al. (2006) showed that privacy policies have become increasingly lengthy and complex, creating what is now recognized as a fundamental usability crisis in digital consent.
+Addressing the problem of complex privacy policies that users cannot understand, researchers have developed automated analysis systems. Harkous et al. (2018) created Polosis, which uses deep learning to extract and categorize privacy policy clauses, demonstrating that AI can successfully parse policy documents across multiple categories. However, their approach requires substantial computational resources and focuses on legal compliance rather than user empowerment. Zaeem et al. (2022) developed PrivacyCheck v3 with machine learning capabilities for policy analysis, but their system primarily provides summarization without the structured categorical scoring needed for user decision-making.
 
-### 4.2 Existing Privacy Analysis Tools
+### 4.2 Privacy Scoring and Assessment Methodologies
 
-Current automated solutions have significant limitations. Zaeem et al. (2022) developed PrivacyCheck v3, a browser extension that summarizes policies using machine learning, but focuses mainly on summarization rather than actionable scoring. Harkous et al. (2018) created Polisis for automated policy analysis using deep learning, but their system requires substantial computational resources and lacks real-time integration with user browsing experiences.
+Prior work has attempted to transform complex policy information into actionable insights through scoring mechanisms. Zaeem et al. (2020) implemented machine learning-based scoring in PrivacyCheck v2, but focused on basic policy recap rather than weighted category-specific evaluation. The gap identified in current solutions is the lack of standardized scoring that allows meaningful comparisons between websites' privacy practices, which is essential for addressing users' inability to evaluate privacy trade-offs effectively.
 
-### 4.3 Gap in Current Solutions
+### 4.3 Real-Time Privacy Information Delivery
 
-Existing tools focus primarily on policy summarization or legal compliance rather than empowering users with practical privacy insights. Current solutions fail to provide: (1) real-time integration at decision points, (2) standardized scoring for meaningful comparisons, and (3) accessible information for non-technical users. This proposed AI-powered platform addresses these gaps by providing automated analysis across five privacy categories with numerical scoring and simple reasoning statements, integrated directly into user workflows through both a Chrome extension and web dashboard.
+The problem of providing privacy information at decision points has been addressed through browser-based tools. Zaeem et al. (2022) developed a browser extension for PrivacyCheck v3 that detects policy pages and provides summaries, demonstrating feasibility of real-time integration. However, existing solutions lack contextual scoring at critical moments like login pages, where users need immediate privacy insights to make informed consent decisions.
+
+### 4.4 User-Centered Privacy Information Presentation
+
+Research confirms that current privacy communication methods fail users. Steinfeld (2016) found through eye-tracking studies that users spend less than 30 seconds scanning policies before agreeing, while Milne et al. (2006) showed policies have become increasingly complex over time. This directly relates to the core problem of uninformed consent. Existing tools like Polosis and PrivacyCheck focus on legal or technical audiences rather than presenting information in formats accessible to average users, highlighting the need for simplified scoring with plain-language reasoning statements.
 
 ## 5. Proposed System Architecture
 
