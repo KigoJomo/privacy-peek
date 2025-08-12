@@ -9,13 +9,15 @@ import z from 'zod';
 /*  */
 /*  */
 
+type CategoryName =
+  | 'Data Collection'
+  | 'Data Sharing'
+  | 'Data Retention and Security'
+  | 'User Rights and Controls'
+  | 'Transparency and Clarity';
+
 interface ScoringCategory {
-  category_name:
-    | 'Data Collection'
-    | 'Data Sharing'
-    | 'Data Retention and Security'
-    | 'User Rights and Controls'
-    | 'Transparency and Clarity';
+  category_name: CategoryName;
   rubric: {
     score: number;
     description: string;
@@ -123,8 +125,7 @@ const scoringCategories: ScoringCategory[] = [
       },
       {
         score: 2,
-        description:
-          'Widespread sharing with minimal disclosure or consent',
+        description: 'Widespread sharing with minimal disclosure or consent',
       },
       {
         score: 1,
@@ -238,8 +239,7 @@ const scoringCategories: ScoringCategory[] = [
       },
       {
         score: 1,
-        description:
-          'No meaningful user rights or control over personal data',
+        description: 'No meaningful user rights or control over personal data',
       },
     ],
   },
@@ -298,6 +298,14 @@ const scoringCategories: ScoringCategory[] = [
       },
     ],
   },
+];
+
+const categoryWeights: Array<{ category: CategoryName; weight: number }> = [
+  { category: 'Data Collection', weight: 1.0 },
+  { category: 'Data Sharing', weight: 1.5 },
+  { category: 'Data Retention and Security', weight: 1.2 },
+  { category: 'User Rights and Controls', weight: 1.0 },
+  { category: 'Transparency and Clarity', weight: 0.8 },
 ];
 
 /*  */
@@ -445,4 +453,195 @@ export const extractClauses = action({
   },
 });
 
-// scoring
+export const scorePractices = action({
+  args: {
+    categories: v.array(
+      v.object({
+        category_name: v.union(
+          ...scoringCategories.map((c) => v.literal(c.category_name))
+        ),
+        clauses: v.array(
+          v.object({
+            clause: v.string(),
+            relevance: v.number(),
+          })
+        ),
+      })
+    ),
+  },
+  handler: async (_, { categories }) => {
+    if (!categories) {
+      throw new Error('No category clauses provided.');
+    }
+
+    const promises = categories.map(async (category) => {
+      const filteredClauses = category.clauses.filter(
+        (c) => c.relevance >= 0.3
+      );
+
+      if (filteredClauses.length === 0) {
+        console.warn(
+          `No relevant clauses found for category: ${category.category_name}`
+        );
+        return;
+      }
+
+      const categoryRubric = scoringCategories.find(
+        (r) => r.category_name === category.category_name
+      )?.rubric;
+
+      if (!categoryRubric) {
+        console.warn(`No rubric found for category: ${category.category_name}`);
+        return;
+      }
+
+      const { score, reasoning } = await scoreCategory({
+        categoryName: category.category_name,
+        clauses: category.clauses,
+        rubric: categoryRubric,
+      });
+
+      if (!score || !reasoning) {
+        throw new Error(
+          `An unknown error occured scoring ${category.category_name}`
+        );
+      } else {
+        return { category: category.category_name, score, reasoning };
+      }
+    });
+
+    const scores = await Promise.all(promises);
+    if (!scores) throw new Error('Something went wrong.');
+
+    return scores as Array<{
+      category: CategoryName;
+      score: number;
+      reasoning: string;
+    }>;
+  },
+});
+
+export const getOverallScore = action({
+  args: {
+    categories: v.array(
+      v.object({
+        category_name: v.union(
+          ...scoringCategories.map((c) => v.literal(c.category_name))
+        ),
+        score: v.number(),
+        reasoning: v.string(),
+      })
+    ),
+  },
+  handler: async (_, { categories }) => {
+    const weightsTotal = categoryWeights.reduce((sum, w) => sum + w.weight, 0);
+
+    const weight_x_score_sum = categories
+      .map(
+        (c) =>
+          categoryWeights.find((cw) => cw.category === c.category_name)!
+            .weight * c.score
+      )
+      .reduce((sum, product) => sum + product, 0);
+
+    const result = 10 * (weight_x_score_sum / weightsTotal);
+    const overall_score = Math.round(result * 100) / 100;
+
+    const prompt = `
+      A website's privacy practices are scored out of 10 in categories as shown:
+
+      ${categories
+        .map(
+          (category) =>
+            `${category.category_name}: ${category.score}.\n Reasoning: ${category.reasoning}`
+        )
+        .join('\n\n')}
+      
+      Overall score is calculated as a weighted average based on the following weights:
+      ${categoryWeights.map((c) => `${c.category} - ${c.weight}`).join('\n')}
+
+      The overall score is ${overall_score}.
+      Return only a brief reasoning for this overall score, focusing on the most impactful categories and their implications for user privacy.
+      At most 2 sentences. Use simple language, understandable by a non-technical user.
+    `;
+
+    try {
+      const { object } = await generateObject({
+        model: google('gemini-2.0-flash-lite'),
+        prompt,
+        schema: z.object({
+          reasoning: z.string(),
+        }),
+        temperature: 0,
+        maxTokens: 500
+      })
+
+      const { reasoning } = object
+
+      return {
+        overall_score,
+        reasoning
+      }
+    } catch (error) {
+      console.error('Something went wrong getting a reasoning for the overall score', error);
+      return {
+        overall_score
+      }
+    }
+  },
+});
+
+/*  */
+/*  */
+/*  */
+
+async function scoreCategory({
+  categoryName,
+  clauses,
+  rubric,
+}: {
+  categoryName: CategoryName;
+  clauses: Array<{
+    clause: string;
+    relevance: number;
+  }>;
+  rubric: Array<{
+    score: number;
+    description: string;
+  }>;
+}) {
+  const prompt = `
+    These are clauses extracted from a website's Privacy Policy and Terms of Service specifically regarding ${categoryName}:
+
+    ${clauses
+      .map((c) => `- ${c.clause} (Relevance: ${c.relevance})`)
+      .join('\n')}
+
+    You are given the following rubric for scoring the website's performance in ${categoryName} based on the provided clauses:
+    
+    ${rubric.map((r) => `Score: ${r.score} - ${r.description}`).join('\n')}
+
+    Carefully go through all provided clauses and find the most appropriate score for the website in ${categoryName}.
+
+    Return only a score, and a short reasoning statement - max 2 sentences - saying why the assigned score is appropriate.
+    Use simple language, understandable by a non-technical user.
+  `;
+
+  try {
+    const { object } = await generateObject({
+      model: google('gemini-2.0-flash-lite'),
+      prompt,
+      temperature: 0,
+      maxTokens: 500,
+      schema: z.object({
+        score: z.number(),
+        reasoning: z.string(),
+      }),
+    });
+
+    return object;
+  } catch (error) {
+    console.error('Something went wrong: ', error);
+    throw new Error(`Failed to generate score for ${categoryName}`);
+  }
+}
