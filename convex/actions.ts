@@ -1,327 +1,25 @@
-import { v } from 'convex/values';
-import { action } from './_generated/server';
-import { api, internal } from './_generated/api';
-import { generateObject } from 'ai';
-import { google } from '@ai-sdk/google';
-import { Id } from './_generated/dataModel';
-import z from 'zod';
+import { v } from "convex/values";
+import { action } from "./_generated/server";
+import { api, internal } from "./_generated/api";
+import { generateObject } from "ai";
+import { google } from "@ai-sdk/google";
+import { Id } from "./_generated/dataModel";
+import z from "zod";
 
-/*  */
-/*  */
+import { CategoryName, scoringCategories, categoryWeights } from "./lib";
 
-type CategoryName =
-  | 'Data Collection'
-  | 'Data Sharing'
-  | 'Data Retention and Security'
-  | 'User Rights and Controls'
-  | 'Transparency and Clarity';
-
-interface ScoringCategory {
-  category_name: CategoryName;
-  rubric: {
-    score: number;
-    description: string;
-  }[];
-}
-
-const scoringCategories: ScoringCategory[] = [
-  {
-    category_name: 'Data Collection',
-    rubric: [
-      {
-        score: 10,
-        description:
-          'Only collects data absolutely essential for core service functionality with explicit, granular consent for each data type',
-      },
-      {
-        score: 9,
-        description:
-          'Collects minimal data necessary for service with clear consent mechanisms and detailed explanations',
-      },
-      {
-        score: 8,
-        description:
-          'Collects necessary data with some additional functional data, good consent practices',
-      },
-      {
-        score: 7,
-        description:
-          'Collects reasonable amount of data with adequate consent, some non-essential collection',
-      },
-      {
-        score: 6,
-        description:
-          'Collects moderate amount of data including some convenience features, basic consent',
-      },
-      {
-        score: 5,
-        description:
-          'Collects substantial data including analytics and personalization, broad consent categories',
-      },
-      {
-        score: 4,
-        description:
-          'Collects extensive data for multiple purposes, vague consent mechanisms',
-      },
-      {
-        score: 3,
-        description:
-          'Collects broad data categories with minimal user control or unclear purposes',
-      },
-      {
-        score: 2,
-        description:
-          'Collects excessive data with poor justification and limited consent options',
-      },
-      {
-        score: 1,
-        description:
-          'Collects extensive personal data without clear necessity, consent, or user awareness',
-      },
-    ],
-  },
-  {
-    category_name: 'Data Sharing',
-    rubric: [
-      {
-        score: 10,
-        description:
-          'No data sharing with third parties, or only with explicit opt-in consent for each recipient',
-      },
-      {
-        score: 9,
-        description:
-          'Very limited sharing only with essential service providers, clear user control',
-      },
-      {
-        score: 8,
-        description:
-          'Shares only with trusted partners for core functionality, good transparency',
-      },
-      {
-        score: 7,
-        description:
-          'Limited sharing with partners, clear disclosure and some user control',
-      },
-      {
-        score: 6,
-        description:
-          'Moderate sharing with business partners, adequate disclosure',
-      },
-      {
-        score: 5,
-        description:
-          'Shares data with various partners for business purposes, basic disclosure',
-      },
-      {
-        score: 4,
-        description:
-          'Broad sharing with multiple categories of partners, limited user control',
-      },
-      {
-        score: 3,
-        description:
-          'Extensive sharing for marketing and analytics with poor user control',
-      },
-      {
-        score: 2,
-        description: 'Widespread sharing with minimal disclosure or consent',
-      },
-      {
-        score: 1,
-        description:
-          'Unrestricted data sharing with third parties without meaningful user consent or disclosure',
-      },
-    ],
-  },
-  {
-    category_name: 'Data Retention and Security',
-    rubric: [
-      {
-        score: 10,
-        description:
-          'Strong encryption, minimal retention periods, automatic deletion, comprehensive security measures',
-      },
-      {
-        score: 9,
-        description:
-          'Excellent security practices, clear retention limits, user-controlled deletion',
-      },
-      {
-        score: 8,
-        description:
-          'Good security measures, reasonable retention periods, deletion options available',
-      },
-      {
-        score: 7,
-        description:
-          'Adequate security practices, defined retention periods, some deletion capabilities',
-      },
-      {
-        score: 6,
-        description:
-          'Basic security measures, moderate retention periods, limited deletion options',
-      },
-      {
-        score: 5,
-        description:
-          'Standard security practices, long but defined retention periods',
-      },
-      {
-        score: 4,
-        description:
-          'Minimal security details, vague retention periods, difficult deletion process',
-      },
-      {
-        score: 3,
-        description:
-          'Poor security transparency, indefinite retention mentioned, no deletion options',
-      },
-      {
-        score: 2,
-        description:
-          'Inadequate security measures, permanent data retention, no user control',
-      },
-      {
-        score: 1,
-        description:
-          'No meaningful security measures, indefinite retention without user recourse',
-      },
-    ],
-  },
-  {
-    category_name: 'User Rights and Controls',
-    rubric: [
-      {
-        score: 10,
-        description:
-          'Comprehensive user rights including access, correction, deletion, portability, and granular privacy controls',
-      },
-      {
-        score: 9,
-        description:
-          'Strong user rights with easy-to-use tools for data management and privacy controls',
-      },
-      {
-        score: 8,
-        description:
-          'Good user rights including access, correction, and deletion with clear processes',
-      },
-      {
-        score: 7,
-        description:
-          'Basic user rights with functional but limited tools for data control',
-      },
-      {
-        score: 6,
-        description:
-          'Some user rights available but with restrictions or complex procedures',
-      },
-      {
-        score: 5,
-        description:
-          'Limited user rights, basic access and deletion available with effort',
-      },
-      {
-        score: 4,
-        description:
-          'Minimal user rights, difficult processes, long response times',
-      },
-      {
-        score: 3,
-        description:
-          'Very limited rights, cumbersome procedures, poor responsiveness',
-      },
-      {
-        score: 2,
-        description:
-          'Barely functional user rights, significant barriers to data control',
-      },
-      {
-        score: 1,
-        description: 'No meaningful user rights or control over personal data',
-      },
-    ],
-  },
-  {
-    category_name: 'Transparency and Clarity',
-    rubric: [
-      {
-        score: 10,
-        description:
-          'Crystal clear language, comprehensive explanations, easy navigation, regular updates communicated',
-      },
-      {
-        score: 9,
-        description:
-          'Very clear and accessible language, well-organized content, good update practices',
-      },
-      {
-        score: 8,
-        description:
-          'Clear language with minimal jargon, logical organization, adequate update notifications',
-      },
-      {
-        score: 7,
-        description:
-          'Generally clear with some technical terms, reasonable organization',
-      },
-      {
-        score: 6,
-        description:
-          'Moderately clear but includes jargon, basic organization, some unclear sections',
-      },
-      {
-        score: 5,
-        description:
-          'Mixed clarity with technical language, confusing organization in places',
-      },
-      {
-        score: 4,
-        description:
-          'Difficult to understand, heavy use of legal jargon, poor organization',
-      },
-      {
-        score: 3,
-        description:
-          'Very unclear language, confusing structure, important information buried',
-      },
-      {
-        score: 2,
-        description:
-          'Extremely difficult to understand, deliberately obfuscated, poor accessibility',
-      },
-      {
-        score: 1,
-        description:
-          'Incomprehensible or deliberately misleading language, no meaningful transparency',
-      },
-    ],
-  },
-];
-
-const categoryWeights: Array<{ category: CategoryName; weight: number }> = [
-  { category: 'Data Collection', weight: 1.0 },
-  { category: 'Data Sharing', weight: 1.5 },
-  { category: 'Data Retention and Security', weight: 1.2 },
-  { category: 'User Rights and Controls', weight: 1.0 },
-  { category: 'Transparency and Clarity', weight: 0.8 },
-];
-
-/*  */
-/*  */
 
 export const checkExistingRecord = action({
   args: { user_input: v.string() },
   handler: async (ctx, { user_input }) => {
-    if (!user_input) throw new Error('No User Input');
+    if (!user_input) throw new Error("No User Input");
 
     const sites = await ctx.runQuery(internal.internalQueries.getSiteSByTag, {
       user_input: user_input,
     });
 
     let result: {
-      _id: Id<'sites'>;
+      _id: Id<"sites">;
       site_name: string;
       normalized_base_url: string;
     }[] = [];
@@ -335,15 +33,12 @@ export const checkExistingRecord = action({
         };
       });
     } else {
-      const { normalized_base_url } = await ctx.runAction(
-        api.actions.getWebsiteMetadata,
-        {
-          site: user_input,
-        }
-      );
+      const metaData = await ctx.runAction(api.actions.getWebsiteMetadata, {
+        site: user_input,
+      });
 
       const site = await ctx.runQuery(internal.internalQueries.getSiteByUrl, {
-        normalized_base_url,
+        normalized_base_url: metaData.normalized_base_url,
       });
 
       result = site ? ([site] as typeof result) : [];
@@ -358,7 +53,7 @@ export const getWebsiteMetadata = action({
     site: v.string(),
   },
   handler: async (_, { site }) => {
-    if (!site) throw new Error('No Site Provided');
+    if (!site) throw new Error("No Site Provided");
 
     const prompt = `
       You are asked to get the website metadata for ${site}.
@@ -380,11 +75,12 @@ export const getWebsiteMetadata = action({
       - Never hallucinate - return empty strings or empty arrays if uncertain
     `;
 
+    console.log("Hitting Gemini API now.");
     const { object } = await generateObject({
-      model: google('gemini-2.0-flash', {
+      model: google("gemini-2.0-flash", {
         useSearchGrounding: true,
       }),
-      system: 'You are a privacy practices analyzer and researcher.',
+      system: "You are a privacy practices analyzer and researcher.",
       prompt: prompt,
       temperature: 0,
       schema: z.object({
@@ -405,14 +101,14 @@ export const extractClauses = action({
   },
   handler: async (_, { policy_documents_urls }) => {
     if (policy_documents_urls.length <= 0)
-      throw new Error('No Policy Document URLs Provided');
+      throw new Error("No Policy Document URLs Provided");
 
     const prompt = `
       You are given the following urls:
-      ${policy_documents_urls.map((u) => `${u}`).join('\n')}
+      ${policy_documents_urls.map((u) => `${u}`).join("\n")}
 
       You are required to go through each page, extracting all relevant clauses that fall under each of these categories:
-      ${scoringCategories.map((c, i) => `${i}. ${c.category_name}`).join('\n')}
+      ${scoringCategories.map((c, i) => `${i}. ${c.category_name}`).join("\n")}
 
       Important:
       - Use official sources only.
@@ -423,28 +119,29 @@ export const extractClauses = action({
       - Never hallucinate or return placeholder text - return empty strings or empty arrays if uncertain.
     `;
 
+    console.log("Hitting Gemini API now.");
     const { object } = await generateObject({
-      model: google('gemini-2.0-flash', {
+      model: google("gemini-2.0-flash", {
         useSearchGrounding: true,
       }),
       system:
-        'You are a privacy policy analyzer. Your task is to extract and summarize the privacy practices of a website based on its terms of service or privacy policy.',
+        "You are a privacy policy analyzer. Your task is to extract and summarize the privacy practices of a website based on its terms of service or privacy policy.",
       prompt: prompt,
       temperature: 0,
-      output: 'array',
+      output: "array",
       schema: z.object({
         category: z.enum([
-          'Data Collection',
-          'Data Sharing',
-          'Data Retention and Security',
-          'User Rights and Controls',
-          'Transparency and Clarity',
+          "Data Collection",
+          "Data Sharing",
+          "Data Retention and Security",
+          "User Rights and Controls",
+          "Transparency and Clarity",
         ]),
         clauses: z.array(
           z.object({
             clause: z.string(),
             relevance: z.number(),
-          })
+          }),
         ),
       }),
     });
@@ -458,36 +155,36 @@ export const scorePractices = action({
     categories: v.array(
       v.object({
         category_name: v.union(
-          ...scoringCategories.map((c) => v.literal(c.category_name))
+          ...scoringCategories.map((c) => v.literal(c.category_name)),
         ),
         clauses: v.array(
           v.object({
             clause: v.string(),
             relevance: v.number(),
-          })
+          }),
         ),
-      })
+      }),
     ),
   },
   handler: async (_, { categories }) => {
     if (!categories) {
-      throw new Error('No category clauses provided.');
+      throw new Error("No category clauses provided.");
     }
 
     const promises = categories.map(async (category) => {
       const filteredClauses = category.clauses.filter(
-        (c) => c.relevance >= 0.3
+        (c) => c.relevance >= 0.3,
       );
 
       if (filteredClauses.length === 0) {
         console.warn(
-          `No relevant clauses found for category: ${category.category_name}`
+          `No relevant clauses found for category: ${category.category_name}`,
         );
         return;
       }
 
       const categoryRubric = scoringCategories.find(
-        (r) => r.category_name === category.category_name
+        (r) => r.category_name === category.category_name,
       )?.rubric;
 
       if (!categoryRubric) {
@@ -497,13 +194,13 @@ export const scorePractices = action({
 
       const { score, reasoning } = await scoreCategory({
         categoryName: category.category_name,
-        clauses: category.clauses,
+        clauses: filteredClauses,
         rubric: categoryRubric,
       });
 
       if (!score || !reasoning) {
         throw new Error(
-          `An unknown error occured scoring ${category.category_name}`
+          `An unknown error occured scoring ${category.category_name}`,
         );
       } else {
         return { category: category.category_name, score, reasoning };
@@ -511,7 +208,7 @@ export const scorePractices = action({
     });
 
     const scores = await Promise.all(promises);
-    if (!scores) throw new Error('Something went wrong.');
+    if (!scores) throw new Error("Something went wrong.");
 
     return scores as Array<{
       category: CategoryName;
@@ -526,11 +223,11 @@ export const getOverallScore = action({
     categories: v.array(
       v.object({
         category_name: v.union(
-          ...scoringCategories.map((c) => v.literal(c.category_name))
+          ...scoringCategories.map((c) => v.literal(c.category_name)),
         ),
         score: v.number(),
         reasoning: v.string(),
-      })
+      }),
     ),
   },
   handler: async (_, { categories }) => {
@@ -540,7 +237,7 @@ export const getOverallScore = action({
       .map(
         (c) =>
           categoryWeights.find((cw) => cw.category === c.category_name)!
-            .weight * c.score
+            .weight * c.score,
       )
       .reduce((sum, product) => sum + product, 0);
 
@@ -553,12 +250,12 @@ export const getOverallScore = action({
       ${categories
         .map(
           (category) =>
-            `${category.category_name}: ${category.score}.\n Reasoning: ${category.reasoning}`
+            `${category.category_name}: ${category.score}.\n Reasoning: ${category.reasoning}`,
         )
-        .join('\n\n')}
+        .join("\n\n")}
       
       Overall score is calculated as a weighted average based on the following weights:
-      ${categoryWeights.map((c) => `${c.category} - ${c.weight}`).join('\n')}
+      ${categoryWeights.map((c) => `${c.category} - ${c.weight}`).join("\n")}
 
       The overall score is ${overall_score}.
       Return only a brief reasoning for this overall score, focusing on the most impactful categories and their implications for user privacy.
@@ -566,34 +263,38 @@ export const getOverallScore = action({
     `;
 
     try {
+      console.log("Hitting Gemini API now.");
       const { object } = await generateObject({
-        model: google('gemini-2.0-flash-lite'),
+        model: google("gemini-2.0-flash-lite"),
         prompt,
         schema: z.object({
           reasoning: z.string(),
         }),
         temperature: 0,
-        maxTokens: 500
-      })
+        maxTokens: 500,
+      });
 
-      const { reasoning } = object
+      const { reasoning } = object;
 
       return {
         overall_score,
-        reasoning
-      }
+        reasoning,
+      };
     } catch (error) {
-      console.error('Something went wrong getting a reasoning for the overall score', error);
+      console.error(
+        "Something went wrong getting a reasoning for the overall score",
+        error,
+      );
       return {
-        overall_score
-      }
+        overall_score,
+      };
     }
   },
 });
 
-/*  */
-/*  */
-/*  */
+/**
+ * helper function(s)
+ */
 
 async function scoreCategory({
   categoryName,
@@ -615,11 +316,11 @@ async function scoreCategory({
 
     ${clauses
       .map((c) => `- ${c.clause} (Relevance: ${c.relevance})`)
-      .join('\n')}
+      .join("\n")}
 
     You are given the following rubric for scoring the website's performance in ${categoryName} based on the provided clauses:
     
-    ${rubric.map((r) => `Score: ${r.score} - ${r.description}`).join('\n')}
+    ${rubric.map((r) => `Score: ${r.score} - ${r.description}`).join("\n")}
 
     Carefully go through all provided clauses and find the most appropriate score for the website in ${categoryName}.
 
@@ -628,8 +329,9 @@ async function scoreCategory({
   `;
 
   try {
+    console.log("Hitting Gemini API now.");
     const { object } = await generateObject({
-      model: google('gemini-2.0-flash-lite'),
+      model: google("gemini-2.0-flash-lite"),
       prompt,
       temperature: 0,
       maxTokens: 500,
@@ -641,7 +343,7 @@ async function scoreCategory({
 
     return object;
   } catch (error) {
-    console.error('Something went wrong: ', error);
+    console.error("Something went wrong: ", error);
     throw new Error(`Failed to generate score for ${categoryName}`);
   }
 }

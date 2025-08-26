@@ -1,4 +1,4 @@
-import { RecentlyAnalyzed } from './_components/RecentlyAnalyzed';
+// import { RecentlyAnalyzed } from './_components/RecentlyAnalyzed';
 import SearchComponent from './_components/SearchComponent';
 
 export default function Home() {
@@ -16,7 +16,7 @@ export default function Home() {
           <SearchComponent />
         </div>
 
-        <RecentlyAnalyzed />
+        {/* <RecentlyAnalyzed /> */}
       </section>
     </>
   );

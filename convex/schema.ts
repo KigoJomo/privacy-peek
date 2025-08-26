@@ -25,6 +25,14 @@ export default defineSchema({
     normalized_base_url: v.string(),
     site_name: v.string(),
     policy_documents_urls: v.array(v.string()),
+    last_analyzed: v.string(),
+    overall_score: v.number(),
+    reasoning: v.string(),
+    category_scores: v.array(v.object({
+      category_name: v.string(),
+      category_score: v.number(),
+      reasoning: v.string(),
+    }))
   })
     .index('by_url', ['normalized_base_url'])
     .index('by_site_name', ['site_name']),
