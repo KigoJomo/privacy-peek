@@ -246,6 +246,13 @@ li {
   font-size: calc(var(--font-size));
 }
 
+a {
+  color: var(--primary);
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
 img {
   object-fit: cover;
   object-position: center;
@@ -329,7 +336,3 @@ html {
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
 }
-
-/* .test{
-  color: #ffffff00;
-} */

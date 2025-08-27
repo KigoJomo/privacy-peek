@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAction } from "convex/react";
@@ -20,18 +19,13 @@ import Link from "next/link";
 import { startTransition, useActionState } from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
+import { ResultItem as SearchResult } from "@/convex/actions";
 
 const SearchSchema = z.object({
   search_term: z.string().min(3, "search term must be at least 3 characters."),
 });
 
 type SearchValue = z.infer<typeof SearchSchema>;
-
-type SearchResult = {
-  _id: Id<"sites">;
-  site_name: string;
-  normalized_base_url: string;
-};
 
 type ActionState =
   | { ok: true; message: string; results?: SearchResult[] }
@@ -47,7 +41,7 @@ export default function SearchInput() {
     mode: "onSubmit",
   });
 
-  const searchSite = useAction(api.actions.checkExistingRecord);
+  const searchSite = useAction(api.actions.getSiteAnalysis);
 
   const [state, submit, isPending] = useActionState(
     async (_prev: ActionState, value: SearchValue): Promise<ActionState> => {
@@ -128,7 +122,7 @@ export default function SearchInput() {
             <>
               <CardHeader className="!text-sm">
                 <CardTitle>
-                  <h3>Results for &apos;{form.watch("search_term")}&apos;</h3>
+                  <span className="text-muted-foreground border-l-4 pl-2">Results for &apos;{form.watch("search_term")}&apos;</span>
                 </CardTitle>
               </CardHeader>
 
