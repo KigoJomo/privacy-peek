@@ -20,8 +20,7 @@ import {
 } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 import { api } from '@/convex/_generated/api';
-import { cn } from '@/lib/utils';
-import { formatRelativeTime } from '@/lib/utils/utils';
+import { cn, formatRelativeTime } from '@/lib/utils';
 import { fetchQuery } from 'convex/nextjs';
 import Link from 'next/link';
 

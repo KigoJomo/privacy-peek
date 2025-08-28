@@ -12,9 +12,7 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="w-full flex flex-col items-center">
-          <SearchComponent />
-        </div>
+        <SearchComponent />
 
         {/* <RecentlyAnalyzed /> */}
       </section>

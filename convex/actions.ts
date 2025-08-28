@@ -37,9 +37,12 @@ export const getSiteAnalysis = action({
           _id: site._id,
           site_name: site.site_name,
           normalized_base_url: site.normalized_base_url,
+          overall_score: site.overall_score,
+          reasoning: site.reasoning,
         };
       });
 
+      console.log("Found Matching Records");
       return result;
     } else {
       // if there are not matching records, do a more thorough search
@@ -51,9 +54,11 @@ export const getSiteAnalysis = action({
 
       if (site) {
         result = [site];
+        console.log("Found Matching Record")
         return result;
       } else {
         // no initial matching records and no result after thorough search, then do the analysis
+        console.log('No Matching Records. Begining Analysis.')
         // 1. Get category clauses.
         const categoriesClauses = await extractClauses({
           policy_documents_urls: siteMetaData.policy_documents_urls,
