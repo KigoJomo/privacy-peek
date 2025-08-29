@@ -19,7 +19,7 @@ import Link from "next/link";
 import { startTransition, useActionState } from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
-import { ResultItem as SearchResult } from "@/convex/actions";
+import { ResultItem } from "@/convex/actions";
 
 const SearchSchema = z.object({
   search_term: z.string().min(3, "search term must be at least 3 characters."),
@@ -28,7 +28,7 @@ const SearchSchema = z.object({
 type SearchValue = z.infer<typeof SearchSchema>;
 
 type ActionState =
-  | { ok: true; message: string; results?: SearchResult[] }
+  | { ok: true; message: string; results?: ResultItem[] }
   | { ok: false; message: string }
   | null;
 

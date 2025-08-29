@@ -1,5 +1,6 @@
 import { v } from 'convex/values';
 import { internalMutation, internalQuery } from './_generated/server';
+import { CategoryNameValidator } from './lib';
 
 export const getSiteSByTag = internalQuery({
   args: { user_input: v.string() },
@@ -44,7 +45,7 @@ export const insertAnalysis = internalMutation({
     reasoning: v.string(),
     category_scores: v.array(
       v.object({
-        category_name: v.string(),
+        category_name: CategoryNameValidator,
         category_score: v.number(),
         reasoning: v.string(),
       })

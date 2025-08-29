@@ -1,5 +1,6 @@
 import { defineSchema, defineTable } from 'convex/server';
 import { v } from 'convex/values';
+import { CategoryNameValidator } from './lib';
 
 export default defineSchema({
   websites: defineTable({ // phasing this out as we move to the sites table
@@ -29,7 +30,7 @@ export default defineSchema({
     overall_score: v.number(),
     reasoning: v.string(),
     category_scores: v.array(v.object({
-      category_name: v.string(),
+      category_name: CategoryNameValidator,
       category_score: v.number(),
       reasoning: v.string(),
     }))

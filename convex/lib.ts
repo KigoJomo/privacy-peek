@@ -1,9 +1,39 @@
-export type CategoryName =
-  | 'Data Collection'
-  | 'Data Sharing'
-  | 'Data Retention and Security'
-  | 'User Rights and Controls'
-  | 'Transparency and Clarity';
+import { Infer, v } from 'convex/values';
+import type { Id } from './_generated/dataModel';
+
+export type RequireOnly<T, K extends keyof T> = Partial<T> & Pick<T, K>;
+
+export const CategoryNameValidator = v.union(
+  v.literal("Data Collection"),
+  v.literal("Data Sharing"),
+  v.literal("Data Retention and Security"),
+  v.literal("User Rights and Controls"),
+  v.literal("Transparency and Clarity"),
+)
+
+export type CategoryName = Infer<typeof CategoryNameValidator>;
+
+// export type CategoryName =
+//   | 'Data Collection'
+//   | 'Data Sharing'
+//   | 'Data Retention and Security'
+//   | 'User Rights and Controls'
+//   | 'Transparency and Clarity';
+
+export interface SiteDetails {
+  _id: Id<'sites'>;
+  normalized_base_url: string;
+  site_name: string;
+  policy_documents_urls: string[];
+  last_analyzed: string;
+  overall_score: number;
+  reasoning: string;
+  category_scores: Array<{
+    category_name: CategoryName;
+    category_score: number;
+    reasoning: string;
+  }>;
+}
 
 interface ScoringCategory {
   category_name: CategoryName;
@@ -289,7 +319,10 @@ export const scoringCategories: ScoringCategory[] = [
   },
 ];
 
-export const categoryWeights: Array<{ category: CategoryName; weight: number }> = [
+export const categoryWeights: Array<{
+  category: CategoryName;
+  weight: number;
+}> = [
   { category: 'Data Collection', weight: 1.0 },
   { category: 'Data Sharing', weight: 1.5 },
   { category: 'Data Retention and Security', weight: 1.2 },

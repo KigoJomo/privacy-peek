@@ -3,18 +3,28 @@ import { action } from './_generated/server';
 import { internal } from './_generated/api';
 import { generateObject } from 'ai';
 import { google } from '@ai-sdk/google';
-import { Id } from './_generated/dataModel';
 import z from 'zod';
 
-import { CategoryName, scoringCategories, categoryWeights } from './lib';
+import {
+  CategoryName,
+  scoringCategories,
+  categoryWeights,
+  SiteDetails,
+  RequireOnly,
+} from './lib';
 
-export interface ResultItem {
-  _id: Id<'sites'>;
-  normalized_base_url: string;
-  site_name: string;
-  overall_score?: number;
-  reasoning?: string;
-}
+// export interface ResultItem {
+//   _id: Id<'sites'>;
+//   normalized_base_url: string;
+//   site_name: string;
+//   overall_score?: number;
+//   reasoning?: string;
+// }
+
+export type ResultItem = RequireOnly<
+  SiteDetails,
+  '_id' | 'normalized_base_url' | 'site_name' | 'overall_score' | 'reasoning'
+>;
 
 export const getSiteAnalysis = action({
   args: { user_input: v.string() },
@@ -42,7 +52,7 @@ export const getSiteAnalysis = action({
         };
       });
 
-      console.log("Found Matching Records");
+      console.log('Found Matching Records');
       return result;
     } else {
       // if there are not matching records, do a more thorough search
@@ -54,11 +64,11 @@ export const getSiteAnalysis = action({
 
       if (site) {
         result = [site];
-        console.log("Found Matching Record")
+        console.log('Found Matching Record');
         return result;
       } else {
         // no initial matching records and no result after thorough search, then do the analysis
-        console.log('No Matching Records. Begining Analysis.')
+        console.log('No Matching Records. Begining Analysis.');
         // 1. Get category clauses.
         const categoriesClauses = await extractClauses({
           policy_documents_urls: siteMetaData.policy_documents_urls,
@@ -90,10 +100,10 @@ export const getSiteAnalysis = action({
           normalized_base_url: siteMetaData.normalized_base_url,
           site_name: siteMetaData.site_name,
           overall_score: overallScore.overall_score,
-          reasoning: overallScore.reasoning
-        }
+          reasoning: overallScore.reasoning,
+        };
 
-        result = [analysisResult]
+        result = [analysisResult];
         return result;
       }
     }
@@ -314,6 +324,7 @@ const getOverallScore = async ({
     );
     return {
       overall_score,
+      reasoning: '',
     };
   }
 };
