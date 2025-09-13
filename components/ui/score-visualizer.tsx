@@ -6,7 +6,7 @@ interface ScoreVisualizerProps {
   size?: number;
   displayNumber?: string | number;
   strokeWidth?: number;
-  className?: string
+  className?: string;
 }
 
 const ScoreVisualizer: React.FC<ScoreVisualizerProps> = ({
@@ -14,7 +14,7 @@ const ScoreVisualizer: React.FC<ScoreVisualizerProps> = ({
   size = 64,
   displayNumber,
   strokeWidth,
-  className= ''
+  className = '',
 }) => {
   // Validate input value
   const score = Math.max(0, Math.min(1, value));
@@ -30,9 +30,13 @@ const ScoreVisualizer: React.FC<ScoreVisualizerProps> = ({
   const circumference = 2 * Math.PI * radius;
   const dashOffset = circumference * (1 - score);
 
+  // Dynamic font size for the center label based on overall size
+  // Clamp to keep it readable across small/large sizes
+  const fontSizePx = Math.max(10, Math.round(size * 0.275));
+
   return (
     <div
-      className={cn("relative inline-block", className)}
+      className={cn('relative inline-block', className)}
       style={{ width: size, height: size }}>
       <svg
         width={size}
@@ -45,7 +49,7 @@ const ScoreVisualizer: React.FC<ScoreVisualizerProps> = ({
           cy={size / 2}
           r={radius}
           fill="none"
-          className='stroke-muted-foreground stroke-1'
+          className="stroke-muted-foreground stroke-1"
           // strokeWidth={strokeWidth / 4}
         />
 
@@ -65,7 +69,9 @@ const ScoreVisualizer: React.FC<ScoreVisualizerProps> = ({
 
       {/* Optional center text */}
       <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-sm font-medium" style={{ color: scoreColor }}>
+        <span
+          className="font-medium"
+          style={{ color: scoreColor, fontSize: fontSizePx }}>
           {displayNumber ? displayNumber : <>{Math.round(score * 100)}%</>}
         </span>
       </div>

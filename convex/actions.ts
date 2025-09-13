@@ -1,6 +1,6 @@
 import { v } from 'convex/values';
 import { action } from './_generated/server';
-import { internal } from './_generated/api';
+import { api, internal } from './_generated/api';
 import { generateObject } from 'ai';
 import { google } from '@ai-sdk/google';
 import z from 'zod';
@@ -36,7 +36,7 @@ export const getSiteAnalysis = action({
     let siteMetaData: Awaited<ReturnType<typeof getWebsiteMetadata>>;
 
     // check existing record
-    const sites = await ctx.runQuery(internal.internalQueries.getSiteSByTag, {
+    const sites = await ctx.runQuery(internal.sites.getSiteSByTag, {
       user_input,
     });
 
@@ -58,7 +58,7 @@ export const getSiteAnalysis = action({
       // if there are not matching records, do a more thorough search
       siteMetaData = await getWebsiteMetadata({ site: user_input });
 
-      const site = await ctx.runQuery(internal.internalQueries.getSiteByUrl, {
+      const site = await ctx.runQuery(internal.sites.getSiteByUrl, {
         normalized_base_url: siteMetaData.normalized_base_url,
       });
 
@@ -81,19 +81,16 @@ export const getSiteAnalysis = action({
         const overallScore = await getOverallScore({ categoryScores });
 
         // 4. Return Analysis & Persist in db
-        const newSiteId = await ctx.runMutation(
-          internal.internalQueries.insertAnalysis,
-          {
-            normalized_base_url: siteMetaData.normalized_base_url,
-            site_name: siteMetaData.site_name,
-            policy_documents_urls: siteMetaData.policy_documents_urls,
-            tags: siteMetaData.tags,
-            last_analyzed: new Date().toISOString(),
-            overall_score: overallScore.overall_score,
-            reasoning: overallScore.reasoning ? overallScore.reasoning : '',
-            category_scores: categoryScores,
-          }
-        );
+        const newSiteId = await ctx.runMutation(internal.sites.insertAnalysis, {
+          normalized_base_url: siteMetaData.normalized_base_url,
+          site_name: siteMetaData.site_name,
+          policy_documents_urls: siteMetaData.policy_documents_urls,
+          tags: siteMetaData.tags,
+          last_analyzed: new Date().toISOString(),
+          overall_score: overallScore.overall_score,
+          reasoning: overallScore.reasoning ? overallScore.reasoning : '',
+          category_scores: categoryScores,
+        });
 
         const analysisResult: ResultItem = {
           _id: newSiteId,
@@ -380,3 +377,7 @@ async function scoreCategory({
     throw new Error(`Failed to generate score for ${category_name}`);
   }
 }
+
+/**
+ *
+ */

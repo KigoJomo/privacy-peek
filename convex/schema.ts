@@ -36,7 +36,8 @@ export default defineSchema({
     }))
   })
     .index('by_url', ['normalized_base_url'])
-    .index('by_site_name', ['site_name']),
+    .index('by_site_name', ['site_name'])
+    .index('by_last_analyzed', ['last_analyzed']),
 
   tags: defineTable({
     site_id: v.id('sites'),

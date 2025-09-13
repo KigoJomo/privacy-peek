@@ -1,28 +1,35 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { api } from "@/convex/_generated/api";
-import { cn } from "@/lib/utils";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useAction } from "convex/react";
-import { LoaderCircle, Search } from "lucide-react";
-import Link from "next/link";
-import { startTransition, useActionState } from "react";
-import { useForm } from "react-hook-form";
-import z from "zod";
-import { ResultItem } from "@/convex/actions";
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { api } from '@/convex/_generated/api';
+import { cn } from '@/lib/utils';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useAction } from 'convex/react';
+import { ExternalLinkIcon, LoaderCircle, Search } from 'lucide-react';
+import Link from 'next/link';
+import { startTransition, useActionState } from 'react';
+import { useForm } from 'react-hook-form';
+import z from 'zod';
+import { ResultItem } from '@/convex/actions';
+import ScoreVisualizer from '@/components/ui/score-visualizer';
 
 const SearchSchema = z.object({
-  search_term: z.string().min(3, "search term must be at least 3 characters."),
+  search_term: z.string().min(3, 'search term must be at least 3 characters.'),
 });
 
 type SearchValue = z.infer<typeof SearchSchema>;
@@ -37,8 +44,8 @@ const initialState: ActionState = null;
 export default function SearchComponent() {
   const form = useForm<SearchValue>({
     resolver: zodResolver(SearchSchema),
-    defaultValues: { search_term: "" },
-    mode: "onSubmit",
+    defaultValues: { search_term: '' },
+    mode: 'onSubmit',
   });
 
   const searchSite = useAction(api.actions.getSiteAnalysis);
@@ -51,7 +58,7 @@ export default function SearchComponent() {
         });
         return {
           ok: true,
-          message: "Analysis Complete!",
+          message: 'Analysis Complete!',
           results: searchResults,
         };
       } catch (error: unknown) {
@@ -59,12 +66,12 @@ export default function SearchComponent() {
           console.log(error.message);
           return { ok: false, message: error.message };
         } else {
-          console.log("Failed to retrieve site analysis.");
-          return { ok: false, message: "Failed to retrieve site analysis!" };
+          console.log('Failed to retrieve site analysis.');
+          return { ok: false, message: 'Failed to retrieve site analysis!' };
         }
       }
     },
-    initialState,
+    initialState
   );
 
   return (
@@ -75,8 +82,7 @@ export default function SearchComponent() {
             submit(value);
           });
         })}
-        className={cn("w-full max-w-xl flex flex-col gap-2")}
-      >
+        className={cn('w-full max-w-xl flex flex-col gap-2')}>
         <div className="w-full flex items-end gap-1">
           <FormField
             control={form.control}
@@ -96,65 +102,75 @@ export default function SearchComponent() {
           <Button
             type="submit"
             disabled={isPending}
-            variant={"outline"}
-            size={"icon"}
-          >
+            variant={'outline'}
+            size={'icon'}>
             {isPending ? <LoaderCircle className="animate-spin" /> : <Search />}
           </Button>
         </div>
 
-        {state && (
+        {state && !state.ok && (
           <p
-            className={cn(
-              "!text-sm text-center mb-2",
-              state.ok ? "text-green-600" : "text-red-600",
-            )}
-            role={state.ok ? "status" : "alert"}
-          >
+            className={cn('!text-sm text-center', 'text-red-600')}
+            role="alert">
             {state.message}
           </p>
         )}
       </form>
 
-      {state?.ok && state.results && (
-        <Card className={cn("w-full max-w-xl", "flex flex-col gap-2")}>
-          {state.results.length > 0 ? (
-            <>
-              <CardHeader className="!text-sm">
-                <CardTitle>
-                  <span className="text-muted-foreground border-l-4 pl-2">Results for &apos;{form.watch("search_term")}&apos;</span>
-                </CardTitle>
-              </CardHeader>
-
-              <CardContent>
-                {state.results.map((result) => (
-                  <div key={result._id} className="flex flex-col gap-1">
-                    <h3>{result.site_name}</h3>
-                    <Link href={result.normalized_base_url} target="_blank">
-                      {result.normalized_base_url}
-                    </Link>
-                  </div>
-                ))}
-              </CardContent>
-            </>
-          ) : (
-            <>
-              <CardHeader className="">
-                <CardTitle>
-                  <h3>Not found!</h3>
-                </CardTitle>
-              </CardHeader>
-
-              <CardContent>
-                <p className="!text-sm text-muted-foreground border-l-4 pl-2">
-                  Sorry. We could not get a privacy analysis for &apos;
-                  {form.watch("search_term")}&apos;
-                </p>
-              </CardContent>
-            </>
-          )}
-        </Card>
+      {state?.ok && state.results && state.results.length > 0 && (
+        <div className="w-full max-w-xl flex flex-col gap-2 -mt-8">
+          {state.results.map((site) => (
+            <div key={site._id} className="">
+              <ResultCard site={site} />
+            </div>
+          ))}
+        </div>
       )}
     </Form>
+  );
+}
+
+export function ResultCard({ site }: { site: ResultItem }) {
+  const { site_name, normalized_base_url, overall_score, reasoning } = site;
+  return (
+    <Link
+      href={`/site/${site._id}`}
+      target="_blank"
+      className={cn(
+        '!no-underline',
+        'rounded-xl transition-all',
+        'focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] outline-none',
+        'hover:border-ring hover:ring-ring/50 hover:ring-[3px]'
+      )}>
+      <Card
+        className={cn(
+          'w-full max-w-xl',
+          'flex flex-col gap-2',
+        )}>
+        <CardHeader className="">
+          <CardTitle className="h-full flex items-center row-span-2">
+            <Link
+              href={normalized_base_url}
+              target="_blank"
+              className="flex items-center gap-2">
+              <h4>{site_name}</h4>
+              <ExternalLinkIcon size={16} className="stroke-primary" />
+            </Link>
+          </CardTitle>
+          <CardAction className="flex items-center gap-2">
+            <span className="text-sm">Overall Score /100</span>
+            <ScoreVisualizer
+              value={(overall_score ?? 0) / 100}
+              displayNumber={Math.round(overall_score)}
+              className="md:mr-1"
+              size={48}
+            />
+          </CardAction>
+        </CardHeader>
+        <CardContent>
+          <span className="text-muted-foreground">{reasoning}</span>
+        </CardContent>
+      </Card>
+    </Link>
   );
 }

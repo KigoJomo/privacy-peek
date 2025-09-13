@@ -16,9 +16,8 @@ import type {
 import type * as actions from "../actions.js";
 import type * as http from "../http.js";
 import type * as httpActions from "../httpActions.js";
-import type * as internalQueries from "../internalQueries.js";
 import type * as lib from "../lib.js";
-import type * as websites from "../websites.js";
+import type * as sites from "../sites.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -32,9 +31,8 @@ declare const fullApi: ApiFromModules<{
   actions: typeof actions;
   http: typeof http;
   httpActions: typeof httpActions;
-  internalQueries: typeof internalQueries;
   lib: typeof lib;
-  websites: typeof websites;
+  sites: typeof sites;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,

@@ -1,5 +1,5 @@
 import { v } from 'convex/values';
-import { internalMutation, internalQuery } from './_generated/server';
+import { internalMutation, internalQuery, query } from './_generated/server';
 import { CategoryNameValidator } from './lib';
 
 export const getSiteSByTag = internalQuery({
@@ -79,3 +79,38 @@ export const insertAnalysis = internalMutation({
     return site_id;
   },
 });
+
+export const getRecentSites = query({
+  args: { limit: v.optional(v.number()) },
+  handler: async (ctx, { limit }) => {
+    limit = limit ? limit : 6;
+
+    const results = await ctx.db
+      .query('sites')
+      .withIndex('by_last_analyzed')
+      .order('desc')
+      .take(limit);
+    
+    const structured_results = results.map(r => {
+      const { _id, normalized_base_url, site_name, overall_score, reasoning, last_analyzed, category_scores } = r;
+      return {
+        _id,
+        normalized_base_url,
+        site_name,
+        overall_score,
+        reasoning,
+        last_analyzed,
+        category_scores
+      };
+    });
+
+    return structured_results;
+  },
+});
+
+export const getFullSiteDetails = query({
+  args: { site_id: v.id('sites') },
+  handler: async (ctx, { site_id }) => {
+    return await ctx.db.get(site_id);
+  }
+})
