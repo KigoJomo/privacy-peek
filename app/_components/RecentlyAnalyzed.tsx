@@ -53,7 +53,6 @@ export function SiteCard({
   const {
     _id,
     site_name,
-    normalized_base_url,
     overall_score,
     last_analyzed,
     category_scores,
