@@ -20,7 +20,7 @@ import { api } from '@/convex/_generated/api';
 import { cn } from '@/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAction } from 'convex/react';
-import { ExternalLinkIcon, LoaderCircle, Search } from 'lucide-react';
+import { LoaderCircle, Search } from 'lucide-react';
 import Link from 'next/link';
 import { startTransition, useActionState } from 'react';
 import { useForm } from 'react-hook-form';

@@ -26,9 +26,12 @@ export const getSiteAnalysis = action({
     let result: ResultItem[] = [];
 
     // check existing record
-    const sites: ResultItem[] = await ctx.runQuery(internal.sites.getSiteSByTag, {
-      user_input,
-    });
+    const sites: ResultItem[] = await ctx.runQuery(
+      internal.sites.getSiteSByTag,
+      {
+        user_input,
+      }
+    );
 
     if (sites && sites.length > 0) {
       console.log('\nFound Matching Records');
@@ -43,10 +46,13 @@ export const getSiteAnalysis = action({
 
       if (site) {
         // add the user input as a tag for this site
-        const new_tag = await ctx.runMutation(internal.tags.insertTag, { site_id: site._id, tag: user_input });
+        const new_tag = await ctx.runMutation(internal.tags.insertTag, {
+          site_id: site._id,
+          tag: user_input,
+        });
         const sites: ResultItem[] = [site];
         console.log('\nFound Matching Record');
-        console.log(`\nAdded new tags for site ${site._id} => ${new_tag}`)
+        console.log(`\nAdded new tags for site ${site._id} => ${new_tag}`);
         return sites;
       } else {
         // no initial matching records and no result after thorough search, then do the analysis
@@ -67,7 +73,11 @@ export const getSiteAnalysis = action({
           normalized_base_url: siteMetaData.normalized_base_url,
           site_name: siteMetaData.site_name,
           policy_documents_urls: siteMetaData.policy_documents_urls,
-          tags: [...siteMetaData.tags, user_input, siteMetaData.normalized_base_url],
+          tags: [
+            ...siteMetaData.tags,
+            user_input,
+            siteMetaData.normalized_base_url,
+          ],
           last_analyzed: new Date().toISOString(),
           overall_score: overallScore.overall_score,
           reasoning: overallScore.reasoning ? overallScore.reasoning : '',
@@ -263,7 +273,7 @@ const getOverallScore = async ({
   const overall_score = Math.round(result * 100) / 100;
 
   const prompt = `
-      A website's privacy practices are scored out of 10 in categories as shown:
+      A website's privacy practices are evaluated in the following categories with their reasoning:
 
       ${categoryScores
         .map(
@@ -271,13 +281,14 @@ const getOverallScore = async ({
             `${category.category_name}: ${category.category_score}.\n Reasoning: ${category.reasoning}`
         )
         .join('\n\n')}
-      
-      Overall score is calculated as a weighted average based on the following weights:
-      ${categoryWeights.map((c) => `${c.category} - ${c.weight}`).join('\n')}
 
-      The overall score is ${overall_score}.
-      Return only a brief reasoning for this overall score, focusing on the most impactful categories and their implications for user privacy.
-      At most 2 sentences. Use simple language, understandable by a non-technical user.
+      Write a brief explanation that tells users what this means for them in practical terms.
+      Requirements for the explanation:
+      - Focus on concrete user impact (what information is collected or shared, how long it may be kept, what choices/controls users have, and how clearly this is communicated).
+      - Be clear, specific, and non-ambiguous.
+      - Do NOT mention any numeric scores, category names, or the website name.
+      - Avoid jargon and hedging language.
+      Return only the explanation, at most 2 short sentences.
     `;
 
   try {
@@ -336,10 +347,15 @@ async function scoreCategory({
     
     ${rubric.map((r) => `Score: ${r.score} - ${r.description}`).join('\n')}
 
-    Carefully go through all provided clauses and find the most appropriate score for the website in ${category_name}.
+    Carefully go through all provided clauses and find the most appropriate numeric score for the website in ${category_name}.
 
-    Return only a score, and a short reasoning statement - max 2 sentences - saying why the assigned score is appropriate.
-    Use simple language, understandable by a non-technical user.
+    Return two fields: a category_score (number) and a reasoning (string).
+    The reasoning must:
+    - Focus on what this means for users in real terms (e.g., what data is collected/shared/retained, what choices users have, and any notable risks or protections).
+    - Be clear, concrete, and non-ambiguous.
+    - NOT mention the numeric score or the website name.
+    - Avoid jargon and hedging language.
+    Keep it to at most 2 short sentences, understandable by a non-technical user.
   `;
 
   try {
