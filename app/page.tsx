@@ -1,4 +1,4 @@
-import { RecentlyAnalyzed } from './_components/RecentlyAnalyzed';
+import RecentlyAnalyzed from './_components/RecentlyAnalyzed';
 import SearchComponent from './_components/SearchComponent';
 
 export default function Home() {
@@ -12,12 +12,10 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="w-full flex flex-col items-center">
-          <SearchComponent />
-        </div>
-
-        <RecentlyAnalyzed />
+        <SearchComponent />
       </section>
+
+      <RecentlyAnalyzed />
     </>
   );
 }
