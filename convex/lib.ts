@@ -13,13 +13,6 @@ export const CategoryNameValidator = v.union(
 
 export type CategoryName = Infer<typeof CategoryNameValidator>;
 
-// export type CategoryName =
-//   | 'Data Collection'
-//   | 'Data Sharing'
-//   | 'Data Retention and Security'
-//   | 'User Rights and Controls'
-//   | 'Transparency and Clarity';
-
 export interface SiteDetails {
   _id: Id<'sites'>;
   normalized_base_url: string;

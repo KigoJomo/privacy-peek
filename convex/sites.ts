@@ -48,6 +48,7 @@ export const insertAnalysis = internalMutation({
         category_name: CategoryNameValidator,
         category_score: v.number(),
         reasoning: v.string(),
+        supporting_clauses: v.array(v.string()),
       })
     ),
   },

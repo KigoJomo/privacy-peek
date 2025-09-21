@@ -13,14 +13,6 @@ import {
   RequireOnly,
 } from './lib';
 
-// export interface ResultItem {
-//   _id: Id<'sites'>;
-//   normalized_base_url: string;
-//   site_name: string;
-//   overall_score?: number;
-//   reasoning?: string;
-// }
-
 export type ResultItem = RequireOnly<
   SiteDetails,
   '_id' | 'normalized_base_url' | 'site_name' | 'overall_score' | 'reasoning'
@@ -33,42 +25,32 @@ export const getSiteAnalysis = action({
 
     let result: ResultItem[] = [];
 
-    let siteMetaData: Awaited<ReturnType<typeof getWebsiteMetadata>>;
-
     // check existing record
-    const sites = await ctx.runQuery(internal.sites.getSiteSByTag, {
+    const sites: ResultItem[] = await ctx.runQuery(internal.sites.getSiteSByTag, {
       user_input,
     });
 
     if (sites && sites.length > 0) {
-      // if there are matching records
-      result = sites.map((site) => {
-        return {
-          _id: site._id,
-          site_name: site.site_name,
-          normalized_base_url: site.normalized_base_url,
-          overall_score: site.overall_score,
-          reasoning: site.reasoning,
-        };
-      });
-
-      console.log('Found Matching Records');
-      return result;
+      console.log('\nFound Matching Records');
+      return sites;
     } else {
       // if there are not matching records, do a more thorough search
-      siteMetaData = await getWebsiteMetadata({ site: user_input });
+      const siteMetaData = await getWebsiteMetadata({ site: user_input });
 
       const site = await ctx.runQuery(internal.sites.getSiteByUrl, {
         normalized_base_url: siteMetaData.normalized_base_url,
       });
 
       if (site) {
-        result = [site];
-        console.log('Found Matching Record');
-        return result;
+        // add the user input as a tag for this site
+        const new_tag = await ctx.runMutation(internal.tags.insertTag, { site_id: site._id, tag: user_input });
+        const sites: ResultItem[] = [site];
+        console.log('\nFound Matching Record');
+        console.log(`\nAdded new tags for site ${site._id} => ${new_tag}`)
+        return sites;
       } else {
         // no initial matching records and no result after thorough search, then do the analysis
-        console.log('No Matching Records. Begining Analysis.');
+        console.log('\nNo Matching Records. Begining Analysis.');
         // 1. Get category clauses.
         const categoriesClauses = await extractClauses({
           policy_documents_urls: siteMetaData.policy_documents_urls,
@@ -85,7 +67,7 @@ export const getSiteAnalysis = action({
           normalized_base_url: siteMetaData.normalized_base_url,
           site_name: siteMetaData.site_name,
           policy_documents_urls: siteMetaData.policy_documents_urls,
-          tags: siteMetaData.tags,
+          tags: [...siteMetaData.tags, user_input, siteMetaData.normalized_base_url],
           last_analyzed: new Date().toISOString(),
           overall_score: overallScore.overall_score,
           reasoning: overallScore.reasoning ? overallScore.reasoning : '',
@@ -130,7 +112,7 @@ const getWebsiteMetadata = async ({ site }: { site: string }) => {
       - Never hallucinate - return empty strings or empty arrays if uncertain
     `;
 
-  console.log('Hitting Gemini API now.');
+  console.log('\nHitting Gemini API now.');
   const { object } = await generateObject({
     model: google('gemini-2.0-flash', {
       useSearchGrounding: true,
@@ -173,7 +155,7 @@ const extractClauses = async ({
       - Never hallucinate or return placeholder text - return empty strings or empty arrays if uncertain.
     `;
 
-  console.log('Hitting Gemini API now.');
+  console.log('\nHitting Gemini API now.');
   const { object } = await generateObject({
     model: google('gemini-2.0-flash', {
       useSearchGrounding: true,
@@ -246,6 +228,7 @@ const getCategoryScores = async ({
         category_name: category.category_name,
         category_score,
         reasoning,
+        supporting_clauses: category.clauses.map((c) => c.clause),
       };
     }
   });
@@ -257,6 +240,7 @@ const getCategoryScores = async ({
     category_name: CategoryName;
     category_score: number;
     reasoning: string;
+    supporting_clauses: string[];
   }>;
 };
 
@@ -297,7 +281,7 @@ const getOverallScore = async ({
     `;
 
   try {
-    console.log('Hitting Gemini API now.');
+    console.log('\nHitting Gemini API now.');
     const { object } = await generateObject({
       model: google('gemini-2.0-flash-lite'),
       prompt,
@@ -359,7 +343,7 @@ async function scoreCategory({
   `;
 
   try {
-    console.log('Hitting Gemini API now.');
+    console.log('\nHitting Gemini API now.');
     const { object } = await generateObject({
       model: google('gemini-2.0-flash-lite'),
       prompt,

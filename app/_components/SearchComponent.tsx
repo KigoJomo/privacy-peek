@@ -88,7 +88,7 @@ export default function SearchComponent() {
             control={form.control}
             name="search_term"
             render={({ field }) => (
-              <FormItem className="flex-1">
+              <FormItem className="flex-1 gap-4">
                 <FormLabel className="pl-2">
                   Enter a website url or name to see it&apos;s privacy score.
                 </FormLabel>
@@ -131,31 +131,21 @@ export default function SearchComponent() {
 }
 
 export function ResultCard({ site }: { site: ResultItem }) {
-  const { site_name, normalized_base_url, overall_score, reasoning } = site;
+  const { site_name, overall_score, reasoning } = site;
   return (
     <Link
       href={`/site/${site._id}`}
       target="_blank"
       className={cn(
-        '!no-underline',
+        '!no-underline shrink-0',
         'rounded-xl transition-all',
         'focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] outline-none',
         'hover:border-ring hover:ring-ring/50 hover:ring-[3px]'
       )}>
-      <Card
-        className={cn(
-          'w-full max-w-xl',
-          'flex flex-col gap-2',
-        )}>
+      <Card className={cn('w-full max-w-xl', 'flex flex-col gap-2')}>
         <CardHeader className="">
           <CardTitle className="h-full flex items-center row-span-2">
-            <Link
-              href={normalized_base_url}
-              target="_blank"
-              className="flex items-center gap-2">
-              <h4>{site_name}</h4>
-              <ExternalLinkIcon size={16} className="stroke-primary" />
-            </Link>
+            <h4>{site_name}</h4>
           </CardTitle>
           <CardAction className="flex items-center gap-2">
             <span className="text-sm">Overall Score /100</span>

@@ -242,35 +242,37 @@ export default function SitePage({ params }: SitePageProps) {
                     {selectedCategory.reasoning}
                   </p>
 
-                  <Separator />
+                  {selectedCategory.supporting_clauses && (
+                    <>
+                      <Separator />
 
-                  <div className="flex items-center gap-2 text-accent-foreground">
-                    <InfoIcon className="size-4" />
-                    <h5 className="text-sm font-medium">
-                      Featured clauses (sample)
-                    </h5>
-                  </div>
-                  <Accordion type="single" collapsible className="w-full">
-                    {[1, 2, 3].map((i) => (
-                      <AccordionItem key={i} value={`item-${i}`}>
-                        <AccordionTrigger className="text-left">
-                          <div className="flex items-center gap-2">
-                            <QuoteIcon className="size-4 shrink-0" />
-                            <span className="truncate">
-                              Representative clause #{i}
-                            </span>
-                          </div>
-                        </AccordionTrigger>
-                        <AccordionContent>
-                          <div className="text-sm bg-primary/5 border border-border rounded-md p-4 leading-relaxed">
-                            Lorem ipsum dolor sit amet, consectetur adipiscing
-                            elit. Integer nec odio. Praesent libero. Sed cursus
-                            ante dapibus diam. Suspendisse potenti.
-                          </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    ))}
-                  </Accordion>
+                      <div className="flex items-center gap-2 text-accent-foreground">
+                        <InfoIcon className="size-4" />
+                        <h5 className="text-sm font-medium">
+                          Featured clauses
+                        </h5>
+                      </div>
+                      <Accordion type="single" collapsible className="w-full">
+                        {selectedCategory.supporting_clauses.map((c, i) => (
+                          <AccordionItem key={i} value={`item-${i}`}>
+                            <AccordionTrigger className="text-left">
+                              <div className="flex items-center gap-2">
+                                <QuoteIcon className="size-4 shrink-0" />
+                                <span className="truncate">
+                                  Representative clause #{i}
+                                </span>
+                              </div>
+                            </AccordionTrigger>
+                            <AccordionContent>
+                              <div className="text-sm bg-primary/5 border border-border rounded-md p-4 leading-relaxed">
+                                {c}
+                              </div>
+                            </AccordionContent>
+                          </AccordionItem>
+                        ))}
+                      </Accordion>
+                    </>
+                  )}
                 </CardContent>
               </Card>
             ) : (
@@ -288,6 +290,8 @@ export default function SitePage({ params }: SitePageProps) {
             )}
           </div>
         </div>
+
+        <Separator />
       </section>
     </>
   );
