@@ -61,6 +61,13 @@ export const getSiteAnalysis = action({
         await statusUpdate('complete')
         return sites;
       } else {
+        // Check if policy documents URLs are available before proceeding with analysis
+        if (!siteMetaData.policy_documents_urls || siteMetaData.policy_documents_urls.length === 0) {
+          console.log('\nNo policy documents URLs found. Skipping analysis.');
+          await statusUpdate('error');
+          throw new Error('No privacy policy or terms of service URLs found for this website. Cannot perform privacy analysis without policy documents.');
+        }
+
         console.log('\nNo Matching Records. Begining Analysis.');
         await statusUpdate('reading_policies')
         const categoriesClauses = await extractClauses({
@@ -117,15 +124,17 @@ const getWebsiteMetadata = async ({ site }: { site: string }) => {
 
       tags should include relevant keywords, common urls and topics associated with the website. Include at least 15 tags. For example, meta.com may have tags like "Meta", "Facebook", "instagram.com", "facebook.com", "Social Media", "Tech Company", etc.
 
-      policy_documents_urls: An array of URLs that contain the site's privacy policy, terms of service, or other relevant legal documents. Include at least 2 URLs.
+      policy_documents_urls: An array of URLs that contain the site's privacy policy, terms of service, or other relevant legal documents. Only include URLs if you can verify they actually exist and contain policy information.
 
       Important:
-      - Use offcial sources only.
+      - Use official sources only.
       - Prioritize the most current versions.
-      - Verify URLs actually exist
+      - ONLY include URLs that you can verify actually exist and contain policy documents
+      - If you cannot find valid policy document URLs, return an empty array
       - The normalized_base_url should match the base url for the policy documents, example; input -> chatgpt.com, ouput -> normalized_base_url: 'https://www.openai.com', policy_documents_urls: ['https://www.openai.com/policies/terms-of-use', 'https://www.openai.com/policies/privacy-policy']
       - Always include www. in the normalized_base_url
       - Never hallucinate - return empty strings or empty arrays if uncertain
+      - If no valid policy documents can be found, return an empty array for policy_documents_urls
     `;
 
   console.log('\nHitting Gemini API now.');
@@ -165,10 +174,12 @@ const extractClauses = async ({
       Important:
       - Use official sources only.
       - Prioritize the most current versions.
+      - If any URL cannot be accessed or does not exist, skip it and note this in your response.
       - Clause should be the exact complete sentence or paragraph that clearly states the policy.
-      - Each category should have a minimum of 10 clauses.
+      - Each category should have a minimum of 10 clauses if sufficient content is available.
       - Each clause should be accompanied by a relevance score from 0 to 1, where 1 is highly relevant and 0 is not relevant at all.
       - Never hallucinate or return placeholder text - return empty strings or empty arrays if uncertain.
+      - If URLs are inaccessible or do not contain policy information, return empty clause arrays for affected categories.
     `;
 
   console.log('\nHitting Gemini API now.');
