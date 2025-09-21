@@ -11,6 +11,7 @@ import {
   categoryWeights,
   SiteDetails,
   RequireOnly,
+  AnalysisStatus,
 } from './lib';
 
 export type ResultItem = RequireOnly<
@@ -19,25 +20,29 @@ export type ResultItem = RequireOnly<
 >;
 
 export const getSiteAnalysis = action({
-  args: { user_input: v.string() },
-  handler: async (ctx, { user_input }) => {
+  args: { user_input: v.string(), job_id: v.id('analysisJobs') },
+  handler: async (ctx, { user_input, job_id }) => {
     if (!user_input) throw new Error('No User Input');
 
-    let result: ResultItem[] = [];
+    const statusUpdate = async (status: AnalysisStatus) => {
+      await ctx.runMutation(internal.analysisJobs.updateJob, {
+        job_id,
+        status,
+      });
+    };
 
-    // check existing record
+    await statusUpdate('checking_recent');
     const sites: ResultItem[] = await ctx.runQuery(
       internal.sites.getSiteSByTag,
-      {
-        user_input,
-      }
+      { user_input }
     );
 
     if (sites && sites.length > 0) {
       console.log('\nFound Matching Records');
+      await statusUpdate('complete')
       return sites;
     } else {
-      // if there are not matching records, do a more thorough search
+      await statusUpdate('getting_site_info')
       const siteMetaData = await getWebsiteMetadata({ site: user_input });
 
       const site = await ctx.runQuery(internal.sites.getSiteByUrl, {
@@ -53,22 +58,22 @@ export const getSiteAnalysis = action({
         const sites: ResultItem[] = [site];
         console.log('\nFound Matching Record');
         console.log(`\nAdded new tags for site ${site._id} => ${new_tag}`);
+        await statusUpdate('complete')
         return sites;
       } else {
-        // no initial matching records and no result after thorough search, then do the analysis
         console.log('\nNo Matching Records. Begining Analysis.');
-        // 1. Get category clauses.
+        await statusUpdate('reading_policies')
         const categoriesClauses = await extractClauses({
           policy_documents_urls: siteMetaData.policy_documents_urls,
         });
 
-        // 2. Get category scores and reasoning
+        await statusUpdate('categorizing_and_scoring')
         const categoryScores = await getCategoryScores({ categoriesClauses });
 
-        // 3. Get the overall score and reasoning
+        await statusUpdate('computing_overall_score')
         const overallScore = await getOverallScore({ categoryScores });
 
-        // 4. Return Analysis & Persist in db
+        await statusUpdate('finalizing')
         const newSiteId = await ctx.runMutation(internal.sites.insertAnalysis, {
           normalized_base_url: siteMetaData.normalized_base_url,
           site_name: siteMetaData.site_name,
@@ -92,7 +97,8 @@ export const getSiteAnalysis = action({
           reasoning: overallScore.reasoning,
         };
 
-        result = [analysisResult];
+        await statusUpdate('complete')
+        const result = [analysisResult];
         return result;
       }
     }

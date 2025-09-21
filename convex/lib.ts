@@ -4,14 +4,27 @@ import type { Id } from './_generated/dataModel';
 export type RequireOnly<T, K extends keyof T> = Partial<T> & Pick<T, K>;
 
 export const CategoryNameValidator = v.union(
-  v.literal("Data Collection"),
-  v.literal("Data Sharing"),
-  v.literal("Data Retention and Security"),
-  v.literal("User Rights and Controls"),
-  v.literal("Transparency and Clarity"),
-)
+  v.literal('Data Collection'),
+  v.literal('Data Sharing'),
+  v.literal('Data Retention and Security'),
+  v.literal('User Rights and Controls'),
+  v.literal('Transparency and Clarity')
+);
+
+export const AnalysisStatusValidator = v.union(
+  v.literal('queued'),
+  v.literal('checking_recent'),
+  v.literal('getting_site_info'),
+  v.literal('reading_policies'),
+  v.literal('categorizing_and_scoring'),
+  v.literal('computing_overall_score'),
+  v.literal('finalizing'),
+  v.literal('complete'),
+  v.literal('error')
+);
 
 export type CategoryName = Infer<typeof CategoryNameValidator>;
+export type AnalysisStatus = Infer<typeof AnalysisStatusValidator>;
 
 export interface SiteDetails {
   _id: Id<'sites'>;
@@ -316,9 +329,9 @@ export const categoryWeights: Array<{
   category: CategoryName;
   weight: number;
 }> = [
-  { category: 'Data Collection', weight: 1.0 },
+  { category: 'Data Collection', weight: 1.2 },
   { category: 'Data Sharing', weight: 1.5 },
-  { category: 'Data Retention and Security', weight: 1.2 },
+  { category: 'Data Retention and Security', weight: 1.0 },
   { category: 'User Rights and Controls', weight: 1.0 },
   { category: 'Transparency and Clarity', weight: 0.8 },
 ];
