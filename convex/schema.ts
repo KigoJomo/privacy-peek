@@ -1,9 +1,11 @@
 import { defineSchema, defineTable } from 'convex/server';
 import { v } from 'convex/values';
-import { CategoryNameValidator } from './lib';
+import { AnalysisStatusValidator, CategoryNameValidator } from './lib';
 
 export default defineSchema({
-  websites: defineTable({ // phasing this out as we move to the sites table
+  // deprecated
+  websites: defineTable({
+    // phasing this out as we move to the sites table
     site_name: v.string(),
     normalized_url: v.string(),
     tags: v.array(v.string()),
@@ -29,12 +31,14 @@ export default defineSchema({
     last_analyzed: v.string(),
     overall_score: v.number(),
     reasoning: v.string(),
-    category_scores: v.array(v.object({
-      category_name: CategoryNameValidator,
-      category_score: v.number(),
-      reasoning: v.string(),
-      supporting_clauses: v.array(v.string()),
-    }))
+    category_scores: v.array(
+      v.object({
+        category_name: CategoryNameValidator,
+        category_score: v.number(),
+        reasoning: v.string(),
+        supporting_clauses: v.array(v.string()),
+      })
+    ),
   })
     .index('by_url', ['normalized_base_url'])
     .index('by_site_name', ['site_name'])
@@ -46,4 +50,11 @@ export default defineSchema({
   })
     .index('by_tag', ['tag'])
     .index('by_site', ['site_id']),
+
+  analysisJobs: defineTable({
+    site_input: v.string(),
+    created_at: v.string(),
+    updated_at: v.string(),
+    status: AnalysisStatusValidator,
+  }),
 });
