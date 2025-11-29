@@ -34,9 +34,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className="hide-scrollbar overflow-x-hidden overflow-y-auto">
+    <html lang="en" suppressHydrationWarning className="hide-scrollbar overflow-x-hidden overflow-y-auto relative">
       <body
-        className={`${funnel.variable} antialiased overflow-x-hidden overflow-y-auto`}>
+        className={`${funnel.variable} antialiased overflow-x-hidden overflow-y-auto relative`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

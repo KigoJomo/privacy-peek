@@ -62,7 +62,7 @@ export function SiteCard({
       href={`/site/${_id}`}
       target="_blank"
       className={cn(
-        '!no-underline',
+        '!no-underline border-b-4',
         'rounded-xl transition-all',
         'focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] outline-none',
         'hover:border-ring hover:ring-ring/50 hover:ring-[3px]'
