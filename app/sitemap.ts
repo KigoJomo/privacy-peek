@@ -1,6 +1,6 @@
+import { api } from "@/convex/_generated/api";
 import { fetchQuery } from "convex/nextjs";
 import { MetadataRoute } from "next";
-import { api } from "./convex/_generated/api";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const site_ids = await fetchQuery(api.sites.getAllSiteIds);
