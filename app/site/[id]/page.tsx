@@ -1,7 +1,4 @@
-"use client";
-
 import ScoreVisualizer from "@/components/ui/score-visualizer";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import {
   Accordion,
@@ -12,10 +9,11 @@ import {
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { cn, formatRelativeTime } from "@/lib/utils";
-import { useQuery } from "convex/react";
 import { QuoteIcon } from "lucide-react";
 import Link from "next/link";
-import { use } from "react";
+import Loading from "../_components/loading";
+import NotFound from "../_components/not-found";
+import { fetchQuery } from "convex/nextjs";
 
 interface SitePageProps {
   params: Promise<{
@@ -23,10 +21,10 @@ interface SitePageProps {
   }>;
 }
 
-export default function SitePage({ params }: SitePageProps) {
-  const { id } = use(params);
+export default async function SitePage({ params }: SitePageProps) {
+  const { id } = await params;
 
-  const full_site_details = useQuery(api.sites.getFullSiteDetails, {
+  const full_site_details = await fetchQuery(api.sites.getFullSiteDetails, {
     site_id: id,
   });
 
@@ -149,48 +147,6 @@ export default function SitePage({ params }: SitePageProps) {
               </Link>
             ))}
           </div>
-        </div>
-      </section>
-    </>
-  );
-}
-
-/**
- *
- *
- *
- */
-
-function NotFound() {
-  return (
-    <>
-      <section className="min-h-[90vh] flex flex-col items-center justify-center gap-12">
-        <h1>Oops!</h1>
-
-        <h3>The requested site was not found.</h3>
-
-        <Link href="/">Click here to go back to the home page.</Link>
-      </section>
-    </>
-  );
-}
-
-function Loading() {
-  return (
-    <>
-      <section
-        className="min-h-[90vh] flex flex-col gap-6"
-        aria-busy="true"
-        aria-live="polite"
-      >
-        <h2 className="sr-only">Loading site details…</h2>
-        <div className="w-full flex items-center gap-4 justify-between">
-          <Skeleton className="h-8 w-48 rounded" />
-        </div>
-        <div className="grid gap-4">
-          <Skeleton className="h-4 w-full rounded" />
-          <Skeleton className="h-4 w-2/3 rounded" />
-          <Skeleton className="h-4 w-1/3 rounded" />
         </div>
       </section>
     </>
