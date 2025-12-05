@@ -1,9 +1,9 @@
-import { v } from 'convex/values';
-import { action } from './_generated/server';
-import { internal } from './_generated/api';
-import { generateObject } from 'ai';
-import { google } from '@ai-sdk/google';
-import z from 'zod';
+import { v } from "convex/values";
+import { action } from "./_generated/server";
+import { internal } from "./_generated/api";
+import { generateObject } from "ai";
+import { google } from "@ai-sdk/google";
+import z from "zod";
 
 import {
   CategoryName,
@@ -12,17 +12,17 @@ import {
   SiteDetails,
   RequireOnly,
   AnalysisStatus,
-} from './lib';
+} from "./lib";
 
 export type ResultItem = RequireOnly<
   SiteDetails,
-  '_id' | 'normalized_base_url' | 'site_name' | 'overall_score' | 'reasoning'
+  "_id" | "normalized_base_url" | "site_name" | "overall_score" | "reasoning"
 >;
 
 export const getSiteAnalysis = action({
-  args: { user_input: v.string(), job_id: v.id('analysisJobs') },
+  args: { user_input: v.string(), job_id: v.id("analysisJobs") },
   handler: async (ctx, { user_input, job_id }) => {
-    if (!user_input) throw new Error('No User Input');
+    if (!user_input) throw new Error("No User Input");
 
     const statusUpdate = async (status: AnalysisStatus) => {
       await ctx.runMutation(internal.analysisJobs.updateJob, {
@@ -31,18 +31,18 @@ export const getSiteAnalysis = action({
       });
     };
 
-    await statusUpdate('checking_recent');
+    await statusUpdate("checking_recent");
     const sites: ResultItem[] = await ctx.runQuery(
       internal.sites.getSiteSByTag,
-      { user_input }
+      { user_input },
     );
 
     if (sites && sites.length > 0) {
-      console.log('\nFound Matching Records');
-      await statusUpdate('complete')
+      console.log("\nFound Matching Records");
+      await statusUpdate("complete");
       return sites;
     } else {
-      await statusUpdate('getting_site_info')
+      await statusUpdate("getting_site_info");
       const siteMetaData = await getWebsiteMetadata({ site: user_input });
 
       const site = await ctx.runQuery(internal.sites.getSiteByUrl, {
@@ -56,24 +56,24 @@ export const getSiteAnalysis = action({
           tag: user_input,
         });
         const sites: ResultItem[] = [site];
-        console.log('\nFound Matching Record');
+        console.log("\nFound Matching Record");
         console.log(`\nAdded new tags for site ${site._id} => ${new_tag}`);
-        await statusUpdate('complete')
+        await statusUpdate("complete");
         return sites;
       } else {
-        console.log('\nNo Matching Records. Begining Analysis.');
-        await statusUpdate('reading_policies')
+        console.log("\nNo Matching Records. Beginning Analysis.");
+        await statusUpdate("reading_policies");
         const categoriesClauses = await extractClauses({
           policy_documents_urls: siteMetaData.policy_documents_urls,
         });
 
-        await statusUpdate('categorizing_and_scoring')
+        await statusUpdate("categorizing_and_scoring");
         const categoryScores = await getCategoryScores({ categoriesClauses });
 
-        await statusUpdate('computing_overall_score')
+        await statusUpdate("computing_overall_score");
         const overallScore = await getOverallScore({ categoryScores });
 
-        await statusUpdate('finalizing')
+        await statusUpdate("finalizing");
         const newSiteId = await ctx.runMutation(internal.sites.insertAnalysis, {
           normalized_base_url: siteMetaData.normalized_base_url,
           site_name: siteMetaData.site_name,
@@ -85,7 +85,7 @@ export const getSiteAnalysis = action({
           ],
           last_analyzed: new Date().toISOString(),
           overall_score: overallScore.overall_score,
-          reasoning: overallScore.reasoning ? overallScore.reasoning : '',
+          reasoning: overallScore.reasoning ? overallScore.reasoning : "",
           category_scores: categoryScores,
         });
 
@@ -97,7 +97,7 @@ export const getSiteAnalysis = action({
           reasoning: overallScore.reasoning,
         };
 
-        await statusUpdate('complete')
+        await statusUpdate("complete");
         const result = [analysisResult];
         return result;
       }
@@ -106,7 +106,7 @@ export const getSiteAnalysis = action({
 });
 
 const getWebsiteMetadata = async ({ site }: { site: string }) => {
-  if (!site) throw new Error('No Site Provided');
+  if (!site) throw new Error("No Site Provided");
 
   const prompt = `
       You are asked to get the website metadata for ${site}.
@@ -120,7 +120,7 @@ const getWebsiteMetadata = async ({ site }: { site: string }) => {
       policy_documents_urls: An array of URLs that contain the site's privacy policy, terms of service, or other relevant legal documents. Include at least 2 URLs.
 
       Important:
-      - Use offcial sources only.
+      - Use official sources only.
       - Prioritize the most current versions.
       - Verify URLs actually exist
       - The normalized_base_url should match the base url for the policy documents, example; input -> chatgpt.com, ouput -> normalized_base_url: 'https://www.openai.com', policy_documents_urls: ['https://www.openai.com/policies/terms-of-use', 'https://www.openai.com/policies/privacy-policy']
@@ -128,12 +128,12 @@ const getWebsiteMetadata = async ({ site }: { site: string }) => {
       - Never hallucinate - return empty strings or empty arrays if uncertain
     `;
 
-  console.log('\nHitting Gemini API now.');
+  console.log("\nHitting Gemini API now.");
   const { object } = await generateObject({
-    model: google('gemini-2.0-flash', {
+    model: google("gemini-2.0-flash", {
       useSearchGrounding: true,
     }),
-    system: 'You are a privacy practices analyzer and researcher.',
+    system: "You are a privacy practices analyzer and researcher.",
     prompt: prompt,
     temperature: 0,
     schema: z.object({
@@ -153,14 +153,14 @@ const extractClauses = async ({
   policy_documents_urls: string[];
 }) => {
   if (policy_documents_urls.length <= 0)
-    throw new Error('No Policy Document URLs Provided');
+    throw new Error("No Policy Document URLs Provided");
 
   const prompt = `
       You are given the following urls:
-      ${policy_documents_urls.map((u) => `${u}`).join('\n')}
+      ${policy_documents_urls.map((u) => `${u}`).join("\n")}
 
       You are required to go through each page, extracting all relevant clauses that fall under each of these categories:
-      ${scoringCategories.map((c, i) => `${i}. ${c.category_name}`).join('\n')}
+      ${scoringCategories.map((c, i) => `${i}. ${c.category_name}`).join("\n")}
 
       Important:
       - Use official sources only.
@@ -171,29 +171,29 @@ const extractClauses = async ({
       - Never hallucinate or return placeholder text - return empty strings or empty arrays if uncertain.
     `;
 
-  console.log('\nHitting Gemini API now.');
+  console.log("\nHitting Gemini API now.");
   const { object } = await generateObject({
-    model: google('gemini-2.0-flash', {
+    model: google("gemini-2.0-flash", {
       useSearchGrounding: true,
     }),
     system:
-      'You are a privacy policy analyzer. Your task is to extract and summarize the privacy practices of a website based on its terms of service or privacy policy.',
+      "You are a privacy policy analyzer. Your task is to extract and summarize the privacy practices of a website based on its terms of service or privacy policy.",
     prompt: prompt,
     temperature: 0,
-    output: 'array',
+    output: "array",
     schema: z.object({
       category_name: z.enum([
-        'Data Collection',
-        'Data Sharing',
-        'Data Retention and Security',
-        'User Rights and Controls',
-        'Transparency and Clarity',
+        "Data Collection",
+        "Data Sharing",
+        "Data Retention and Security",
+        "User Rights and Controls",
+        "Transparency and Clarity",
       ]),
       clauses: z.array(
         z.object({
           clause: z.string(),
           relevance: z.number(),
-        })
+        }),
       ),
     }),
   });
@@ -207,7 +207,7 @@ const getCategoryScores = async ({
   categoriesClauses: Awaited<ReturnType<typeof extractClauses>>;
 }) => {
   if (!categoriesClauses) {
-    throw new Error('No clauses provided.');
+    throw new Error("No clauses provided.");
   }
 
   const promises = categoriesClauses.map(async (category) => {
@@ -215,13 +215,13 @@ const getCategoryScores = async ({
 
     if (filteredClauses.length === 0) {
       console.warn(
-        `No relevant clauses found for category: ${category.category_name}`
+        `No relevant clauses found for category: ${category.category_name}`,
       );
       return;
     }
 
     const categoryRubric = scoringCategories.find(
-      (r) => r.category_name === category.category_name
+      (r) => r.category_name === category.category_name,
     )?.rubric;
 
     if (!categoryRubric) {
@@ -237,7 +237,7 @@ const getCategoryScores = async ({
 
     if (!category_score || !reasoning) {
       throw new Error(
-        `An unknown error occured scoring ${category.category_name}`
+        `An unknown error occured scoring ${category.category_name}`,
       );
     } else {
       return {
@@ -250,7 +250,7 @@ const getCategoryScores = async ({
   });
 
   const scores = await Promise.all(promises);
-  if (!scores) throw new Error('Something went wrong.');
+  if (!scores) throw new Error("Something went wrong.");
 
   return scores as Array<{
     category_name: CategoryName;
@@ -271,7 +271,7 @@ const getOverallScore = async ({
     .map(
       (c) =>
         categoryWeights.find((cw) => cw.category === c.category_name)!.weight *
-        c.category_score
+        c.category_score,
     )
     .reduce((sum, product) => sum + product, 0);
 
@@ -282,11 +282,11 @@ const getOverallScore = async ({
       A website's privacy practices are evaluated in the following categories with their reasoning:
 
       ${categoryScores
-        .map(
-          (category) =>
-            `${category.category_name}: ${category.category_score}.\n Reasoning: ${category.reasoning}`
-        )
-        .join('\n\n')}
+      .map(
+        (category) =>
+          `${category.category_name}: ${category.category_score}.\n Reasoning: ${category.reasoning}`,
+      )
+      .join("\n\n")}
 
       Write a brief explanation that tells users what this means for them in practical terms.
       Requirements for the explanation:
@@ -298,9 +298,9 @@ const getOverallScore = async ({
     `;
 
   try {
-    console.log('\nHitting Gemini API now.');
+    console.log("\nHitting Gemini API now.");
     const { object } = await generateObject({
-      model: google('gemini-2.0-flash-lite'),
+      model: google("gemini-2.0-flash-lite"),
       prompt,
       schema: z.object({
         reasoning: z.string(),
@@ -317,12 +317,12 @@ const getOverallScore = async ({
     };
   } catch (error) {
     console.error(
-      'Something went wrong getting a reasoning for the overall score',
-      error
+      "Something went wrong getting a reasoning for the overall score",
+      error,
     );
     return {
       overall_score,
-      reasoning: '',
+      reasoning: "",
     };
   }
 };
@@ -347,11 +347,11 @@ async function scoreCategory({
 
     ${clauses
       .map((c) => `- ${c.clause} (Relevance: ${c.relevance})`)
-      .join('\n')}
+      .join("\n")}
 
     You are given the following rubric for scoring the website's performance in ${category_name} based on the provided clauses:
     
-    ${rubric.map((r) => `Score: ${r.score} - ${r.description}`).join('\n')}
+    ${rubric.map((r) => `Score: ${r.score} - ${r.description}`).join("\n")}
 
     Carefully go through all provided clauses and find the most appropriate numeric score for the website in ${category_name}.
 
@@ -365,9 +365,9 @@ async function scoreCategory({
   `;
 
   try {
-    console.log('\nHitting Gemini API now.');
+    console.log("\nHitting Gemini API now.");
     const { object } = await generateObject({
-      model: google('gemini-2.0-flash-lite'),
+      model: google("gemini-2.0-flash-lite"),
       prompt,
       temperature: 0,
       maxTokens: 500,
@@ -379,7 +379,7 @@ async function scoreCategory({
 
     return object;
   } catch (error) {
-    console.error('Something went wrong: ', error);
+    console.error("Something went wrong: ", error);
     throw new Error(`Failed to generate score for ${category_name}`);
   }
 }
