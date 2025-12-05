@@ -16,7 +16,7 @@ import { ModeToggle } from '@/components/ModeToggle';
 export function NavBar() {
   return (
     <NavigationMenu
-      className="sticky top-0 z-50 max-w-full py-4 px-6 bg-background"
+      className="sticky top-0 z-50 max-w-full py-4 px-6 bg-background/10 backdrop-blur-lg"
       viewport={false}>
       <NavigationMenuList className="">
         <NavigationMenuItem>
