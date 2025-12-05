@@ -21,7 +21,7 @@ type RecentSite = FunctionReturnType<typeof api.sites.getRecentSites>[number];
 export default async function RecentSites() {
   const recent_sites: RecentSite[] = await fetchQuery(
     api.sites.getRecentSites,
-    {},
+    {limit: 32},
   );
 
   return (
@@ -57,7 +57,6 @@ export function SiteCard({
   return (
     <Link
       href={`/site/${_id}`}
-      target="_blank"
       className={cn(
         "!no-underline border-b-4",
         "rounded-xl transition-all",

@@ -1,25 +1,25 @@
-'use client';
+"use client";
 
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardAction,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
+} from "@/components/ui/card";
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { api } from '@/convex/_generated/api';
-import { cn } from '@/lib/utils';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useAction, useMutation, useQuery } from 'convex/react';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { api } from "@/convex/_generated/api";
+import { cn } from "@/lib/utils";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useAction, useMutation, useQuery } from "convex/react";
 import {
   LoaderCircle,
   Search,
@@ -33,18 +33,18 @@ import {
   Globe,
   History,
   Settings2,
-} from 'lucide-react';
-import Link from 'next/link';
-import { startTransition, useActionState, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import z from 'zod';
-import { ResultItem } from '@/convex/actions';
-import ScoreVisualizer from '@/components/ui/score-visualizer';
-import { Id } from '@/convex/_generated/dataModel';
-import type { AnalysisStatus } from '@/convex/lib';
+} from "lucide-react";
+import Link from "next/link";
+import { startTransition, useActionState, useState } from "react";
+import { useForm } from "react-hook-form";
+import z from "zod";
+import { ResultItem } from "@/convex/actions";
+import ScoreVisualizer from "@/components/ui/score-visualizer";
+import { Id } from "@/convex/_generated/dataModel";
+import type { AnalysisStatus } from "@/convex/lib";
 
 const SearchSchema = z.object({
-  search_term: z.string().min(3, 'search term must be at least 3 characters.'),
+  search_term: z.string().min(3, "search term must be at least 3 characters."),
 });
 
 type SearchValue = z.infer<typeof SearchSchema>;
@@ -59,21 +59,21 @@ const initialState: ActionState = null;
 export default function SearchComponent() {
   const form = useForm<SearchValue>({
     resolver: zodResolver(SearchSchema),
-    defaultValues: { search_term: '' },
-    mode: 'onSubmit',
+    defaultValues: { search_term: "" },
+    mode: "onSubmit",
   });
 
   const searchSite = useAction(api.actions.getSiteAnalysis);
   const createJob = useMutation(api.analysisJobs.createJob);
-  const [jobId, setJobId] = useState<Id<'analysisJobs'> | null>(null);
+  const [jobId, setJobId] = useState<Id<"analysisJobs"> | null>(null);
   const [displayedResults, setDisplayedResults] = useState<ResultItem[] | null>(
-    null
+    null,
   );
 
   const [state, submit, isPending] = useActionState(
     async (_prev: ActionState, value: SearchValue): Promise<ActionState> => {
       setDisplayedResults([]);
-      
+
       try {
         const analysisJobId = await createJob({
           site_input: value.search_term,
@@ -89,7 +89,7 @@ export default function SearchComponent() {
 
         return {
           ok: true,
-          message: 'Analysis Complete!',
+          message: "Analysis Complete!",
           results: searchResults,
         };
       } catch (error: unknown) {
@@ -97,8 +97,8 @@ export default function SearchComponent() {
           console.log(error.message);
           return { ok: false, message: error.message };
         } else {
-          console.log('Failed to retrieve site analysis.');
-          return { ok: false, message: 'Failed to retrieve site analysis!' };
+          console.log("Failed to retrieve site analysis.");
+          return { ok: false, message: "Failed to retrieve site analysis!" };
         }
       } finally {
         setTimeout(() => {
@@ -106,7 +106,7 @@ export default function SearchComponent() {
         }, 3000);
       }
     },
-    initialState
+    initialState,
   );
 
   return (
@@ -117,18 +117,23 @@ export default function SearchComponent() {
             submit(value);
           });
         })}
-        className={cn('w-full max-w-xl flex flex-col gap-2')}>
+        className={cn("w-full max-w-xl flex flex-col gap-2")}
+      >
         <div className="w-full flex items-end gap-1">
           <FormField
             control={form.control}
             name="search_term"
             render={({ field }) => (
               <FormItem className="flex-1 gap-4">
-                <FormLabel className="pl-2">
+                <FormLabel className="pl-2 w-fit! mx-auto">
                   Search an app or website to see how it performs.
                 </FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter a name or url." {...field} />
+                  <Input
+                    placeholder="Enter a name or url."
+                    className="text-lg! text-center h-fit! px-6! py-3! rounded-full"
+                    {...field}
+                  />
                 </FormControl>
               </FormItem>
             )}
@@ -137,9 +142,14 @@ export default function SearchComponent() {
           <Button
             type="submit"
             disabled={isPending}
-            variant={'outline'}
-            size={'icon'}>
-            {isPending ? <LoaderCircle className="animate-spin" /> : <Search />}
+            variant={"outline"}
+            className="aspect-square! h-fit! px-3.5! rounded-full"
+          >
+            {isPending ? (
+              <LoaderCircle className="animate-spin size-5" />
+            ) : (
+              <Search className="size-5" />
+            )}
           </Button>
         </div>
 
@@ -147,8 +157,9 @@ export default function SearchComponent() {
 
         {state && !state.ok && (
           <p
-            className={cn('!text-sm text-center', 'text-red-600')}
-            role="alert">
+            className={cn("!text-sm text-center", "text-red-600")}
+            role="alert"
+          >
             {state.message}
           </p>
         )}
@@ -167,15 +178,15 @@ export default function SearchComponent() {
   );
 }
 
-function JobStatus({ job_id }: { job_id: Id<'analysisJobs'> }) {
+function JobStatus({ job_id }: { job_id: Id<"analysisJobs"> }) {
   const ongoingJob = useQuery(api.analysisJobs.getJob, { job_id });
   const status = ongoingJob?.status;
 
   type StatusColor =
-    | 'text-muted-foreground'
-    | 'text-accent-foreground'
-    | 'text-destructive'
-    | 'text-chart-1';
+    | "text-muted-foreground"
+    | "text-accent-foreground"
+    | "text-destructive"
+    | "text-chart-1";
 
   const STATUS_DISPLAY: Record<
     AnalysisStatus,
@@ -183,48 +194,48 @@ function JobStatus({ job_id }: { job_id: Id<'analysisJobs'> }) {
   > = {
     queued: {
       icon: Clock,
-      text: 'Queued',
-      color: 'text-muted-foreground',
+      text: "Queued",
+      color: "text-muted-foreground",
     },
     checking_recent: {
       icon: History,
-      text: 'Checking recent analyses ...',
-      color: 'text-muted-foreground',
+      text: "Checking recent analyses ...",
+      color: "text-muted-foreground",
     },
     getting_site_info: {
       icon: Globe,
-      text: 'Getting site information ...',
-      color: 'text-accent-foreground',
+      text: "Getting site information ...",
+      color: "text-accent-foreground",
     },
     reading_policies: {
       icon: BookOpenText,
-      text: 'Reading policy documents ...',
-      color: 'text-accent-foreground',
+      text: "Reading policy documents ...",
+      color: "text-accent-foreground",
     },
     categorizing_and_scoring: {
       icon: Gauge,
-      text: 'Categorizing and scoring ...',
-      color: 'text-accent-foreground',
+      text: "Categorizing and scoring ...",
+      color: "text-accent-foreground",
     },
     computing_overall_score: {
       icon: Calculator,
-      text: 'Computing overall score ...',
-      color: 'text-accent-foreground',
+      text: "Computing overall score ...",
+      color: "text-accent-foreground",
     },
     finalizing: {
       icon: Settings2,
-      text: 'Finalizing',
-      color: 'text-accent-foreground',
+      text: "Finalizing",
+      color: "text-accent-foreground",
     },
     complete: {
       icon: CheckCircle2,
-      text: 'Analysis complete',
-      color: 'text-chart-1',
+      text: "Analysis complete",
+      color: "text-chart-1",
     },
     error: {
       icon: AlertTriangle,
-      text: 'Something went wrong',
-      color: 'text-destructive',
+      text: "Something went wrong",
+      color: "text-destructive",
     },
   };
 
@@ -236,9 +247,9 @@ function JobStatus({ job_id }: { job_id: Id<'analysisJobs'> }) {
 
   return (
     <>
-      <div className="w-full flex items-center gap-2">
+      <div className="w-full flex items-center justify-center gap-2">
         <display.icon className={cn(display.color)} size={12} />
-        <span className={cn(display.color, 'text-sm')}>{display.text}</span>
+        <span className={cn(display.color, "text-sm")}>{display.text}</span>
       </div>
     </>
   );
@@ -249,20 +260,21 @@ export function ResultCard({ site }: { site: ResultItem }) {
   return (
     <Link
       href={`/site/${site._id}`}
-      target="_blank"
       className={cn(
-        '!no-underline shrink-0 group',
-        'outline-none',
-        'rounded-xl transition-all'
-      )}>
+        "!no-underline shrink-0 group",
+        "outline-none",
+        "rounded-xl transition-all",
+      )}
+    >
       <Card
         className={cn(
-          'w-full max-w-xl',
-          'flex flex-col gap-2',
-          'group-focus-visible:border-ring group-focus-visible:ring-ring/50 group-focus-visible:ring-[3px] outline-none',
-          'group-hover:border-ring group-hover:ring-ring/50 group-hover:ring-[3px]',
-          'transition-all'
-        )}>
+          "w-full max-w-xl",
+          "flex flex-col gap-2",
+          "group-focus-visible:border-ring group-focus-visible:ring-ring/50 group-focus-visible:ring-[3px] outline-none",
+          "group-hover:border-ring group-hover:ring-ring/50 group-hover:ring-[3px]",
+          "transition-all",
+        )}
+      >
         <CardHeader className="">
           <CardTitle className="h-full flex items-center row-span-2">
             <h4>{site_name}</h4>
