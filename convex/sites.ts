@@ -1,13 +1,13 @@
-import { v } from 'convex/values';
-import { internalMutation, internalQuery, query } from './_generated/server';
-import { CategoryNameValidator } from './lib';
+import { v } from "convex/values";
+import { internalMutation, internalQuery, query } from "./_generated/server";
+import { CategoryNameValidator } from "./lib";
 
 export const getSiteSByTag = internalQuery({
   args: { user_input: v.string() },
   handler: async (ctx, { user_input }) => {
     const tagRows = await ctx.db
-      .query('tags')
-      .withIndex('by_tag', (q) => q.eq('tag', user_input))
+      .query("tags")
+      .withIndex("by_tag", (q) => q.eq("tag", user_input))
       .collect();
 
     const site_ids = tagRows.map((t) => t.site_id);
@@ -15,7 +15,7 @@ export const getSiteSByTag = internalQuery({
       site_ids.map(async (site_id) => {
         const site = await ctx.db.get(site_id);
         return site;
-      })
+      }),
     );
 
     return sites.filter((site) => site !== null);
@@ -26,9 +26,9 @@ export const getSiteByUrl = internalQuery({
   args: { normalized_base_url: v.string() },
   handler: async (ctx, { normalized_base_url }) => {
     return await ctx.db
-      .query('sites')
-      .withIndex('by_url', (q) =>
-        q.eq('normalized_base_url', normalized_base_url)
+      .query("sites")
+      .withIndex("by_url", (q) =>
+        q.eq("normalized_base_url", normalized_base_url),
       )
       .first();
   },
@@ -49,7 +49,7 @@ export const insertAnalysis = internalMutation({
         category_score: v.number(),
         reasoning: v.string(),
         supporting_clauses: v.array(v.string()),
-      })
+      }),
     ),
   },
   handler: async (ctx, args) => {
@@ -63,7 +63,7 @@ export const insertAnalysis = internalMutation({
       reasoning,
       category_scores,
     } = args;
-    const site_id = await ctx.db.insert('sites', {
+    const site_id = await ctx.db.insert("sites", {
       normalized_base_url,
       site_name,
       policy_documents_urls,
@@ -74,7 +74,7 @@ export const insertAnalysis = internalMutation({
     });
 
     for (const tag of tags) {
-      await ctx.db.insert('tags', { site_id, tag });
+      await ctx.db.insert("tags", { site_id, tag });
     }
 
     return site_id;
@@ -87,13 +87,21 @@ export const getRecentSites = query({
     limit = limit ? limit : 6;
 
     const results = await ctx.db
-      .query('sites')
-      .withIndex('by_last_analyzed')
-      .order('desc')
+      .query("sites")
+      .withIndex("by_last_analyzed")
+      .order("desc")
       .take(limit);
-    
-    const structured_results = results.map(r => {
-      const { _id, normalized_base_url, site_name, overall_score, reasoning, last_analyzed, category_scores } = r;
+
+    const structured_results = results.map((r) => {
+      const {
+        _id,
+        normalized_base_url,
+        site_name,
+        overall_score,
+        reasoning,
+        last_analyzed,
+        category_scores,
+      } = r;
       return {
         _id,
         normalized_base_url,
@@ -101,7 +109,7 @@ export const getRecentSites = query({
         overall_score,
         reasoning,
         last_analyzed,
-        category_scores
+        category_scores,
       };
     });
 
@@ -110,8 +118,16 @@ export const getRecentSites = query({
 });
 
 export const getFullSiteDetails = query({
-  args: { site_id: v.id('sites') },
+  args: { site_id: v.id("sites") },
   handler: async (ctx, { site_id }) => {
     return await ctx.db.get(site_id);
-  }
-})
+  },
+});
+
+export const getAllSiteIds = query({
+  handler: async (ctx) => {
+    const all_sites = await ctx.db.query("sites").collect();
+    const ids = all_sites.map((site) => site._id);
+    return ids;
+  },
+});

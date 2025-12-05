@@ -14,6 +14,7 @@ import Link from "next/link";
 import Loading from "../_components/loading";
 import NotFound from "../_components/not-found";
 import { fetchQuery } from "convex/nextjs";
+import { Metadata } from "next";
 
 interface SitePageProps {
   params: Promise<{
@@ -149,6 +150,38 @@ export default async function SitePage({ params }: SitePageProps) {
           </div>
         </div>
       </section>
+
+      <div className="fixed -top-24 -left-24 -z-10 w-128 aspect-square rounded-full bg-accent/70 blur-3xl" />
+
+      <div className="fixed -bottom-24 -right-24 -z-10 w-128 aspect-square rounded-full bg-accent/70 blur-3xl" />
     </>
   );
+}
+
+export async function generateStaticParams() {
+  const all_ids = await fetchQuery(api.sites.getAllSiteIds);
+  return all_ids.map((id) => ({ id: id }));
+}
+
+export async function generateMetadata({
+  params,
+}: SitePageProps): Promise<Metadata> {
+  const { id } = await params;
+
+  const site = await fetchQuery(api.sites.getFullSiteDetails, { site_id: id });
+
+  return {
+    title: site ? `${site.site_name} Analysis | Privacy Peek` : "Privacy Peek",
+    description: site
+      ? `Full privacy policy analysis for ${site?.site_name}`
+      : "Full privacy policy analysis.",
+    creator: "Roci",
+    keywords: ["privacy peek", "privacy", "policy analysis", "online privacy"],
+    metadataBase: new URL("https://privacypeek.vercel.app"),
+    authors: [
+      { name: "Roci", url: "https://jomo.aqutte.co.ke" },
+      { name: "Privacy Peek" },
+    ],
+    applicationName: "Privacy Peek",
+  };
 }
