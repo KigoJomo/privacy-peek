@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://privacypeek.com/sitemap.xml
