@@ -1,4 +1,4 @@
-import RecentlyAnalyzed from './_components/RecentlyAnalyzed';
+import RecentSites from './_components/recent-sites';
 import SearchComponent from './_components/SearchComponent';
 
 export default function Home() {
@@ -15,7 +15,7 @@ export default function Home() {
         <SearchComponent />
       </section>
 
-      <RecentlyAnalyzed />
+      <RecentSites />
     </>
   );
 }
