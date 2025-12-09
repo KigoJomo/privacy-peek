@@ -1,8 +1,8 @@
 import { v } from "convex/values";
 import { action } from "./_generated/server";
 import { internal } from "./_generated/api";
-import { generateObject } from "ai";
-import { google } from "@ai-sdk/google";
+import { generateObject, generateText } from "ai";
+import { createGroq } from "@ai-sdk/groq";
 import z from "zod";
 
 import {
@@ -18,6 +18,15 @@ export type ResultItem = RequireOnly<
   SiteDetails,
   "_id" | "normalized_base_url" | "site_name" | "overall_score" | "reasoning"
 >;
+
+const groq = createGroq({
+  apiKey: process.env.GROQ_API_KEY,
+});
+
+// Model with browser search support for web-grounded calls
+const BROWSER_SEARCH_MODEL = "openai/gpt-oss-120b";
+// Model with generous limits for non-web-search calls
+const STANDARD_MODEL = "moonshotai/kimi-k2-instruct-0905";
 
 export const getSiteAnalysis = action({
   args: { user_input: v.string(), job_id: v.id("analysisJobs") },
@@ -128,21 +137,36 @@ const getWebsiteMetadata = async ({ site }: { site: string }) => {
       - Never hallucinate - return empty strings or empty arrays if uncertain
     `;
 
-  console.log("\nHitting Gemini API now.");
-  const { object } = await generateObject({
-    model: google("gemini-2.0-flash", {
-      useSearchGrounding: true,
-    }),
-    system: "You are a privacy practices analyzer and researcher.",
-    prompt: prompt,
-    temperature: 0,
-    schema: z.object({
-      normalized_base_url: z.string(),
-      site_name: z.string(),
-      tags: z.array(z.string()),
-      policy_documents_urls: z.array(z.string()),
-    }),
+  console.log("\nHitting Groq API now (with browser search).");
+  
+  // Use browser search to get accurate website metadata
+  const { text } = await generateText({
+    model: groq(BROWSER_SEARCH_MODEL),
+    system: "You are a privacy practices analyzer and researcher. Return your response as valid JSON only, with no additional text or explanation.",
+    prompt: `${prompt}
+    
+    Return your response as a JSON object with exactly these fields:
+    - normalized_base_url: string
+    - site_name: string  
+    - tags: string[]
+    - policy_documents_urls: string[]`,
+    tools: {
+      browser_search: groq.tools.browserSearch({}),
+    },
+    toolChoice: "required",
   });
+
+  // Parse the JSON response
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) {
+    throw new Error("Failed to parse website metadata response");
+  }
+  const object = JSON.parse(jsonMatch[0]) as {
+    normalized_base_url: string;
+    site_name: string;
+    tags: string[];
+    policy_documents_urls: string[];
+  };
 
   return object;
 };
@@ -171,32 +195,33 @@ const extractClauses = async ({
       - Never hallucinate or return placeholder text - return empty strings or empty arrays if uncertain.
     `;
 
-  console.log("\nHitting Gemini API now.");
-  const { object } = await generateObject({
-    model: google("gemini-2.0-flash", {
-      useSearchGrounding: true,
-    }),
+  console.log("\nHitting Groq API now (with browser search).");
+
+  // Use browser search to extract clauses from policy documents
+  const { text } = await generateText({
+    model: groq(BROWSER_SEARCH_MODEL),
     system:
-      "You are a privacy policy analyzer. Your task is to extract and summarize the privacy practices of a website based on its terms of service or privacy policy.",
-    prompt: prompt,
-    temperature: 0,
-    output: "array",
-    schema: z.object({
-      category_name: z.enum([
-        "Data Collection",
-        "Data Sharing",
-        "Data Retention and Security",
-        "User Rights and Controls",
-        "Transparency and Clarity",
-      ]),
-      clauses: z.array(
-        z.object({
-          clause: z.string(),
-          relevance: z.number(),
-        }),
-      ),
-    }),
+      "You are a privacy policy analyzer. Your task is to extract and summarize the privacy practices of a website based on its terms of service or privacy policy. Return your response as valid JSON only, with no additional text or explanation.",
+    prompt: `${prompt}
+    
+    Return your response as a JSON array where each element has:
+    - category_name: one of "Data Collection", "Data Sharing", "Data Retention and Security", "User Rights and Controls", "Transparency and Clarity"
+    - clauses: array of objects with "clause" (string) and "relevance" (number between 0 and 1)`,
+    tools: {
+      browser_search: groq.tools.browserSearch({}),
+    },
+    toolChoice: "required",
   });
+
+  // Parse the JSON response
+  const jsonMatch = text.match(/\[[\s\S]*\]/);
+  if (!jsonMatch) {
+    throw new Error("Failed to parse clauses response");
+  }
+  const object = JSON.parse(jsonMatch[0]) as Array<{
+    category_name: "Data Collection" | "Data Sharing" | "Data Retention and Security" | "User Rights and Controls" | "Transparency and Clarity";
+    clauses: Array<{ clause: string; relevance: number }>;
+  }>;
 
   return object;
 };
@@ -298,15 +323,15 @@ const getOverallScore = async ({
     `;
 
   try {
-    console.log("\nHitting Gemini API now.");
+    console.log("\nHitting Groq API now.");
     const { object } = await generateObject({
-      model: google("gemini-2.0-flash-lite"),
+      model: groq(STANDARD_MODEL),
       prompt,
       schema: z.object({
         reasoning: z.string(),
       }),
       temperature: 0,
-      maxTokens: 500,
+      maxOutputTokens: 500,
     });
 
     const { reasoning } = object;
@@ -365,12 +390,12 @@ async function scoreCategory({
   `;
 
   try {
-    console.log("\nHitting Gemini API now.");
+    console.log("\nHitting Groq API now.");
     const { object } = await generateObject({
-      model: google("gemini-2.0-flash-lite"),
+      model: groq(STANDARD_MODEL),
       prompt,
       temperature: 0,
-      maxTokens: 500,
+      maxOutputTokens: 500,
       schema: z.object({
         category_score: z.number(),
         reasoning: z.string(),
