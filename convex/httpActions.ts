@@ -1,4 +1,167 @@
 import { httpAction } from './_generated/server';
+import { api, internal } from './_generated/api';
+import { Id } from './_generated/dataModel';
+
+// CORS headers for extension requests
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+};
+
+// Helper to create JSON response with CORS
+const jsonResponse = (data: unknown, status = 200) => {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: {
+      'Content-Type': 'application/json',
+      ...corsHeaders,
+    },
+  });
+};
+
+// Helper for CORS preflight
+const corsPreflightResponse = () => {
+  return new Response(null, {
+    status: 204,
+    headers: corsHeaders,
+  });
+};
+
+/**
+ * GET /api/site?url=<url>
+ * Lookup a site by URL (normalized base URL or tag)
+ */
+export const getSite = httpAction(async (ctx, req: Request): Promise<Response> => {
+  if (req.method === 'OPTIONS') {
+    return corsPreflightResponse();
+  }
+
+  if (req.method !== 'GET') {
+    return jsonResponse({ error: 'Method Not Allowed' }, 405);
+  }
+
+  const url = new URL(req.url);
+  const siteUrl = url.searchParams.get('url');
+
+  if (!siteUrl) {
+    return jsonResponse({ error: 'Missing required parameter: url' }, 400);
+  }
+
+  try {
+    // First try to find by tag (user input)
+    const sitesByTag = await ctx.runQuery(internal.sites.getSiteSByTag, {
+      user_input: siteUrl,
+    });
+
+    if (sitesByTag && sitesByTag.length > 0) {
+      const site = sitesByTag[0];
+      return jsonResponse({
+        found: true,
+        site: {
+          _id: site._id,
+          normalized_base_url: site.normalized_base_url,
+          site_name: site.site_name,
+          overall_score: site.overall_score,
+          reasoning: site.reasoning,
+          category_scores: site.category_scores,
+          last_analyzed: site.last_analyzed,
+          policy_documents_urls: site.policy_documents_urls,
+        },
+      });
+    }
+
+    return jsonResponse({ found: false, site: null });
+  } catch (error) {
+    console.error('Error fetching site:', error);
+    return jsonResponse({ error: 'Internal server error' }, 500);
+  }
+});
+
+/**
+ * POST /api/analyze
+ * Start a new analysis job
+ * Body: { site_input: string }
+ */
+export const analyze = httpAction(async (ctx, req: Request): Promise<Response> => {
+  if (req.method === 'OPTIONS') {
+    return corsPreflightResponse();
+  }
+
+  if (req.method !== 'POST') {
+    return jsonResponse({ error: 'Method Not Allowed' }, 405);
+  }
+
+  try {
+    const body = await req.json();
+    const { site_input } = body;
+
+    if (!site_input || typeof site_input !== 'string') {
+      return jsonResponse({ error: 'Missing required field: site_input' }, 400);
+    }
+
+    // Create a job
+    const jobId = await ctx.runMutation(api.analysisJobs.createJob, {
+      site_input,
+    });
+
+    // Start the analysis (this runs in the background)
+    ctx.runAction(api.actions.getSiteAnalysis, {
+      user_input: site_input,
+      job_id: jobId,
+    });
+
+    return jsonResponse({
+      job_id: jobId,
+      status: 'queued',
+    });
+  } catch (error) {
+    console.error('Error starting analysis:', error);
+    return jsonResponse({ error: 'Internal server error' }, 500);
+  }
+});
+
+/**
+ * GET /api/job?id=<job_id>
+ * Get the status of an analysis job
+ */
+export const getJob = httpAction(async (ctx, req: Request): Promise<Response> => {
+  if (req.method === 'OPTIONS') {
+    return corsPreflightResponse();
+  }
+
+  if (req.method !== 'GET') {
+    return jsonResponse({ error: 'Method Not Allowed' }, 405);
+  }
+
+  const url = new URL(req.url);
+  const jobId = url.searchParams.get('id');
+
+  if (!jobId) {
+    return jsonResponse({ error: 'Missing required parameter: id' }, 400);
+  }
+
+  try {
+    const job = await ctx.runQuery(api.analysisJobs.getJob, {
+      job_id: jobId as Id<'analysisJobs'>,
+    });
+
+    if (!job) {
+      return jsonResponse({ error: 'Job not found' }, 404);
+    }
+
+    return jsonResponse({
+      job_id: job._id,
+      status: job.status,
+      site_input: job.site_input,
+      created_at: job.created_at,
+      updated_at: job.updated_at,
+    });
+  } catch (error) {
+    console.error('Error fetching job:', error);
+    return jsonResponse({ error: 'Internal server error' }, 500);
+  }
+});
 
 export const health = httpAction(
   async (_ctx, req: Request): Promise<Response> => {
