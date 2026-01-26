@@ -56,52 +56,52 @@ export const scoringCategories: ScoringCategory[] = [
       {
         score: 10,
         description:
-          'Only collects data absolutely essential for core service functionality with explicit, granular consent for each data type',
+          'Collects only strictly essential data for core functionality, with explicit per-use consent and documented business justification for each data type collected',
       },
       {
         score: 9,
         description:
-          'Collects minimal data necessary for service with clear consent mechanisms and detailed explanations',
+          'Minimal data collection limited to essential functionality, granular consent options, and clear statement of purpose for all collection',
       },
       {
         score: 8,
         description:
-          'Collects necessary data with some additional functional data, good consent practices',
+          'Collects essential data plus limited functional analytics, with consent checkboxes and explanations of data use',
       },
       {
         score: 7,
         description:
-          'Collects reasonable amount of data with adequate consent, some non-essential collection',
+          'Collects necessary service data plus some non-essential features, reasonable consent structure but some categories remain undefined',
       },
       {
         score: 6,
         description:
-          'Collects moderate amount of data including some convenience features, basic consent',
+          'Moderate data collection including analytics, personalization, and tracking, with basic consent mechanisms',
       },
       {
         score: 5,
         description:
-          'Collects substantial data including analytics and personalization, broad consent categories',
+          'Collects substantial data across multiple categories (behavioral, location, preferences) with vague justifications and broad consent requests',
       },
       {
         score: 4,
         description:
-          'Collects extensive data for multiple purposes, vague consent mechanisms',
+          'Extensive data collection for profiling and third-party purposes, consent mechanisms weak or pre-checked, purposes remain unclear',
       },
       {
         score: 3,
         description:
-          'Collects broad data categories with minimal user control or unclear purposes',
+          'Broad unrestricted data collection across device, behavioral, and personal categories with minimal transparency about scope or purpose',
       },
       {
         score: 2,
         description:
-          'Collects excessive data with poor justification and limited consent options',
+          'Collects comprehensive personal and behavioral data including sensitive information with minimal consent and no clear limitation',
       },
       {
         score: 1,
         description:
-          'Collects extensive personal data without clear necessity, consent, or user awareness',
+          'Collects extensive personal data without meaningful consent, user awareness, or stated limitations; data scope undefined',
       },
     ],
   },
@@ -111,51 +111,52 @@ export const scoringCategories: ScoringCategory[] = [
       {
         score: 10,
         description:
-          'No data sharing with third parties, or only with explicit opt-in consent for each recipient',
+          'Explicitly states no third-party sharing except with explicit per-recipient opt-in; any essential service providers are named and contractually bound',
       },
       {
         score: 9,
         description:
-          'Very limited sharing only with essential service providers, clear user control',
+          'Very restricted sharing only with clearly named essential service providers; users have granular control over each sharing relationship',
       },
       {
         score: 8,
         description:
-          'Shares only with trusted partners for core functionality, good transparency',
+          'Shares only with identified service providers necessary for core function; users can control or disable sharing; no marketing sharing',
       },
       {
         score: 7,
         description:
-          'Limited sharing with partners, clear disclosure and some user control',
+          'Shares with identified partners for stated business purposes with user control options available, though opting out may be difficult',
       },
       {
         score: 6,
         description:
-          'Moderate sharing with business partners, adequate disclosure',
+          'Moderate sharing with multiple partner categories (analytics, marketing, service providers); basic transparency but limited user control',
       },
       {
         score: 5,
         description:
-          'Shares data with various partners for business purposes, basic disclosure',
+          'Shares data with various partners including marketing and analytics without explicit per-partner consent; categories broadly defined but vague',
       },
       {
         score: 4,
         description:
-          'Broad sharing with multiple categories of partners, limited user control',
+          'Widespread sharing with multiple partner categories; partners named only generically; user control minimal or requires account changes',
       },
       {
         score: 3,
         description:
-          'Extensive sharing for marketing and analytics with poor user control',
+          'Shares broadly with business partners, affiliates, and advertisers with minimal disclosure; category-based sharing (not partner-specific) disclosed poorly',
       },
       {
         score: 2,
-        description: 'Widespread sharing with minimal disclosure or consent',
+        description:
+          'Shares extensively with undefined categories of third parties; policy indicates sharing for "business purposes" or "improvements" without specifics',
       },
       {
         score: 1,
         description:
-          'Unrestricted data sharing with third parties without meaningful user consent or disclosure',
+          'No meaningful disclosure of sharing practices; policy suggests unrestricted third-party sharing or sharing practices remain completely undefined',
       },
     ],
   },
@@ -165,52 +166,52 @@ export const scoringCategories: ScoringCategory[] = [
       {
         score: 10,
         description:
-          'Strong encryption, minimal retention periods, automatic deletion, comprehensive security measures',
+          'States strong encryption for data in transit and at rest, minimal specific retention periods (e.g., days/weeks), automatic deletion of data, regular security audits mentioned',
       },
       {
         score: 9,
         description:
-          'Excellent security practices, clear retention limits, user-controlled deletion',
+          'Encryption mentioned for sensitive data, short defined retention periods (e.g., under 1 year), user-initiated deletion available, security practices described',
       },
       {
         score: 8,
         description:
-          'Good security measures, reasonable retention periods, deletion options available',
+          'Describes encryption for sensitive data, reasonable retention periods (1-3 years), deletion options available to users, basic security measures mentioned',
       },
       {
         score: 7,
         description:
-          'Adequate security practices, defined retention periods, some deletion capabilities',
+          'Security measures mentioned (encryption or standards referenced), retention periods defined but longer (3-5 years), some user control over deletion',
       },
       {
         score: 6,
         description:
-          'Basic security measures, moderate retention periods, limited deletion options',
+          'Basic security practices mentioned, retention periods defined but lengthy (5+ years), deletion requests possible but require account closure or contact',
       },
       {
         score: 5,
         description:
-          'Standard security practices, long but defined retention periods',
+          'Generic security claims without specific mechanisms, retention periods long or vague ("as long as needed"), deletion available only via customer support',
       },
       {
         score: 4,
         description:
-          'Minimal security details, vague retention periods, difficult deletion process',
+          'Minimal security details provided, retention periods vague or "as needed," deletion process unclear, data may be retained for secondary purposes',
       },
       {
         score: 3,
         description:
-          'Poor security transparency, indefinite retention mentioned, no deletion options',
+          'Poor security transparency, indefinite retention stated or implied, deletion available only under legal request, no ongoing protection measures described',
       },
       {
         score: 2,
         description:
-          'Inadequate security measures, permanent data retention, no user control',
+          'Inadequate or absent security measures, permanent retention stated for analytics or legal purposes, no user-initiated deletion option',
       },
       {
         score: 1,
         description:
-          'No meaningful security measures, indefinite retention without user recourse',
+          'No meaningful security commitments made, indefinite retention without justification, user recourse for deletion non-existent',
       },
     ],
   },
@@ -220,51 +221,52 @@ export const scoringCategories: ScoringCategory[] = [
       {
         score: 10,
         description:
-          'Comprehensive user rights including access, correction, deletion, portability, and granular privacy controls',
+          'Clearly lists all user rights (access, correction, deletion, portability, opt-out) with specific processes; users can exercise rights easily without barriers',
       },
       {
         score: 9,
         description:
-          'Strong user rights with easy-to-use tools for data management and privacy controls',
+          'Provides access to personal data, correction and deletion rights, with straightforward processes; portability mentioned; granular privacy controls available',
       },
       {
         score: 8,
         description:
-          'Good user rights including access, correction, and deletion with clear processes',
+          'Users can access data, request deletion, and make corrections with reasonable processes; some granular privacy controls (e.g., tracking opt-out)',
       },
       {
         score: 7,
         description:
-          'Basic user rights with functional but limited tools for data control',
+          'Basic rights available (access, deletion) but with moderate friction; cookie controls present; some personalization preferences adjustable',
       },
       {
         score: 6,
         description:
-          'Some user rights available but with restrictions or complex procedures',
+          'Some rights mentioned but with restrictions or complex procedures; basic privacy settings available but not comprehensive',
       },
       {
         score: 5,
         description:
-          'Limited user rights, basic access and deletion available with effort',
+          'Limited rights described (access or deletion but not both) requiring effort or account management; minimal user control options',
       },
       {
         score: 4,
         description:
-          'Minimal user rights, difficult processes, long response times',
+          'User rights mentioned but processes difficult or time-consuming; user controls relegated to account settings rather than data management',
       },
       {
         score: 3,
         description:
-          'Very limited rights, cumbersome procedures, poor responsiveness',
+          'Very limited rights accessible; processes cumbersome or require contacting support; significant friction for opting out',
       },
       {
         score: 2,
         description:
-          'Barely functional user rights, significant barriers to data control',
+          'Minimal functional user rights; significant barriers to exercising deletion, access, or opt-out; response times undefined',
       },
       {
         score: 1,
-        description: 'No meaningful user rights or control over personal data',
+        description:
+          'No meaningful user rights or controls described; no path for users to manage, delete, or control their personal data',
       },
     ],
   },
@@ -274,52 +276,52 @@ export const scoringCategories: ScoringCategory[] = [
       {
         score: 10,
         description:
-          'Crystal clear language, comprehensive explanations, easy navigation, regular updates communicated',
+          'Language is simple and accessible to non-lawyers, minimal technical jargon, well-organized with clear sections, frequently updated with change summaries',
       },
       {
         score: 9,
         description:
-          'Very clear and accessible language, well-organized content, good update practices',
+          'Clearly written with definitions for technical terms, well-organized navigation, update log provided, accessible formatting',
       },
       {
         score: 8,
         description:
-          'Clear language with minimal jargon, logical organization, adequate update notifications',
+          'Mostly clear language with some jargon, logical document structure, updates dated and communicated, readable formatting',
       },
       {
         score: 7,
         description:
-          'Generally clear with some technical terms, reasonable organization',
+          'Generally understandable but contains technical terms without definitions, reasonable organization, update dates present',
       },
       {
         score: 6,
         description:
-          'Moderately clear but includes jargon, basic organization, some unclear sections',
+          'Moderately clear with significant jargon, basic organization, some sections unclear, update history unclear',
       },
       {
         score: 5,
         description:
-          'Mixed clarity with technical language, confusing organization in places',
+          'Mixed clarity with heavy use of legal and technical jargon, confusing organization, updated but changes not summarized',
       },
       {
         score: 4,
         description:
-          'Difficult to understand, heavy use of legal jargon, poor organization',
+          'Difficult to understand, dense legal language predominates, poor organization makes finding information challenging',
       },
       {
         score: 3,
         description:
-          'Very unclear language, confusing structure, important information buried',
+          'Confusing structure, heavy jargon, important information buried, vague language when describing data practices',
       },
       {
         score: 2,
         description:
-          'Extremely difficult to understand, deliberately obfuscated, poor accessibility',
+          'Deliberately complex language, poor organization, key practices described vaguely or in contradictory ways',
       },
       {
         score: 1,
         description:
-          'Incomprehensible or deliberately misleading language, no meaningful transparency',
+          'Incomprehensible language, no meaningful structure, practices described in deliberately unclear or contradictory terms',
       },
     ],
   },
@@ -329,9 +331,9 @@ export const categoryWeights: Array<{
   category: CategoryName;
   weight: number;
 }> = [
-  { category: 'Data Collection', weight: 1.2 },
-  { category: 'Data Sharing', weight: 1.5 },
-  { category: 'Data Retention and Security', weight: 1.0 },
-  { category: 'User Rights and Controls', weight: 1.0 },
-  { category: 'Transparency and Clarity', weight: 0.8 },
+  { category: 'Data Collection', weight: 1.3 },
+  { category: 'Data Sharing', weight: 1.6 },
+  { category: 'Data Retention and Security', weight: 1.3 },
+  { category: 'User Rights and Controls', weight: 1.1 },
+  { category: 'Transparency and Clarity', weight: 0.7 },
 ];

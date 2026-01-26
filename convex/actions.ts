@@ -87,11 +87,11 @@ export const getSiteAnalysis = action({
           normalized_base_url: siteMetaData.normalized_base_url,
           site_name: siteMetaData.site_name,
           policy_documents_urls: siteMetaData.policy_documents_urls,
-          tags: [
-            ...siteMetaData.tags,
-            user_input,
-            siteMetaData.normalized_base_url,
-          ],
+           tags: [
+             ...siteMetaData.tags.map((tag) => tag.toLowerCase()),
+             user_input.toLowerCase(),
+             siteMetaData.normalized_base_url.toLowerCase(),
+           ],
           last_analyzed: new Date().toISOString(),
           overall_score: overallScore.overall_score,
           reasoning: overallScore.reasoning ? overallScore.reasoning : "",
@@ -303,24 +303,32 @@ const getOverallScore = async ({
   const result = 10 * (weight_x_score_sum / weightsTotal);
   const overall_score = Math.round(result * 100) / 100;
 
-  const prompt = `
-      A website's privacy practices are evaluated in the following categories with their reasoning:
+   const prompt = `
+       Based on a website's privacy practices across five categories, generate a 1-2 sentence summary that explains the overall privacy situation to a user.
 
-      ${categoryScores
-      .map(
-        (category) =>
-          `${category.category_name}: ${category.category_score}.\n Reasoning: ${category.reasoning}`,
-      )
-      .join("\n\n")}
+       Here are the category evaluations:
 
-      Write a brief explanation that tells users what this means for them in practical terms.
-      Requirements for the explanation:
-      - Focus on concrete user impact (what information is collected or shared, how long it may be kept, what choices/controls users have, and how clearly this is communicated).
-      - Be clear, specific, and non-ambiguous.
-      - Do NOT mention any numeric scores, category names, or the website name.
-      - Avoid jargon and hedging language.
-      Return only the explanation, at most 2 short sentences.
-    `;
+       ${categoryScores
+       .map(
+         (category) =>
+           `${category.category_name}: ${category.reasoning}`,
+       )
+       .join("\n\n")}
+
+       Write a brief explanation that synthesizes this into practical terms for users:
+       - Lead with the main privacy concern or strength (e.g., "This site collects extensive data and shares it freely" or "This site is careful about your data").
+       - Include 1-2 specific details from the categories above (e.g., mention data collection scope, sharing practices, retention, user control options).
+       - Balance risks and protections if mixed (e.g., "Data is shared with many partners, but you can opt-out from your account settings").
+       - Do NOT mention numeric scores, category names, or the website name.
+       - Use plain, conversational language (e.g., "they keep your data" instead of "indefinite retention").
+       - Tone should match the overall privacy posture: firm/concerned for poor practices, neutral/positive for strong ones.
+
+       Example summaries:
+       - Poor privacy: "Extensive tracking and profiling occurs, with data shared to hundreds of advertisers. You'll need to dig into settings to limit sharing, and deletion takes months."
+       - Mixed privacy: "Your essential service data is kept secure, but behavioral data is shared with analytics partners. You can disable tracking in settings and request deletion anytime."
+       - Strong privacy: "Only essential data is collected and never shared. You have full control to download, edit, or delete everything from your account dashboard."
+     `;
+
 
   try {
     console.log("\nHitting Groq API now.");
@@ -368,26 +376,38 @@ async function scoreCategory({
   }>;
 }) {
   const prompt = `
-    These are clauses extracted from a website's Privacy Policy and Terms of Service specifically regarding ${category_name}:
+     These are clauses extracted from a website's Privacy Policy and Terms of Service specifically regarding ${category_name}:
 
-    ${clauses
-      .map((c) => `- ${c.clause} (Relevance: ${c.relevance})`)
-      .join("\n")}
+     ${clauses
+       .map((c) => `- ${c.clause} (Relevance: ${c.relevance})`)
+       .join("\n")}
 
-    You are given the following rubric for scoring the website's performance in ${category_name} based on the provided clauses:
-    
-    ${rubric.map((r) => `Score: ${r.score} - ${r.description}`).join("\n")}
+     You are given the following rubric for scoring the website's performance in ${category_name} based on the provided clauses:
+     
+     ${rubric.map((r) => `Score: ${r.score} - ${r.description}`).join("\n")}
 
-    Carefully go through all provided clauses and find the most appropriate numeric score for the website in ${category_name}.
+     Carefully go through all provided clauses and find the most appropriate numeric score for the website in ${category_name}.
 
-    Return two fields: a category_score (number) and a reasoning (string).
-    The reasoning must:
-    - Focus on what this means for users in real terms (e.g., what data is collected/shared/retained, what choices users have, and any notable risks or protections).
-    - Be clear, concrete, and non-ambiguous.
-    - NOT mention the numeric score or the website name.
-    - Avoid jargon and hedging language.
-    Keep it to at most 2 short sentences, understandable by a non-technical user.
-  `;
+     Return two fields: a category_score (number) and a reasoning (string).
+     
+     The reasoning must be 1-2 concise sentences explaining the practical privacy impact to a user, with specific details:
+     - Lead with the main risk or protection (e.g., "Your location and browsing history are tracked" or "Only essential service data is collected").
+     - Include specific practices (e.g., "advertisers," "30-day retention," "opt-out available in settings," "account deletion required").
+     - Show both risks AND protections when balanced (e.g., "Data is shared with partners, but you can disable this in your account settings").
+     - Do NOT mention the numeric score, category name, or website name.
+     - Avoid jargon; use plain language (e.g., "apps" instead of "third-party services," "you can delete it" instead of "data portability").
+     - Tone should reflect the privacy posture: warning for bad practices, reassuring for strong protections.
+
+     Example reasonings for reference:
+     - Data Collection (strong): "Only your account username and email are collected—no tracking or profiling."
+     - Data Collection (weak): "Your browsing history, location, and payment data are tracked. Consent is pre-checked and buried in settings."
+     - Data Sharing (strong): "Your data is never shared with advertisers; it's only used internally for service improvements."
+     - Data Sharing (weak): "Your profile is shared with hundreds of advertising partners and data brokers unless you opt-out separately for each one."
+     - Data Retention (strong): "Data is encrypted and automatically deleted 90 days after you stop using the service."
+     - Data Retention (weak): "Your data is kept indefinitely for 'analytics purposes' with no clear deletion option."
+     - User Rights (strong): "You can download or delete your account data anytime from your dashboard without contacting support."
+     - User Rights (weak): "You can request deletion by emailing support, but processing takes 60 days and some data is kept for legal reasons."
+   `;
 
   try {
     console.log("\nHitting Groq API now.");

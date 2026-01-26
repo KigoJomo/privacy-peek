@@ -7,7 +7,7 @@ export const getSiteSByTag = internalQuery({
   handler: async (ctx, { user_input }) => {
     const tagRows = await ctx.db
       .query("tags")
-      .withIndex("by_tag", (q) => q.eq("tag", user_input))
+      .withIndex("by_tag", (q) => q.eq("tag", user_input.toLowerCase()))
       .collect();
 
     const site_ids = tagRows.map((t) => t.site_id);
