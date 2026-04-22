@@ -19,9 +19,13 @@ import { FunctionReturnType } from "convex/server";
 type RecentSite = FunctionReturnType<typeof api.sites.getRecentSites>[number];
 
 export default async function RecentSites() {
+  if (!process.env.NEXT_PUBLIC_CONVEX_URL) {
+    return null;
+  }
+
   const recent_sites: RecentSite[] = await fetchQuery(
     api.sites.getRecentSites,
-    {limit: 32},
+    { limit: 32 },
   );
 
   return (
