@@ -44,7 +44,10 @@ import { Id } from "@/convex/_generated/dataModel";
 import type { AnalysisStatus } from "@/convex/lib";
 
 const SearchSchema = z.object({
-  search_term: z.string().min(3, "search term must be at least 3 characters."),
+  search_term: z
+    .string()
+    .trim()
+    .min(3, "search term must be at least 3 characters."),
 });
 
 type SearchValue = z.infer<typeof SearchSchema>;
@@ -72,16 +75,17 @@ export default function SearchComponent() {
 
   const [state, submit, isPending] = useActionState(
     async (_prev: ActionState, value: SearchValue): Promise<ActionState> => {
+      const normalizedSearchTerm = value.search_term.trim();
       setDisplayedResults([]);
 
       try {
         const analysisJobId = await createJob({
-          site_input: value.search_term,
+          site_input: normalizedSearchTerm,
         });
         setJobId(analysisJobId);
 
         const searchResults = await searchSite({
-          user_input: value.search_term,
+          user_input: normalizedSearchTerm,
           job_id: analysisJobId,
         });
 
@@ -94,10 +98,10 @@ export default function SearchComponent() {
         };
       } catch (error: unknown) {
         if (error instanceof Error) {
-          console.log(error.message);
+          console.error(error.message);
           return { ok: false, message: error.message };
         } else {
-          console.log("Failed to retrieve site analysis.");
+          console.error("Failed to retrieve site analysis.");
           return { ok: false, message: "Failed to retrieve site analysis!" };
         }
       } finally {
@@ -113,8 +117,18 @@ export default function SearchComponent() {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit((value) => {
+          const normalizedValue = {
+            ...value,
+            search_term: value.search_term.trim(),
+          };
+
+          form.setValue("search_term", normalizedValue.search_term, {
+            shouldDirty: true,
+            shouldTouch: true,
+          });
+
           startTransition(() => {
-            submit(value);
+            submit(normalizedValue);
           });
         })}
         className={cn("w-full max-w-xl flex flex-col gap-2")}
@@ -172,6 +186,12 @@ export default function SearchComponent() {
               <ResultCard site={site} />
             </div>
           ))}
+        </div>
+      )}
+
+      {displayedResults && displayedResults.length === 0 && !isPending && state?.ok && (
+        <div className="w-full max-w-xl rounded-2xl border border-dashed px-6 py-8 text-center text-muted-foreground">
+          No matching analysis yet. Try a different app name or paste the full site URL.
         </div>
       )}
     </Form>
