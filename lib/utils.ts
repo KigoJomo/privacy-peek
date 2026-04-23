@@ -5,15 +5,42 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export const isAnalysisStale = (lastAnalyzed: string): boolean => {
-  const twoWeeksInMs = 14 * 24 * 60 * 60 * 1000; // 2 weeks in milliseconds
-  const lastAnalyzedDate = new Date(lastAnalyzed);
-  const currentDate = new Date();
+export const ANALYSIS_STALE_AFTER_DAYS = 14;
+const DAY_IN_MS = 24 * 60 * 60 * 1000;
 
-  return currentDate.getTime() - lastAnalyzedDate.getTime() > twoWeeksInMs;
-  // for testing - always return true;
-  // return true;
+export function getAnalysisAgeInDays(lastAnalyzed: string): number | null {
+  const lastAnalyzedDate = new Date(lastAnalyzed);
+
+  if (Number.isNaN(lastAnalyzedDate.getTime())) {
+    return null;
+  }
+
+  return Math.max(0, Math.floor((Date.now() - lastAnalyzedDate.getTime()) / DAY_IN_MS));
+}
+
+export const isAnalysisStale = (lastAnalyzed: string): boolean => {
+  const analysisAgeInDays = getAnalysisAgeInDays(lastAnalyzed);
+
+  return analysisAgeInDays !== null && analysisAgeInDays >= ANALYSIS_STALE_AFTER_DAYS;
 };
+
+export function getAnalysisFreshnessLabel(lastAnalyzed: string): string | null {
+  const analysisAgeInDays = getAnalysisAgeInDays(lastAnalyzed);
+
+  if (analysisAgeInDays === null) {
+    return null;
+  }
+
+  if (analysisAgeInDays === 0) {
+    return "Checked today";
+  }
+
+  if (analysisAgeInDays === 1) {
+    return "Checked 1 day ago";
+  }
+
+  return `Checked ${analysisAgeInDays} days ago`;
+}
 
 export function formatRelativeTime(dateString: string): string {
   try {
