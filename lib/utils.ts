@@ -6,43 +6,44 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export const isAnalysisStale = (lastAnalyzed: string): boolean => {
-  const twoWeeksInMs = 14 * 24 * 60 * 60 * 1000; // 2 weeks in milliseconds
-  const lastAnalyzedDate = new Date(lastAnalyzed);
-  const currentDate = new Date();
+  const twoWeeksInMs = 14 * 24 * 60 * 60 * 1000
+  const lastAnalyzedDate = new Date(lastAnalyzed)
 
-  return currentDate.getTime() - lastAnalyzedDate.getTime() > twoWeeksInMs;
-  // for testing - always return true;
-  // return true;
-};
+  if (Number.isNaN(lastAnalyzedDate.getTime())) {
+    return false
+  }
+
+  return Date.now() - lastAnalyzedDate.getTime() > twoWeeksInMs
+}
 
 export function formatRelativeTime(dateString: string): string {
-  try {
-    const date = new Date(dateString);
-    const formatter = new Intl.RelativeTimeFormat('en', { style: 'short' });
-    const diff = date.getTime() - Date.now();
+  const date = new Date(dateString)
 
-    const units = [
-      { unit: 'year', ms: 31536000000 },
-      { unit: 'month', ms: 2628000000 },
-      { unit: 'day', ms: 86400000 },
-      { unit: 'hour', ms: 3600000 },
-      { unit: 'minute', ms: 60000 },
-    ];
-
-    for (const { unit, ms } of units) {
-      if (Math.abs(diff) >= ms) {
-        return formatter.format(
-          Math.round(diff / ms),
-          unit as Intl.RelativeTimeFormatUnit
-        );
-      }
-    }
-
-    return 'Just now';
-  } catch (error) {
-    console.error('Invalid date format:', dateString, error);
-    return '';
+  if (Number.isNaN(date.getTime())) {
+    return ''
   }
+
+  const formatter = new Intl.RelativeTimeFormat('en', { style: 'short' })
+  const diff = date.getTime() - Date.now()
+
+  const units = [
+    { unit: 'year', ms: 31536000000 },
+    { unit: 'month', ms: 2628000000 },
+    { unit: 'day', ms: 86400000 },
+    { unit: 'hour', ms: 3600000 },
+    { unit: 'minute', ms: 60000 },
+  ]
+
+  for (const { unit, ms } of units) {
+    if (Math.abs(diff) >= ms) {
+      return formatter.format(
+        Math.round(diff / ms),
+        unit as Intl.RelativeTimeFormatUnit,
+      )
+    }
+  }
+
+  return 'Just now'
 }
 
 export function slugify(text: string): string {
