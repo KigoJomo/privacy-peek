@@ -54,7 +54,6 @@ export default async function SitePage({ params }: SitePageProps) {
     overall_score,
     category_scores,
   } = full_site_details;
-
   const safeOverallScore = getOverallScoreDisplay(overall_score);
   const safeCategoryScores = (category_scores ?? []).map((category) => ({
     ...category,

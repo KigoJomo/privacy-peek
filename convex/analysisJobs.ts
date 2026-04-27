@@ -25,6 +25,9 @@ export const getJob = query({
 export const updateJob = internalMutation({
   args: { job_id: v.id('analysisJobs'), status: AnalysisStatusValidator },
   handler: async (ctx, { job_id, status }) => {
-    await ctx.db.patch(job_id, { status });
+    await ctx.db.patch(job_id, {
+      status,
+      updated_at: new Date().toISOString(),
+    });
   },
 });

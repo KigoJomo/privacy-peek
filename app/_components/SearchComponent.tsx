@@ -35,7 +35,7 @@ import {
   Settings2,
 } from "lucide-react";
 import Link from "next/link";
-import { startTransition, useActionState, useState } from "react";
+import { startTransition, useActionState, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
 import { ResultItem } from "@/convex/actions";
@@ -72,6 +72,10 @@ export default function SearchComponent() {
   const [displayedResults, setDisplayedResults] = useState<ResultItem[] | null>(
     null,
   );
+  const ongoingJob = useQuery(
+    api.analysisJobs.getJob,
+    jobId ? { job_id: jobId } : "skip",
+  );
 
   const [state, submit, isPending] = useActionState(
     async (_prev: ActionState, value: SearchValue): Promise<ActionState> => {
@@ -104,14 +108,23 @@ export default function SearchComponent() {
           console.error("Failed to retrieve site analysis.");
           return { ok: false, message: "Failed to retrieve site analysis!" };
         }
-      } finally {
-        setTimeout(() => {
-          setJobId(null);
-        }, 3000);
       }
     },
     initialState,
   );
+
+  useEffect(() => {
+    if (!jobId) return;
+
+    const status = ongoingJob?.status;
+    if (status !== "complete" && status !== "error") return;
+
+    const timeout = window.setTimeout(() => {
+      setJobId(null);
+    }, 3000);
+
+    return () => window.clearTimeout(timeout);
+  }, [jobId, ongoingJob?.status]);
 
   return (
     <Form {...form}>
