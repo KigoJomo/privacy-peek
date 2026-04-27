@@ -19,7 +19,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { RequireOnly, SiteDetails } from "@/convex/lib";
-import { cn, formatRelativeTime } from "@/lib/utils";
+import {
+  cn,
+  formatRelativeTime,
+  getCategoryScoreDisplay,
+  getOverallScoreDisplay,
+} from "@/lib/utils";
 import Link from "next/link";
 import ScoreVisualizer from "@/components/ui/score-visualizer";
 import { FunctionReturnType } from "convex/server";
@@ -28,6 +33,10 @@ import { ArrowUpRightIcon } from "lucide-react";
 type RecentSite = FunctionReturnType<typeof api.sites.getRecentSites>[number];
 
 export default async function RecentSites() {
+  if (!process.env.NEXT_PUBLIC_CONVEX_URL) {
+    return null;
+  }
+
   const recent_sites: RecentSite[] = await fetchQuery(
     api.sites.getRecentSites,
     { limit: 32 },
@@ -69,7 +78,7 @@ function RecentSitesTable({ sites }: { sites: RecentSite[] }) {
         </TableHeader>
         <TableBody>
           {sites.map((site) => {
-            const safeOverallScore = getSafeOverallScore(site.overall_score);
+            const safeOverallScore = getOverallScoreDisplay(site.overall_score);
 
             return (
               <TableRow key={site._id}>
@@ -138,8 +147,11 @@ export function SiteCard({
     normalized_base_url,
   } = site_details;
 
-  const safeOverallScore = getSafeOverallScore(overall_score);
-
+  const safeOverallScore = getOverallScoreDisplay(overall_score);
+  const safeCategoryScores = (category_scores ?? []).map((category) => ({
+    ...category,
+    category_score: getCategoryScoreDisplay(category.category_score),
+  }));
   return (
     <Link
       href={`/site/${_id}`}
@@ -163,7 +175,7 @@ export function SiteCard({
             <span className="text-sm">Overall Score /100</span>
             <ScoreVisualizer
               value={safeOverallScore / 100}
-              displayNumber={safeOverallScore.toFixed(0)}
+              displayNumber={safeOverallScore}
               className="md:mr-1"
             />
           </CardAction>
@@ -172,35 +184,25 @@ export function SiteCard({
           <span className="-mt-2 text-center text-muted-foreground">
             Category Scores (/10)
           </span>
-          {category_scores.map((catg, index) => {
-            const safeCategoryScore = Number.isFinite(catg.category_score)
-              ? Math.min(10, Math.max(0, catg.category_score))
-              : 0;
-
-            return (
-              <div
-                key={index}
-                className="flex items-center justify-between gap-4"
-                aria-label={`${catg.category_name} score ${safeCategoryScore} out of 10`}
-              >
-                <p className="truncate text-base!">{catg.category_name}</p>
-                <ScoreVisualizer
-                  value={safeCategoryScore / 10}
-                  size={32}
-                  displayNumber={safeCategoryScore}
-                />
-              </div>
-            );
-          })}
+          {safeCategoryScores.map((catg, index) => (
+            <div
+              key={index}
+              className="flex items-center justify-between gap-4"
+              aria-label={`${catg.category_name} score ${catg.category_score} out of 10`}
+            >
+              <p className="truncate text-base!">{catg.category_name}</p>
+              <ScoreVisualizer
+                value={catg.category_score / 10}
+                size={32}
+                displayNumber={catg.category_score}
+              />
+            </div>
+          ))}
         </CardContent>
         <CardFooter></CardFooter>
       </Card>
     </Link>
   );
-}
-
-function getSafeOverallScore(score: number) {
-  return Number.isFinite(score) ? Math.min(100, Math.max(0, score)) : 0;
 }
 
 function getDomainLabel(url: string) {
