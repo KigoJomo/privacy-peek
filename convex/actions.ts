@@ -274,8 +274,12 @@ const getCategoryScores = async ({
     }
   });
 
-  const scores = await Promise.all(promises);
-  if (!scores) throw new Error("Something went wrong.");
+  const scores = (await Promise.all(promises)).filter(
+    (score): score is NonNullable<typeof score> => score !== undefined,
+  );
+  if (scores.length === 0) {
+    throw new Error("No category scores could be generated.");
+  }
 
   return scores as Array<{
     category_name: CategoryName;
@@ -290,7 +294,13 @@ const getOverallScore = async ({
 }: {
   categoryScores: Awaited<ReturnType<typeof getCategoryScores>>;
 }) => {
-  const weightsTotal = categoryWeights.reduce((sum, w) => sum + w.weight, 0);
+  const appliedWeights = categoryWeights.filter((weight) =>
+    categoryScores.some((score) => score.category_name === weight.category),
+  );
+  const weightsTotal = appliedWeights.reduce((sum, w) => sum + w.weight, 0);
+  if (weightsTotal === 0) {
+    throw new Error("No category weights available for computed scores.");
+  }
 
   const weight_x_score_sum = categoryScores
     .map(

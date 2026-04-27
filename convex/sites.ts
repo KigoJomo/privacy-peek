@@ -2,17 +2,19 @@ import { v } from "convex/values";
 import { internalMutation, internalQuery, query } from "./_generated/server";
 import { CategoryNameValidator } from "./lib";
 
+const normalizeTag = (tag: string) => tag.trim().toLowerCase();
+
 export const getSiteSByTag = internalQuery({
   args: { user_input: v.string() },
   handler: async (ctx, { user_input }) => {
     const tagRows = await ctx.db
       .query("tags")
-      .withIndex("by_tag", (q) => q.eq("tag", user_input.toLowerCase()))
+      .withIndex("by_tag", (q) => q.eq("tag", normalizeTag(user_input)))
       .collect();
 
-    const site_ids = tagRows.map((t) => t.site_id);
+    const siteIds = [...new Set(tagRows.map((tagRow) => tagRow.site_id))];
     const sites = await Promise.all(
-      site_ids.map(async (site_id) => {
+      siteIds.map(async (site_id) => {
         const site = await ctx.db.get(site_id);
         return site;
       }),
@@ -63,6 +65,8 @@ export const insertAnalysis = internalMutation({
       reasoning,
       category_scores,
     } = args;
+    const uniqueTags = [...new Set(tags.map(normalizeTag).filter(Boolean))];
+
     const site_id = await ctx.db.insert("sites", {
       normalized_base_url,
       site_name,
@@ -73,7 +77,7 @@ export const insertAnalysis = internalMutation({
       category_scores,
     });
 
-    for (const tag of tags) {
+    for (const tag of uniqueTags) {
       await ctx.db.insert("tags", { site_id, tag });
     }
 
