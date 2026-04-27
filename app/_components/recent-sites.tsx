@@ -11,7 +11,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { RequireOnly, SiteDetails } from "@/convex/lib";
-import { cn, formatRelativeTime } from "@/lib/utils";
+import {
+  cn,
+  formatRelativeTime,
+  getCategoryScoreDisplay,
+  getOverallScoreDisplay,
+} from "@/lib/utils";
 import Link from "next/link";
 import ScoreVisualizer from "@/components/ui/score-visualizer";
 import { FunctionReturnType } from "convex/server";
@@ -19,9 +24,13 @@ import { FunctionReturnType } from "convex/server";
 type RecentSite = FunctionReturnType<typeof api.sites.getRecentSites>[number];
 
 export default async function RecentSites() {
+  if (!process.env.NEXT_PUBLIC_CONVEX_URL) {
+    return null;
+  }
+
   const recent_sites: RecentSite[] = await fetchQuery(
     api.sites.getRecentSites,
-    {limit: 32},
+    { limit: 32 },
   );
 
   return (
@@ -54,6 +63,11 @@ export function SiteCard({
 }) {
   const { _id, site_name, overall_score, last_analyzed, category_scores } =
     site_details;
+  const safeOverallScore = getOverallScoreDisplay(overall_score);
+  const safeCategoryScores = (category_scores ?? []).map((category) => ({
+    ...category,
+    category_score: getCategoryScoreDisplay(category.category_score),
+  }));
   return (
     <Link
       href={`/site/${_id}`}
@@ -75,8 +89,8 @@ export function SiteCard({
           <CardAction className="flex items-center gap-2">
             <span className="text-sm">Overall Score /100</span>
             <ScoreVisualizer
-              value={(overall_score ?? 0) / 100}
-              displayNumber={overall_score.toFixed(0)}
+              value={safeOverallScore / 100}
+              displayNumber={safeOverallScore}
               className="md:mr-1"
             />
           </CardAction>
@@ -85,7 +99,7 @@ export function SiteCard({
           <span className="-mt-2 text-center text-muted-foreground">
             Category Scores (/10)
           </span>
-          {category_scores.map((catg, index) => (
+          {safeCategoryScores.map((catg, index) => (
             <div
               key={index}
               className="flex items-center justify-between gap-4"
@@ -93,7 +107,7 @@ export function SiteCard({
             >
               <p className="truncate text-base!">{catg.category_name}</p>
               <ScoreVisualizer
-                value={(catg.category_score ?? 0) / 10}
+                value={catg.category_score / 10}
                 size={32}
                 displayNumber={catg.category_score}
               />
