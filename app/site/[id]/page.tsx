@@ -45,6 +45,7 @@ export default async function SitePage({ params }: SitePageProps) {
     overall_score,
     category_scores,
   } = full_site_details;
+  const defaultCategory = category_scores[0]?.category_name;
 
   return (
     <>
@@ -77,7 +78,7 @@ export default async function SitePage({ params }: SitePageProps) {
               type="single"
               collapsible
               className="w-full"
-              defaultValue={`${category_scores[0].category_name}`}
+              defaultValue={defaultCategory}
             >
               {category_scores.map((c) => (
                 <AccordionItem
