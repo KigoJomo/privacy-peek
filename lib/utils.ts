@@ -46,6 +46,27 @@ export function formatRelativeTime(dateString: string): string {
   return "Just now";
 }
 
+export function clampScore(
+  value: number | null | undefined,
+  max: number,
+): number {
+  if (typeof value !== "number" || Number.isNaN(value)) {
+    return 0;
+  }
+
+  return Math.min(Math.max(value, 0), max);
+}
+
+export function getOverallScoreDisplay(value: number | null | undefined): number {
+  return Math.round(clampScore(value, 100));
+}
+
+export function getCategoryScoreDisplay(
+  value: number | null | undefined,
+): number {
+  return clampScore(value, 10);
+}
+
 export function slugify(text: string): string {
   return text
     .toLowerCase()

@@ -8,7 +8,12 @@ import {
 } from "@/components/ui/accordion";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { cn, formatRelativeTime } from "@/lib/utils";
+import {
+  cn,
+  formatRelativeTime,
+  getCategoryScoreDisplay,
+  getOverallScoreDisplay,
+} from "@/lib/utils";
 import { QuoteIcon } from "lucide-react";
 import Link from "next/link";
 import Loading from "../_components/loading";
@@ -46,6 +51,14 @@ export default async function SitePage({ params }: SitePageProps) {
     category_scores,
   } = full_site_details;
 
+  const safeOverallScore = getOverallScoreDisplay(overall_score);
+  const safeCategoryScores = (category_scores ?? []).map((category) => ({
+    ...category,
+    category_score: getCategoryScoreDisplay(category.category_score),
+    supporting_clauses: category.supporting_clauses ?? [],
+  }));
+  const safePolicyDocuments = policy_documents_urls ?? [];
+
   return (
     <>
       <section
@@ -54,9 +67,9 @@ export default async function SitePage({ params }: SitePageProps) {
         <div className="w-full md:col-span-2 flex flex-col gap-6">
           <div className="title flex flex-col items-center md:items-start gap-2">
             <ScoreVisualizer
-              value={overall_score / 100}
+              value={safeOverallScore / 100}
               size={128}
-              displayNumber={`${overall_score.toFixed(0)}`}
+              displayNumber={`${safeOverallScore}`}
               className="md:hidden mx-auto"
             />
             <h2 className="leading-16">{site_name}</h2>
@@ -77,9 +90,9 @@ export default async function SitePage({ params }: SitePageProps) {
               type="single"
               collapsible
               className="w-full"
-              defaultValue={`${category_scores[0].category_name}`}
+              defaultValue={safeCategoryScores[0]?.category_name}
             >
-              {category_scores.map((c) => (
+              {safeCategoryScores.map((c) => (
                 <AccordionItem
                   key={c.category_name}
                   value={c.category_name}
@@ -113,14 +126,20 @@ export default async function SitePage({ params }: SitePageProps) {
 
                   <AccordionContent>
                     <ul className="list-disc px-6 flex flex-col gap-2">
-                      {c.supporting_clauses.map((cl, index) => (
-                        <li
-                          key={index}
-                          className="text-sm! text-muted-foreground italic"
-                        >
-                          &quot;{cl}&quot;
+                      {c.supporting_clauses.length > 0 ? (
+                        c.supporting_clauses.map((cl, index) => (
+                          <li
+                            key={index}
+                            className="text-sm! text-muted-foreground italic"
+                          >
+                            &quot;{cl}&quot;
+                          </li>
+                        ))
+                      ) : (
+                        <li className="text-sm! text-muted-foreground italic">
+                          No supporting clauses were stored for this category.
                         </li>
-                      ))}
+                      )}
                     </ul>
                   </AccordionContent>
                 </AccordionItem>
@@ -131,9 +150,9 @@ export default async function SitePage({ params }: SitePageProps) {
 
         <div className="w-full h-fit md:col-span-1 flex flex-col items-center gap-6 sticky top-24">
           <ScoreVisualizer
-            value={overall_score / 100}
+            value={safeOverallScore / 100}
             size={256}
-            displayNumber={`${overall_score.toFixed(0)}`}
+            displayNumber={`${safeOverallScore}`}
             className="hidden md:flex"
           />
           <span className="text-sm -mt-3 hidden md:flex">Overall Score</span>
@@ -142,11 +161,17 @@ export default async function SitePage({ params }: SitePageProps) {
 
           <div className="w-full flex flex-col gap-3">
             <h5>Policy Documents</h5>
-            {policy_documents_urls.map((url) => (
-              <Link key={url} href={url} target="_blank">
-                {url}
-              </Link>
-            ))}
+            {safePolicyDocuments.length > 0 ? (
+              safePolicyDocuments.map((url) => (
+                <Link key={url} href={url} target="_blank">
+                  {url}
+                </Link>
+              ))
+            ) : (
+              <span className="text-sm text-muted-foreground">
+                No policy document links were stored for this analysis.
+              </span>
+            )}
           </div>
         </div>
       </section>
