@@ -10,6 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -22,6 +23,8 @@ import { RequireOnly, SiteDetails } from "@/convex/lib";
 import {
   cn,
   formatRelativeTime,
+  getAnalysisFreshnessLabel,
+  isAnalysisStale,
   getCategoryScoreDisplay,
   getOverallScoreDisplay,
 } from "@/lib/utils";
@@ -140,11 +143,11 @@ export function SiteCard({
 }) {
   const {
     _id,
+    normalized_base_url,
     site_name,
     overall_score,
     last_analyzed,
     category_scores,
-    normalized_base_url,
   } = site_details;
 
   const safeOverallScore = getOverallScoreDisplay(overall_score);
@@ -152,6 +155,9 @@ export function SiteCard({
     ...category,
     category_score: getCategoryScoreDisplay(category.category_score),
   }));
+  const staleAnalysis = isAnalysisStale(last_analyzed);
+  const freshnessLabel = getAnalysisFreshnessLabel(last_analyzed);
+
   return (
     <Link
       href={`/site/${_id}`}
@@ -164,21 +170,34 @@ export function SiteCard({
     >
       <Card>
         <CardHeader className="border-b">
-          <CardTitle>
-            <h4>{site_name}</h4>
-          </CardTitle>
-          <CardDescription className="flex flex-col gap-1">
-            <span>{getDomainLabel(normalized_base_url)}</span>
-            <span>Analyzed {formatRelativeTime(last_analyzed)}</span>
-          </CardDescription>
-          <CardAction className="flex items-center gap-2">
-            <span className="text-sm">Overall Score /100</span>
-            <ScoreVisualizer
-              value={safeOverallScore / 100}
-              displayNumber={safeOverallScore}
-              className="md:mr-1"
-            />
-          </CardAction>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="space-y-1">
+              <CardTitle>
+                <h4>{site_name}</h4>
+              </CardTitle>
+              <CardDescription className="flex flex-col gap-1">
+                <span className="truncate">{getDomainLabel(normalized_base_url)}</span>
+                <span>Analyzed {formatRelativeTime(last_analyzed)}</span>
+                {freshnessLabel ? <span>{freshnessLabel}</span> : null}
+              </CardDescription>
+            </div>
+
+            <div className="flex flex-col items-end gap-2">
+              {staleAnalysis ? (
+                <Badge variant="secondary" className="border border-amber-500/30 bg-amber-500/10 text-amber-800 dark:text-amber-200">
+                  Stale analysis
+                </Badge>
+              ) : null}
+              <CardAction className="flex items-center gap-2">
+                <span className="text-sm">Overall Score /100</span>
+                <ScoreVisualizer
+                  value={safeOverallScore / 100}
+                  displayNumber={safeOverallScore.toFixed(0)}
+                  className="md:mr-1"
+                />
+              </CardAction>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           <span className="-mt-2 text-center text-muted-foreground">
