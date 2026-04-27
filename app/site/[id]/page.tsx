@@ -28,6 +28,10 @@ interface SitePageProps {
 }
 
 export default async function SitePage({ params }: SitePageProps) {
+  if (!process.env.NEXT_PUBLIC_CONVEX_URL) {
+    return <NotFound />;
+  }
+
   const { id } = await params;
 
   const full_site_details = await fetchQuery(api.sites.getFullSiteDetails, {
@@ -184,13 +188,25 @@ export default async function SitePage({ params }: SitePageProps) {
 }
 
 export async function generateStaticParams() {
+  if (!process.env.NEXT_PUBLIC_CONVEX_URL) {
+    return [];
+  }
+
   const all_ids = await fetchQuery(api.sites.getAllSiteIds);
-  return all_ids.map((id) => ({ id: id }));
+  return all_ids.map((id) => ({ id }));
 }
 
 export async function generateMetadata({
   params,
 }: SitePageProps): Promise<Metadata> {
+  if (!process.env.NEXT_PUBLIC_CONVEX_URL) {
+    return {
+      title: "Privacy Peek",
+      description: "Full privacy policy analysis.",
+      metadataBase: new URL("https://privacypeek.vercel.app"),
+    };
+  }
+
   const { id } = await params;
 
   const site = await fetchQuery(api.sites.getFullSiteDetails, { site_id: id });
