@@ -161,7 +161,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
                 )}
               >
                 {isWinner && validSites.length > 1 && (
-                  <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-chart-1 text-chart-1-foreground text-[10px] font-semibold uppercase tracking-wider px-3 py-0.5 rounded-full">
+                  <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-chart-1 text-white dark:text-white text-[10px] font-semibold uppercase tracking-wider px-3 py-0.5 rounded-full">
                     Best
                   </span>
                 )}
@@ -233,8 +233,8 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
         </div>
       </section>
 
-      <div className="fixed -top-24 -left-24 -z-10 w-128 aspect-square rounded-full bg-accent/70 blur-3xl" />
-      <div className="fixed -bottom-24 -right-24 -z-10 w-128 aspect-square rounded-full bg-accent/70 blur-3xl" />
+      <div className="fixed -top-24 -left-24 -z-10 w-128 aspect-square rounded-full bg-accent/70 blur-3xl animate-blob-pulse" />
+      <div className="fixed -bottom-24 -right-24 -z-10 w-128 aspect-square rounded-full bg-accent/70 blur-3xl animate-blob-pulse" style={{ animationDelay: '-4s' }} />
     </>
   );
 }

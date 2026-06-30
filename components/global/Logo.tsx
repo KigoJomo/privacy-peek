@@ -3,10 +3,9 @@ import * as React from "react";
 const SvgIcon = ({ size=32 }: { size?: number }) => (
   <svg
     height={size}
-    width={size/1.329}
+    width={Math.round(size / 1.329)}
     fill="none"
-    viewBox={`0 0 514 683`}
-    // viewBox={`0 0 ${size / 1.329} ${size}`}
+    viewBox="0 0 514 683"
   >
     <path
       className="fill-foreground"

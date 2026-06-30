@@ -179,9 +179,9 @@ export default async function SitePage({ params }: SitePageProps) {
         </div>
       </section>
 
-      <div className="fixed -top-24 -left-24 -z-10 w-128 aspect-square rounded-full bg-accent/70 blur-3xl" />
+      <div className="fixed -top-24 -left-24 -z-10 w-128 aspect-square rounded-full bg-accent/70 blur-3xl animate-blob-pulse" />
 
-      <div className="fixed -bottom-24 -right-24 -z-10 w-128 aspect-square rounded-full bg-accent/70 blur-3xl" />
+      <div className="fixed -bottom-24 -right-24 -z-10 w-128 aspect-square rounded-full bg-accent/70 blur-3xl animate-blob-pulse" style={{ animationDelay: '-4s' }} />
     </>
   );
 }

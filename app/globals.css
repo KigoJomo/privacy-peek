@@ -21,6 +21,7 @@
   --color-chart-3: var(--chart-3);
   --color-chart-2: var(--chart-2);
   --color-chart-1: var(--chart-1);
+  --color-chart-1-foreground: var(--chart-1-foreground);
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -116,6 +117,7 @@
   --input: oklch(0.9401 0 0);
   --ring: oklch(0 0 0);
   --chart-1: oklch(0.7459 0.1483 156.4499);
+  --chart-1-foreground: oklch(1 0 0);
   --chart-2: oklch(0.5393 0.2713 286.7462);
   --chart-3: oklch(0.7336 0.1758 50.5517);
   --chart-4: oklch(0.5828 0.1809 259.7276);
@@ -186,6 +188,7 @@
   --input: oklch(0.3289 0.0092 268.3843);
   --ring: oklch(0.6132 0.2294 291.7437);
   --chart-1: oklch(0.8003 0.1821 151.711);
+  --chart-1-foreground: oklch(0.1344 0 0);
   --chart-2: oklch(0.6132 0.2294 291.7437);
   --chart-3: oklch(0.8077 0.1035 19.5706);
   --chart-4: oklch(0.6691 0.1569 260.1063);
@@ -337,4 +340,37 @@ html {
 .hide-scrollbar {
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
+}
+
+/* Entrance animations */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes blob-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.7; }
+  50% { transform: scale(1.05); opacity: 0.5; }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.5s ease-out both;
+}
+
+.animate-fade-in-up:nth-child(2) { animation-delay: 0.05s; }
+.animate-fade-in-up:nth-child(3) { animation-delay: 0.1s; }
+.animate-fade-in-up:nth-child(4) { animation-delay: 0.15s; }
+.animate-fade-in-up:nth-child(5) { animation-delay: 0.2s; }
+.animate-fade-in-up:nth-child(6) { animation-delay: 0.25s; }
+.animate-fade-in-up:nth-child(7) { animation-delay: 0.3s; }
+.animate-fade-in-up:nth-child(8) { animation-delay: 0.35s; }
+
+.animate-blob-pulse {
+  animation: blob-pulse 8s ease-in-out infinite;
 }

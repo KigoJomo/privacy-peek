@@ -106,12 +106,13 @@ export function CompareSection({ sites }: { sites: RecentSite[] }) {
       {/* Cards for smaller screens */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:hidden xl:gap-8">
         {sites.map((site) => (
-          <CompareSiteCard
-            key={site._id}
-            site_details={site}
-            isSelected={isSelected(site._id)}
-            onToggle={toggleId}
-          />
+          <div key={site._id} className="animate-fade-in-up">
+            <CompareSiteCard
+              site_details={site}
+              isSelected={isSelected(site._id)}
+              onToggle={toggleId}
+            />
+          </div>
         ))}
       </div>
 
@@ -210,7 +211,7 @@ function CompareFloatingBar({
 
         <Link
           href={`/compare?ids=${selectedIds.join(",")}`}
-          className="inline-flex items-center gap-1.5 text-sm font-medium rounded-lg px-4 py-1.5 transition-all bg-chart-1 text-chart-1-foreground hover:bg-chart-1/90 shadow-sm"
+          className="inline-flex items-center gap-1.5 text-sm font-medium rounded-lg px-4 py-1.5 transition-all bg-chart-1 text-white dark:text-white hover:bg-chart-1/90 shadow-sm"
         >
           <BarChart3Icon className="size-4" />
           Compare
@@ -260,6 +261,7 @@ function CompareTable({
               <TableRow
                 key={site._id}
                 className={cn(
+                  "transition-colors",
                   isSelected(site._id) && "bg-chart-1/[0.03]",
                 )}
               >
@@ -273,7 +275,7 @@ function CompareTable({
                 <TableCell className="font-medium whitespace-normal">
                   <Link
                     href={`/site/${site._id}`}
-                    className="hover:underline"
+                    className="hover:underline transition-all"
                   >
                     {site.site_name}
                   </Link>
@@ -283,7 +285,7 @@ function CompareTable({
                     href={site.normalized_base_url}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground hover:underline"
+                    className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
                   >
                     <span className="max-w-56 truncate">
                       {getDomainLabel(site.normalized_base_url)}
@@ -295,7 +297,7 @@ function CompareTable({
                   {formatRelativeTime(site.last_analyzed)}
                 </TableCell>
                 <TableCell className="text-right">
-                  <div className="inline-flex items-center gap-2">
+                  <div className="inline-flex items-center gap-2 justify-end">
                     <span className="text-sm text-muted-foreground">
                       {safeOverallScore.toFixed(0)}/100
                     </span>

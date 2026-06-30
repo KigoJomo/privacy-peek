@@ -33,6 +33,7 @@ import {
   Globe,
   History,
   Settings2,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { startTransition, useActionState, useEffect, useState } from "react";
@@ -152,15 +153,32 @@ export default function SearchComponent() {
             name="search_term"
             render={({ field }) => (
               <FormItem className="flex-1 gap-4">
-                <FormLabel className="pl-2 w-fit! mx-auto">
+                <FormLabel className="pl-2 w-fit! mx-auto hidden sm:block">
                   Search an app or website to see how it performs.
                 </FormLabel>
                 <FormControl>
-                  <Input
-                    placeholder="Enter a name or url."
-                    className="text-lg! text-center h-fit! px-6! py-3! rounded-full"
-                    {...field}
-                  />
+                  <div className="relative">
+                    <Input
+                      placeholder="Enter a name or URL..."
+                      className="text-lg! text-center h-fit! px-6! py-3! rounded-full"
+                      {...field}
+                    />
+                    {field.value && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          form.setValue("search_term", "", {
+                            shouldDirty: true,
+                            shouldTouch: true,
+                          });
+                        }}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 size-6 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                        aria-label="Clear search"
+                      >
+                        <X className="size-4" />
+                      </button>
+                    )}
+                  </div>
                 </FormControl>
               </FormItem>
             )}
@@ -170,7 +188,7 @@ export default function SearchComponent() {
             type="submit"
             disabled={isPending}
             variant={"outline"}
-            className="aspect-square! h-fit! px-3.5! rounded-full"
+            className="aspect-square! h-fit! px-3.5! rounded-full shrink-0"
           >
             {isPending ? (
               <LoaderCircle className="animate-spin size-5" />
@@ -184,7 +202,7 @@ export default function SearchComponent() {
 
         {state && !state.ok && (
           <p
-            className={cn("!text-sm text-center", "text-red-600")}
+            className={cn("!text-sm text-center", "text-red-600 dark:text-red-400")}
             role="alert"
           >
             {state.message}
@@ -193,9 +211,9 @@ export default function SearchComponent() {
       </form>
 
       {displayedResults && displayedResults.length > 0 && (
-        <div className="w-full max-w-xl flex flex-col gap-2 -mt-8">
+        <div className="w-full max-w-xl flex flex-col gap-2">
           {displayedResults.map((site) => (
-            <div key={site._id} className="">
+            <div key={site._id} className="animate-fade-in-up">
               <ResultCard site={site} />
             </div>
           ))}

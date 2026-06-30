@@ -37,6 +37,14 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning className="hide-scrollbar overflow-x-hidden overflow-y-auto relative">
       <body
         className={`${funnel.variable} antialiased overflow-x-hidden overflow-y-auto relative`}>
+        {/* Skip to main content — first focusable element for keyboard users */}
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:bg-background focus:text-foreground focus:px-4 focus:py-2 focus:rounded-lg focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring"
+        >
+          Skip to main content
+        </a>
+
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -44,7 +52,9 @@ export default function RootLayout({
           disableTransitionOnChange>
           <ConvexClientProvider>
             <NavBar />
-            {children}
+            <main id="main-content" tabIndex={-1}>
+              {children}
+            </main>
           </ConvexClientProvider>
         </ThemeProvider>
       </body>

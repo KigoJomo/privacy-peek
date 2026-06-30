@@ -19,10 +19,11 @@ const ScoreVisualizer: React.FC<ScoreVisualizerProps> = ({
   // Validate input value
   const score = Math.max(0, Math.min(1, value));
 
-  // Calculate color interpolation (red to green)
-  const red = Math.round(255 * (1 - score));
-  const green = Math.round(255 * score);
-  const scoreColor = `rgb(${red}, ${green}, 0)`;
+  // HSL color interpolation: red(0) → orange → amber → yellow-green → emerald(1)
+  const hue = Math.round(150 * score);
+  const sat = Math.round(70 + 20 * (1 - score));
+  const light = Math.round(38 + 12 * score);
+  const scoreColor = `hsl(${hue}, ${sat}%, ${light}%)`;
 
   // SVG circle parameters
   strokeWidth = strokeWidth ? strokeWidth : size / 10;
