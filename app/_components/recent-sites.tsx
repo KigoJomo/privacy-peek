@@ -240,7 +240,6 @@ export function SiteCard({
             </div>
           ))}
         </CardContent>
-        <CardFooter></CardFooter>
       </Card>
     </Link>
   );

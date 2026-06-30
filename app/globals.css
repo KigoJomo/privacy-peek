@@ -199,31 +199,6 @@
   --sidebar-border: oklch(0.3289 0.0092 268.3843);
   --sidebar-ring: oklch(0.6132 0.2294 291.7437);
   --destructive-foreground: oklch(1 0 0);
-  --radius: 1.4rem;
-  --font-sans: Plus Jakarta Sans, sans-serif;
-  --font-serif: Lora, serif;
-  --font-mono: IBM Plex Mono, monospace;
-  --shadow-color: hsl(0 0% 0%);
-  --shadow-opacity: 0.16;
-  --shadow-blur: 3px;
-  --shadow-spread: 0px;
-  --shadow-offset-x: 0px;
-  --shadow-offset-y: 2px;
-  --letter-spacing: -0.025em;
-  --spacing: 0.27rem;
-  --shadow-2xs: 0px 2px 3px 0px hsl(0 0% 0% / 0.08);
-  --shadow-xs: 0px 2px 3px 0px hsl(0 0% 0% / 0.08);
-  --shadow-sm: 0px 2px 3px 0px hsl(0 0% 0% / 0.16),
-    0px 1px 2px -1px hsl(0 0% 0% / 0.16);
-  --shadow: 0px 2px 3px 0px hsl(0 0% 0% / 0.16),
-    0px 1px 2px -1px hsl(0 0% 0% / 0.16);
-  --shadow-md: 0px 2px 3px 0px hsl(0 0% 0% / 0.16),
-    0px 2px 4px -1px hsl(0 0% 0% / 0.16);
-  --shadow-lg: 0px 2px 3px 0px hsl(0 0% 0% / 0.16),
-    0px 4px 6px -1px hsl(0 0% 0% / 0.16);
-  --shadow-xl: 0px 2px 3px 0px hsl(0 0% 0% / 0.16),
-    0px 8px 10px -1px hsl(0 0% 0% / 0.16);
-  --shadow-2xl: 0px 2px 3px 0px hsl(0 0% 0% / 0.4);
 }
 
 @layer base {
@@ -268,6 +243,13 @@ img {
   object-position: center;
 }
 
+.tagline {
+  font-size: calc(var(--font-size));
+  color: var(--muted-foreground);
+  max-width: 32rem;
+  text-align: center;
+}
+
 * {
   box-sizing: border-box;
   & *::selection {
@@ -299,13 +281,13 @@ html {
     @media (width < 40rem) {
       /* padding: y x */
       section {
-        padding: 1.5rem 1.2rem !important;
+        padding: 1.5rem 1.2rem 3rem !important;
       }
     }
 
     @media (width >= 48rem /* md */) {
       section {
-        padding: 1.5rem 2rem !important;
+        padding: 1.5rem 2rem 4rem !important;
       }
     }
   }

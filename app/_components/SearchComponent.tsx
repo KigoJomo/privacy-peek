@@ -23,6 +23,7 @@ import { useAction, useMutation, useQuery } from "convex/react";
 import {
   LoaderCircle,
   Search,
+  X,
   LucideIcon,
   AlertTriangle,
   BookOpenText,
@@ -151,7 +152,7 @@ export default function SearchComponent() {
             control={form.control}
             name="search_term"
             render={({ field }) => (
-              <FormItem className="flex-1 gap-4">
+              <FormItem className="flex-1 gap-4 relative">
                 <FormLabel className="pl-2 w-fit! mx-auto">
                   Search an app or website to see how it performs.
                 </FormLabel>
@@ -177,6 +178,11 @@ export default function SearchComponent() {
                   >
                     <X className="size-4" />
                   </button>
+                )}
+                {form.formState.errors.search_term && (
+                  <p className="text-sm text-destructive text-center" role="alert">
+                    {form.formState.errors.search_term.message}
+                  </p>
                 )}
               </FormItem>
             )}
