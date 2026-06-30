@@ -45,6 +45,21 @@ export default async function RecentSites() {
     { limit: 32 },
   );
 
+  if (recent_sites.length === 0) {
+    return (
+      <section className="flex flex-col gap-4 border-t pt-4">
+        <div className="flex flex-col gap-1 md:flex-row md:items-end md:justify-between">
+          <div>
+            <h4>Recently Analyzed</h4>
+            <p className="text-sm text-muted-foreground">
+              No sites have been analyzed yet. Search for a site above to get started.
+            </p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="flex flex-col gap-4 border-t pt-4">
       <div className="flex flex-col gap-1 md:flex-row md:items-end md:justify-between">
@@ -104,7 +119,14 @@ function RecentSitesTable({ sites }: { sites: RecentSite[] }) {
                   </Link>
                 </TableCell>
                 <TableCell className="text-muted-foreground">
-                  {formatRelativeTime(site.last_analyzed)}
+                  <div className="flex items-center gap-2">
+                    {formatRelativeTime(site.last_analyzed)}
+                    {isAnalysisStale(site.last_analyzed) && (
+                      <Badge variant="secondary" className="border border-amber-500/30 bg-amber-500/10 text-amber-800 dark:text-amber-200 text-[10px] px-1.5 py-0">
+                        Stale
+                      </Badge>
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="inline-flex items-center gap-2">
