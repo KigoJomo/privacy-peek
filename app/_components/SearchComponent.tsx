@@ -162,6 +162,22 @@ export default function SearchComponent() {
                     {...field}
                   />
                 </FormControl>
+                {field.value && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      form.setValue("search_term", "", {
+                        shouldDirty: true,
+                        shouldTouch: true,
+                      });
+                      setDisplayedResults(null);
+                    }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 size-6 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                    aria-label="Clear search"
+                  >
+                    <X className="size-4" />
+                  </button>
+                )}
               </FormItem>
             )}
           />
@@ -193,7 +209,7 @@ export default function SearchComponent() {
       </form>
 
       {displayedResults && displayedResults.length > 0 && (
-        <div className="w-full max-w-xl flex flex-col gap-2 -mt-8">
+        <div className="w-full max-w-xl flex flex-col gap-2" role="region" aria-live="polite" aria-label="Search results">
           {displayedResults.map((site) => (
             <div key={site._id} className="">
               <ResultCard site={site} />
@@ -203,7 +219,7 @@ export default function SearchComponent() {
       )}
 
       {displayedResults && displayedResults.length === 0 && !isPending && state?.ok && (
-        <div className="w-full max-w-xl rounded-2xl border border-dashed px-6 py-8 text-center text-muted-foreground">
+        <div className="w-full max-w-xl rounded-2xl border border-dashed px-6 py-8 text-center text-muted-foreground" role="status" aria-live="polite">
           No matching analysis yet. Try a different app name or paste the full site URL.
         </div>
       )}

@@ -31,7 +31,13 @@ const STANDARD_MODEL = "moonshotai/kimi-k2-instruct-0905";
 export const getSiteAnalysis = action({
   args: { user_input: v.string(), job_id: v.id("analysisJobs") },
   handler: async (ctx, { user_input, job_id }) => {
-    if (!user_input) throw new Error("No User Input");
+    if (!user_input) {
+      await ctx.runMutation(internal.analysisJobs.updateJob, {
+        job_id,
+        status: "error",
+      });
+      throw new Error("No User Input");
+    }
 
     const statusUpdate = async (status: AnalysisStatus) => {
       await ctx.runMutation(internal.analysisJobs.updateJob, {
@@ -40,76 +46,84 @@ export const getSiteAnalysis = action({
       });
     };
 
-    await statusUpdate("checking_recent");
-    const sites: ResultItem[] = await ctx.runQuery(
-      internal.sites.getSiteSByTag,
-      { user_input },
-    );
+    try {
+      await statusUpdate("checking_recent");
+      const sites: ResultItem[] = await ctx.runQuery(
+        internal.sites.getSiteSByTag,
+        { user_input },
+      );
 
-    if (sites && sites.length > 0) {
-      console.log("\nFound Matching Records");
-      await statusUpdate("complete");
-      return sites;
-    } else {
-      await statusUpdate("getting_site_info");
-      const siteMetaData = await getWebsiteMetadata({ site: user_input });
-
-      const site = await ctx.runQuery(internal.sites.getSiteByUrl, {
-        normalized_base_url: siteMetaData.normalized_base_url,
-      });
-
-      if (site) {
-        // add the user input as a tag for this site
-        const new_tag = await ctx.runMutation(internal.tags.insertTag, {
-          site_id: site._id,
-          tag: user_input,
-        });
-        const sites: ResultItem[] = [site];
-        console.log("\nFound Matching Record");
-        console.log(`\nAdded new tags for site ${site._id} => ${new_tag}`);
+      if (sites && sites.length > 0) {
+        console.log("\nFound Matching Records");
         await statusUpdate("complete");
         return sites;
       } else {
-        console.log("\nNo Matching Records. Beginning Analysis.");
-        await statusUpdate("reading_policies");
-        const categoriesClauses = await extractClauses({
-          policy_documents_urls: siteMetaData.policy_documents_urls,
+        await statusUpdate("getting_site_info");
+        const siteMetaData = await getWebsiteMetadata({ site: user_input });
+
+        const site = await ctx.runQuery(internal.sites.getSiteByUrl, {
+          normalized_base_url: siteMetaData.normalized_base_url,
         });
 
-        await statusUpdate("categorizing_and_scoring");
-        const categoryScores = await getCategoryScores({ categoriesClauses });
+        if (site) {
+          // add the user input as a tag for this site
+          const new_tag = await ctx.runMutation(internal.tags.insertTag, {
+            site_id: site._id,
+            tag: user_input,
+          });
+          const sites: ResultItem[] = [site];
+          console.log("\nFound Matching Record");
+          console.log(`\nAdded new tags for site ${site._id} => ${new_tag}`);
+          await statusUpdate("complete");
+          return sites;
+        } else {
+          console.log("\nNo Matching Records. Beginning Analysis.");
+          await statusUpdate("reading_policies");
+          const categoriesClauses = await extractClauses({
+            policy_documents_urls: siteMetaData.policy_documents_urls,
+          });
 
-        await statusUpdate("computing_overall_score");
-        const overallScore = await getOverallScore({ categoryScores });
+          await statusUpdate("categorizing_and_scoring");
+          const categoryScores = await getCategoryScores({ categoriesClauses });
 
-        await statusUpdate("finalizing");
-        const newSiteId = await ctx.runMutation(internal.sites.insertAnalysis, {
-          normalized_base_url: siteMetaData.normalized_base_url,
-          site_name: siteMetaData.site_name,
-          policy_documents_urls: siteMetaData.policy_documents_urls,
-           tags: [
-             ...siteMetaData.tags.map((tag) => tag.toLowerCase()),
-             user_input.toLowerCase(),
-             siteMetaData.normalized_base_url.toLowerCase(),
-           ],
-          last_analyzed: new Date().toISOString(),
-          overall_score: overallScore.overall_score,
-          reasoning: overallScore.reasoning ? overallScore.reasoning : "",
-          category_scores: categoryScores,
-        });
+          await statusUpdate("computing_overall_score");
+          const overallScore = await getOverallScore({ categoryScores });
 
-        const analysisResult: ResultItem = {
-          _id: newSiteId,
-          normalized_base_url: siteMetaData.normalized_base_url,
-          site_name: siteMetaData.site_name,
-          overall_score: overallScore.overall_score,
-          reasoning: overallScore.reasoning,
-        };
+          await statusUpdate("finalizing");
+          const newSiteId = await ctx.runMutation(internal.sites.insertAnalysis, {
+            normalized_base_url: siteMetaData.normalized_base_url,
+            site_name: siteMetaData.site_name,
+            policy_documents_urls: siteMetaData.policy_documents_urls,
+             tags: [
+               ...siteMetaData.tags.map((tag) => tag.toLowerCase()),
+               user_input.toLowerCase(),
+               siteMetaData.normalized_base_url.toLowerCase(),
+             ],
+            last_analyzed: new Date().toISOString(),
+            overall_score: overallScore.overall_score,
+            reasoning: overallScore.reasoning ? overallScore.reasoning : "",
+            category_scores: categoryScores,
+          });
 
-        await statusUpdate("complete");
-        const result = [analysisResult];
-        return result;
+          const analysisResult: ResultItem = {
+            _id: newSiteId,
+            normalized_base_url: siteMetaData.normalized_base_url,
+            site_name: siteMetaData.site_name,
+            overall_score: overallScore.overall_score,
+            reasoning: overallScore.reasoning,
+          };
+
+          await statusUpdate("complete");
+          const result = [analysisResult];
+          return result;
+        }
       }
+    } catch (error) {
+      await ctx.runMutation(internal.analysisJobs.updateJob, {
+        job_id,
+        status: "error",
+      });
+      throw error;
     }
   },
 });

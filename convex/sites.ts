@@ -135,3 +135,31 @@ export const getAllSiteIds = query({
     return ids;
   },
 });
+
+export const getSitesByIds = query({
+  args: { ids: v.array(v.id("sites")) },
+  handler: async (ctx, { ids }) => {
+    if (ids.length === 0) return [];
+    const sites = await Promise.all(
+      ids.map((id) => ctx.db.get(id)),
+    );
+    return sites.filter((s) => s !== null);
+  },
+});
+
+export const getSitesBrief = query({
+  args: { limit: v.optional(v.number()) },
+  handler: async (ctx, { limit }) => {
+    const results = await ctx.db
+      .query("sites")
+      .order("desc")
+      .take(limit ?? 100);
+    return results.map((s) => ({
+      _id: s._id,
+      site_name: s.site_name,
+      normalized_base_url: s.normalized_base_url,
+      overall_score: s.overall_score,
+      last_analyzed: s.last_analyzed,
+    }));
+  },
+});

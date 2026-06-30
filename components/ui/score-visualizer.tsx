@@ -17,7 +17,8 @@ const ScoreVisualizer: React.FC<ScoreVisualizerProps> = ({
   className = '',
 }) => {
   // Validate input value
-  const score = Math.max(0, Math.min(1, value));
+  const clampedValue = Math.max(0, Math.min(1, value));
+  const score = Number.isFinite(clampedValue) ? clampedValue : 0;
 
   // Calculate color interpolation (red to green)
   const red = Math.round(255 * (1 - score));

@@ -58,7 +58,7 @@
 
   --tracking-widest: calc(var(--tracking-normal) + 0.1em);
 
-  --tracking-normal: var(--tracking-normal);
+  --tracking-normal: -0.025em;
 
   --shadow-2xl: var(--shadow-2xl);
 

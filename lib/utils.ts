@@ -15,7 +15,11 @@ export function getAnalysisAgeInDays(lastAnalyzed: string): number | null {
     return null;
   }
 
-  return Math.max(0, Math.floor((Date.now() - lastAnalyzedDate.getTime()) / DAY_IN_MS));
+  const ageMs = Date.now() - lastAnalyzedDate.getTime();
+  // Future dates produce negative age — return null (can't be stale from the future)
+  if (ageMs < 0) return null;
+
+  return Math.floor(ageMs / DAY_IN_MS);
 }
 
 export const isAnalysisStale = (lastAnalyzed: string): boolean => {

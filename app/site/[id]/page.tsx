@@ -14,7 +14,7 @@ import {
   getCategoryScoreDisplay,
   getOverallScoreDisplay,
 } from "@/lib/utils";
-import { QuoteIcon } from "lucide-react";
+import { QuoteIcon, GitCompareArrowsIcon } from "lucide-react";
 import Link from "next/link";
 import Loading from "../_components/loading";
 import NotFound from "../_components/not-found";
@@ -176,6 +176,16 @@ export default async function SitePage({ params }: SitePageProps) {
               </span>
             )}
           </div>
+
+          <Separator />
+
+          <Link
+            href={`/compare`}
+            className="w-full inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground !no-underline"
+          >
+            <GitCompareArrowsIcon className="size-4" />
+            Compare with another site
+          </Link>
         </div>
       </section>
 
