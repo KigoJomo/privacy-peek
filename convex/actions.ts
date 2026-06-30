@@ -260,18 +260,18 @@ const getCategoryScores = async ({
       rubric: categoryRubric,
     });
 
-    if (!category_score || !reasoning) {
+    if (category_score === undefined || category_score === null || !reasoning) {
       throw new Error(
         `An unknown error occured scoring ${category.category_name}`,
       );
-    } else {
-      return {
-        category_name: category.category_name,
-        category_score,
-        reasoning,
-        supporting_clauses: category.clauses.map((c) => c.clause),
-      };
     }
+
+    return {
+      category_name: category.category_name,
+      category_score,
+      reasoning,
+      supporting_clauses: category.clauses.map((c) => c.clause),
+    };
   });
 
   const scores = (await Promise.all(promises)).filter(
@@ -303,11 +303,12 @@ const getOverallScore = async ({
   }
 
   const weight_x_score_sum = categoryScores
-    .map(
-      (c) =>
-        categoryWeights.find((cw) => cw.category === c.category_name)!.weight *
-        c.category_score,
-    )
+    .map((c) => {
+      const weight = categoryWeights.find(
+        (cw) => cw.category === c.category_name,
+      )?.weight;
+      return (weight ?? 0) * c.category_score;
+    })
     .reduce((sum, product) => sum + product, 0);
 
   const result = 10 * (weight_x_score_sum / weightsTotal);

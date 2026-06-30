@@ -105,8 +105,8 @@ export const analyze = httpAction(async (ctx, req: Request): Promise<Response> =
       site_input,
     });
 
-    // Start the analysis (this runs in the background)
-    ctx.runAction(api.actions.getSiteAnalysis, {
+    // Start the analysis via scheduler for reliable background execution
+    await ctx.scheduler.runAfter(0, api.actions.getSiteAnalysis, {
       user_input: site_input,
       job_id: jobId,
     });
