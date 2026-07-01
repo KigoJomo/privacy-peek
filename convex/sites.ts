@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { internalMutation, internalQuery, query } from "./_generated/server";
+import { internalMutation, internalQuery, mutation, query } from "./_generated/server";
 import { CategoryNameValidator } from "./lib";
 
 const normalizeTag = (tag: string) => tag.trim().toLowerCase();
@@ -161,5 +161,38 @@ export const getSitesBrief = query({
       overall_score: s.overall_score,
       last_analyzed: s.last_analyzed,
     }));
+  },
+});
+
+export const getFullSiteDetail = internalQuery({
+  args: { site_id: v.id("sites") },
+  handler: async (ctx, { site_id }) => {
+    return await ctx.db.get(site_id);
+  },
+});
+
+export const updateSiteAnalysis = internalMutation({
+  args: {
+    site_id: v.id("sites"),
+    overall_score: v.number(),
+    reasoning: v.string(),
+    category_scores: v.array(
+      v.object({
+        category_name: CategoryNameValidator,
+        category_score: v.number(),
+        reasoning: v.string(),
+        supporting_clauses: v.array(v.string()),
+      }),
+    ),
+    last_analyzed: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const { site_id, overall_score, reasoning, category_scores, last_analyzed } = args;
+    await ctx.db.patch(site_id, {
+      overall_score,
+      reasoning,
+      category_scores,
+      last_analyzed,
+    });
   },
 });

@@ -128,6 +128,51 @@ export const getSiteAnalysis = action({
   },
 });
 
+export const reanalyzeSite = action({
+  args: { site_id: v.id("sites") },
+  handler: async (ctx, { site_id }) => {
+    const site = await ctx.runQuery(internal.sites.getFullSiteDetail, {
+      site_id,
+    });
+
+    if (!site) {
+      throw new Error("Site not found");
+    }
+
+    const { policy_documents_urls } = site;
+
+    try {
+      console.log(`\nRe-analyzing site ${site.site_name} (${site.normalized_base_url})`);
+
+      const categoriesClauses = await extractClauses({ policy_documents_urls });
+
+      const categoryScores = await getCategoryScores({ categoriesClauses });
+
+      const overallScore = await getOverallScore({ categoryScores });
+
+      await ctx.runMutation(internal.sites.updateSiteAnalysis, {
+        site_id,
+        overall_score: overallScore.overall_score,
+        reasoning: overallScore.reasoning || "",
+        category_scores: categoryScores as any,
+        last_analyzed: new Date().toISOString(),
+      });
+
+      console.log(`\nRe-analysis complete for ${site.site_name}`);
+
+      return {
+        success: true,
+        overall_score: overallScore.overall_score,
+        reasoning: overallScore.reasoning,
+        category_scores: categoryScores,
+      };
+    } catch (error) {
+      console.error("Re-analysis failed:", error);
+      throw error;
+    }
+  },
+});
+
 const getWebsiteMetadata = async ({ site }: { site: string }) => {
   if (!site) throw new Error("No Site Provided");
 

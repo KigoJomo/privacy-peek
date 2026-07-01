@@ -13,13 +13,15 @@ import {
   formatRelativeTime,
   getCategoryScoreDisplay,
   getOverallScoreDisplay,
+  isAnalysisStale,
 } from "@/lib/utils";
-import { QuoteIcon, GitCompareArrowsIcon } from "lucide-react";
+import { QuoteIcon, GitCompareArrowsIcon, AlertTriangleIcon } from "lucide-react";
 import Link from "next/link";
 import Loading from "../_components/loading";
 import NotFound from "../_components/not-found";
 import { fetchQuery } from "convex/nextjs";
 import { Metadata } from "next";
+import { ReanalyzeButton } from "@/components/reanalyze-button";
 
 interface SitePageProps {
   params: Promise<{
@@ -61,12 +63,26 @@ export default async function SitePage({ params }: SitePageProps) {
     supporting_clauses: category.supporting_clauses ?? [],
   }));
   const safePolicyDocuments = policy_documents_urls ?? [];
+  const stale = isAnalysisStale(last_analyzed);
 
   return (
     <>
-      <section
-        className={cn("", "grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-24")}
-      >
+      <section className={cn("flex flex-col gap-6")}>
+        {stale && (
+          <div className="flex items-center gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-5 py-4 text-amber-800 dark:text-amber-200">
+            <AlertTriangleIcon className="size-5 shrink-0" />
+            <div className="flex flex-col gap-0.5">
+              <p className="text-sm font-medium">Stale analysis</p>
+              <p className="text-xs text-amber-700/80 dark:text-amber-300/80">
+                This analysis is over 14 days old. Privacy policies may have changed since it was last analyzed.
+              </p>
+            </div>
+          </div>
+        )}
+
+        <div
+          className={cn("grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-24")}
+        >
         <div className="w-full md:col-span-2 flex flex-col gap-6">
           <div className="title flex flex-col items-center md:items-start gap-2">
             <ScoreVisualizer
@@ -186,8 +202,15 @@ export default async function SitePage({ params }: SitePageProps) {
             <GitCompareArrowsIcon className="size-4" />
             Compare with another site
           </Link>
+
+          {stale && (
+            <div className="w-full border-t pt-4">
+              <ReanalyzeButton siteId={id} />
+            </div>
+          )}
         </div>
-      </section>
+      </div>
+    </section>
     </>
   );
 }
