@@ -69,7 +69,7 @@ export default async function SitePage({ params }: SitePageProps) {
     <>
       <section className={cn("flex flex-col gap-6")}>
         {stale && (
-          <div className="flex items-center gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-5 py-4 text-amber-800 dark:text-amber-200">
+          <div className="animate-fade-in flex items-center gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-5 py-4 text-amber-800 dark:text-amber-200">
             <AlertTriangleIcon className="size-5 shrink-0" />
             <div className="flex flex-col gap-0.5">
               <p className="text-sm font-medium">Stale analysis</p>
@@ -80,11 +80,9 @@ export default async function SitePage({ params }: SitePageProps) {
           </div>
         )}
 
-        <div
-          className={cn("grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-24")}
-        >
+        <div className={cn("grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-24")}>
         <div className="w-full md:col-span-2 flex flex-col gap-6">
-          <div className="title flex flex-col items-center md:items-start gap-2">
+          <div className="animate-fade-in-up title flex flex-col items-center md:items-start gap-2">
             <ScoreVisualizer
               value={safeOverallScore / 100}
               size={128}
@@ -95,15 +93,15 @@ export default async function SitePage({ params }: SitePageProps) {
             <Link href={normalized_base_url} target="_blank">
               {normalized_base_url}
             </Link>
-            <span className="">
+            <span className="text-sm text-muted-foreground">
               Last analysed {formatRelativeTime(last_analyzed)}.
             </span>
           </div>
 
-          <Separator />
+          <Separator className="animate-fade-in" style={{ animationDelay: "0.1s" }} />
 
           <div className="category-scores w-full flex flex-col gap-3">
-            <h4>Category Scores</h4>
+            <h4 className="animate-fade-in-up" style={{ animationDelay: "0.15s" }}>Category Scores</h4>
 
             <Accordion
               type="single"
@@ -111,11 +109,14 @@ export default async function SitePage({ params }: SitePageProps) {
               className="w-full"
               defaultValue={safeCategoryScores[0]?.category_name}
             >
-              {safeCategoryScores.map((c) => (
+              {safeCategoryScores.map((c, i) => (
                 <AccordionItem
                   key={c.category_name}
                   value={c.category_name}
-                  className="bg-card p-4 rounded-3xl mb-3 flex flex-col gap-3 border-b-4"
+                  className={cn(
+                    "animate-fade-in-up bg-card p-4 rounded-3xl mb-3 flex flex-col gap-3 border-b-4",
+                  )}
+                  style={{ animationDelay: `${0.2 + i * 0.08}s` }}
                 >
                   <div className="w-full flex items-center gap-4 justify-between">
                     <h5 className="font-semibold">{c.category_name}</h5>
@@ -135,11 +136,11 @@ export default async function SitePage({ params }: SitePageProps) {
                     {c.reasoning}
                   </p>
 
-                  <Separator className="" />
+                  <Separator />
                   <AccordionTrigger className="cursor-pointer">
                     <div className="flex items-center gap-2">
                       <QuoteIcon className="size-6 stroke-primary" />
-                      <span className="">Supporting Clauses</span>
+                      <span>Supporting Clauses</span>
                     </div>
                   </AccordionTrigger>
 
@@ -167,7 +168,7 @@ export default async function SitePage({ params }: SitePageProps) {
           </div>
         </div>
 
-        <div className="w-full h-fit md:col-span-1 flex flex-col items-center gap-6 sticky top-24">
+        <div className="animate-fade-in-up w-full h-fit md:col-span-1 flex flex-col items-center gap-6 sticky top-24">
           <ScoreVisualizer
             value={safeOverallScore / 100}
             size={256}
@@ -182,7 +183,7 @@ export default async function SitePage({ params }: SitePageProps) {
             <h5>Policy Documents</h5>
             {safePolicyDocuments.length > 0 ? (
               safePolicyDocuments.map((url) => (
-                <Link key={url} href={url} target="_blank">
+                <Link key={url} href={url} target="_blank" className="text-sm truncate hover:underline">
                   {url}
                 </Link>
               ))

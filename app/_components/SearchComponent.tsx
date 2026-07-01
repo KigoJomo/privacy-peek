@@ -38,6 +38,7 @@ import {
 import Link from "next/link";
 import { startTransition, useActionState, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { motion, AnimatePresence } from "framer-motion";
 import z from "zod";
 import { ResultItem } from "@/convex/actions";
 import ScoreVisualizer from "@/components/ui/score-visualizer";
@@ -127,6 +128,8 @@ export default function SearchComponent() {
     return () => window.clearTimeout(timeout);
   }, [jobId, ongoingJob?.status]);
 
+  const hasValue = form.watch("search_term");
+
   return (
     <Form {...form}>
       <form
@@ -147,38 +150,40 @@ export default function SearchComponent() {
         })}
         className={cn("w-full max-w-xl flex flex-col gap-2")}
       >
-        <div className="w-full flex items-end gap-1">
+        <div className="w-full flex items-end gap-2">
           <FormField
             control={form.control}
             name="search_term"
             render={({ field }) => (
               <FormItem className="flex-1 gap-4 relative">
-                <FormLabel className="pl-2 w-fit! mx-auto">
+                <FormLabel className="sr-only">
                   Search an app or website to see how it performs.
                 </FormLabel>
                 <FormControl>
-                  <Input
-                    placeholder="Enter a name or url."
-                    className="text-lg! text-center h-fit! px-6! py-3! rounded-full"
-                    {...field}
-                  />
+                  <div className="relative">
+                    <Input
+                      placeholder="Enter a name or url..."
+                      className="text-lg! text-center h-fit! px-6! py-3! rounded-full pr-10!"
+                      {...field}
+                    />
+                    {field.value && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          form.setValue("search_term", "", {
+                            shouldDirty: true,
+                            shouldTouch: true,
+                          });
+                          setDisplayedResults(null);
+                        }}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 size-6 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                        aria-label="Clear search"
+                      >
+                        <X className="size-4" />
+                      </button>
+                    )}
+                  </div>
                 </FormControl>
-                {field.value && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      form.setValue("search_term", "", {
-                        shouldDirty: true,
-                        shouldTouch: true,
-                      });
-                      setDisplayedResults(null);
-                    }}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 size-6 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                    aria-label="Clear search"
-                  >
-                    <X className="size-4" />
-                  </button>
-                )}
                 {form.formState.errors.search_term && (
                   <p className="text-sm text-destructive text-center" role="alert">
                     {form.formState.errors.search_term.message}
@@ -191,8 +196,8 @@ export default function SearchComponent() {
           <Button
             type="submit"
             disabled={isPending}
-            variant={"outline"}
-            className="aspect-square! h-fit! px-3.5! rounded-full"
+            variant="outline"
+            className="aspect-square! h-fit! px-3.5! py-3! rounded-full shrink-0"
           >
             {isPending ? (
               <LoaderCircle className="animate-spin size-5" />
@@ -202,33 +207,73 @@ export default function SearchComponent() {
           </Button>
         </div>
 
-        {jobId && <JobStatus job_id={jobId} />}
+        <AnimatePresence mode="wait">
+          {jobId && (
+            <motion.div
+              key="job-status"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.25 }}
+            >
+              <JobStatus job_id={jobId} />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {state && !state.ok && (
-          <p
-            className={cn("!text-sm text-center", "text-red-600")}
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="!text-sm text-center text-destructive"
             role="alert"
           >
             {state.message}
-          </p>
+          </motion.p>
         )}
       </form>
 
-      {displayedResults && displayedResults.length > 0 && (
-        <div className="w-full max-w-xl flex flex-col gap-2" role="region" aria-live="polite" aria-label="Search results">
-          {displayedResults.map((site) => (
-            <div key={site._id} className="">
-              <ResultCard site={site} />
-            </div>
-          ))}
-        </div>
-      )}
+      <AnimatePresence mode="wait">
+        {displayedResults && displayedResults.length > 0 && (
+          <motion.div
+            key="results"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="w-full max-w-xl flex flex-col gap-3"
+            role="region"
+            aria-live="polite"
+            aria-label="Search results"
+          >
+            {displayedResults.map((site, i) => (
+              <motion.div
+                key={site._id}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.07, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <ResultCard site={site} />
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {displayedResults && displayedResults.length === 0 && !isPending && state?.ok && (
-        <div className="w-full max-w-xl rounded-2xl border border-dashed px-6 py-8 text-center text-muted-foreground" role="status" aria-live="polite">
-          No matching analysis yet. Try a different app name or paste the full site URL.
-        </div>
-      )}
+      <AnimatePresence mode="wait">
+        {displayedResults && displayedResults.length === 0 && !isPending && state?.ok && (
+          <motion.div
+            key="no-results"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="w-full max-w-xl rounded-2xl border border-dashed px-6 py-8 text-center text-muted-foreground"
+            role="status"
+            aria-live="polite"
+          >
+            No matching analysis yet. Try a different app name or paste the full site URL.
+          </motion.div>
+        )}
+      </AnimatePresence>
     </Form>
   );
 }
@@ -301,12 +346,10 @@ function JobStatus({ job_id }: { job_id: Id<"analysisJobs"> }) {
   const display = STATUS_DISPLAY[status];
 
   return (
-    <>
-      <div className="w-full flex items-center justify-center gap-2">
-        <display.icon className={cn(display.color)} size={12} />
-        <span className={cn(display.color, "text-sm")}>{display.text}</span>
-      </div>
-    </>
+    <div className="w-full flex items-center justify-center gap-2 py-1">
+      <display.icon className={cn(display.color, "size-3")} />
+      <span className={cn(display.color, "text-sm")}>{display.text}</span>
+    </div>
   );
 }
 
@@ -327,10 +370,10 @@ export function ResultCard({ site }: { site: ResultItem }) {
           "flex flex-col gap-2",
           "group-focus-visible:border-ring group-focus-visible:ring-ring/50 group-focus-visible:ring-[3px] outline-none",
           "group-hover:border-ring group-hover:ring-ring/50 group-hover:ring-[3px]",
-          "transition-all",
+          "transition-all duration-200",
         )}
       >
-        <CardHeader className="">
+        <CardHeader>
           <CardTitle className="h-full flex items-center row-span-2">
             <h4>{site_name}</h4>
           </CardTitle>
@@ -347,8 +390,8 @@ export function ResultCard({ site }: { site: ResultItem }) {
         <CardContent className="flex flex-col gap-4">
           <span className="text-muted-foreground">{reasoning}</span>
 
-          <span className="text-accent-foreground text-sm">
-            Click for more details.
+          <span className="text-accent-foreground text-sm font-medium">
+            Click for more details &rarr;
           </span>
         </CardContent>
       </Card>

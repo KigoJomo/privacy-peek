@@ -43,11 +43,16 @@ import {
   ExternalLink,
 } from "lucide-react";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import type { Doc } from "@/convex/_generated/dataModel";
 
-type SiteBrief = NonNullable<
-  ReturnType<typeof api.sites.getSitesBrief._returnType>
->[number];
+type SiteBrief = {
+  _id: Id<"sites">;
+  site_name: string;
+  normalized_base_url: string;
+  overall_score: number;
+  last_analyzed: string;
+};
 
 export default function ComparePage() {
   const [selectedIds, setSelectedIds] = useState<Id<"sites">[]>([]);
@@ -77,7 +82,11 @@ export default function ComparePage() {
   };
 
   return (
-    <>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    >
       <section className="flex flex-col gap-8 min-h-[60dvh]">
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-3">
@@ -147,7 +156,12 @@ export default function ComparePage() {
         </Popover>
 
         {selectedSites && selectedSites.length === 0 && (
-          <div className="flex-1 flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed px-6 py-16 text-center text-muted-foreground">
+          <motion.div
+            key="empty"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex-1 flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed px-6 py-16 text-center text-muted-foreground"
+          >
             <BarChart3Icon className="size-12 opacity-40" />
             <div className="max-w-sm">
               <p className="font-medium text-foreground">
@@ -158,11 +172,16 @@ export default function ComparePage() {
                 side-by-side and make an informed choice.
               </p>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {selectedSites && selectedSites.length === 1 && (
-          <div className="flex flex-col gap-4">
+          <motion.div
+            key="single"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col gap-4"
+          >
             <p className="text-sm text-muted-foreground">
               Add another site to start comparing. You can compare up to 4
               sites at once.
@@ -171,11 +190,18 @@ export default function ComparePage() {
               sites={selectedSites}
               onRemove={removeSite}
             />
-          </div>
+          </motion.div>
         )}
 
         {selectedSites && selectedSites.length >= 2 && (
-          <ComparisonGrid sites={selectedSites} onRemove={removeSite} />
+          <motion.div
+            key="multi"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+          >
+            <ComparisonGrid sites={selectedSites} onRemove={removeSite} />
+          </motion.div>
         )}
 
         {!selectedSites && (
@@ -186,7 +212,7 @@ export default function ComparePage() {
           </div>
         )}
       </section>
-    </>
+    </motion.div>
   );
 }
 
@@ -194,7 +220,7 @@ function ComparisonGrid({
   sites,
   onRemove,
 }: {
-  sites: NonNullable<ReturnType<typeof api.sites.getSitesByIds._returnType>>;
+  sites: (Doc<"sites"> | null)[];
   onRemove: (id: Id<"sites">) => void;
 }) {
   const cols = Math.min(sites.length, 4);
@@ -209,154 +235,166 @@ function ComparisonGrid({
         cols >= 4 && "grid-cols-1 md:grid-cols-2 lg:grid-cols-4",
       )}
     >
-      {sites.map((site) => {
-        if (!site) return null;
+      <AnimatePresence mode="popLayout">
+        {sites.map((site, i) => {
+          if (!site) return null;
 
-        const safeOverallScore = getOverallScoreDisplay(site.overall_score);
-        const safeCategoryScores = (site.category_scores ?? []).map((c) => ({
-          ...c,
-          category_score: getCategoryScoreDisplay(c.category_score),
-        }));
+          const safeOverallScore = getOverallScoreDisplay(site.overall_score);
+          const safeCategoryScores = (site.category_scores ?? []).map((c) => ({
+            ...c,
+            category_score: getCategoryScoreDisplay(c.category_score),
+          }));
 
-        return (
-          <Card
-            key={site._id}
-            className="flex flex-col border-b-4 overflow-hidden"
-          >
-            <CardHeader className="border-b pb-3">
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0 flex-1">
-                  <CardTitle className="truncate">
-                    <Link
-                      href={`/site/${site._id}`}
-                      className="hover:underline"
-                    >
-                      {site.site_name}
-                    </Link>
-                  </CardTitle>
-                  <p className="text-xs text-muted-foreground truncate mt-0.5">
-                    {site.normalized_base_url}
-                  </p>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-6 shrink-0 -mr-1 -mt-1"
-                  onClick={() => onRemove(site._id)}
-                  aria-label={`Remove ${site.site_name} from comparison`}
-                >
-                  <X className="size-3.5" />
-                </Button>
-              </div>
-            </CardHeader>
-
-            <CardContent className="flex flex-col gap-4 pt-4">
-              {/* Overall Score */}
-              <Link
-                href={`/site/${site._id}`}
-                className="flex flex-col items-center gap-1 !no-underline group"
-              >
-                <ScoreVisualizer
-                  value={safeOverallScore / 100}
-                  size={96}
-                  displayNumber={`${safeOverallScore}`}
-                  className="transition-transform group-hover:scale-105"
-                />
-                <span className="text-xs text-muted-foreground">
-                  Overall /100
-                </span>
-              </Link>
-
-              <Separator />
-
-              {/* Reasoning */}
-              {site.reasoning && (
-                <div className="flex flex-col gap-1">
-                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Summary
-                  </span>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {site.reasoning}
-                  </p>
-                </div>
-              )}
-
-              {/* Category Scores */}
-              <div className="flex flex-col gap-3">
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Category Scores /10
-                </span>
-                {safeCategoryScores.map((cat) => (
-                  <div
-                    key={cat.category_name}
-                    className="flex items-center justify-between gap-2"
-                  >
-                    <span className="text-xs truncate">
-                      {cat.category_name}
-                    </span>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span
-                        className={cn(
-                          "text-xs font-mono tabular-nums",
-                          cat.category_score >= 7 && "text-chart-1",
-                          cat.category_score >= 4 &&
-                            cat.category_score < 7 &&
-                            "text-chart-3",
-                          cat.category_score < 4 && "text-destructive",
-                        )}
-                      >
-                        {cat.category_score}
-                      </span>
-                      <ScoreVisualizer
-                        value={cat.category_score / 10}
-                        size={24}
-                        displayNumber=""
-                      />
+          return (
+            <motion.div
+              key={site._id}
+              layout
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
+              transition={{
+                duration: 0.35,
+                delay: i * 0.06,
+                ease: [0.16, 1, 0.3, 1],
+              }}
+            >
+              <Card className="flex flex-col border-b-4 overflow-hidden h-full">
+                <CardHeader className="border-b pb-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <CardTitle className="truncate">
+                        <Link
+                          href={`/site/${site._id}`}
+                          className="hover:underline"
+                        >
+                          {site.site_name}
+                        </Link>
+                      </CardTitle>
+                      <p className="text-xs text-muted-foreground truncate mt-0.5">
+                        {site.normalized_base_url}
+                      </p>
                     </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-6 shrink-0 -mr-1 -mt-1"
+                      onClick={() => onRemove(site._id)}
+                      aria-label={`Remove ${site.site_name} from comparison`}
+                    >
+                      <X className="size-3.5" />
+                    </Button>
                   </div>
-                ))}
-              </div>
+                </CardHeader>
 
-              {/* Policy docs link */}
-              {site.policy_documents_urls &&
-                site.policy_documents_urls.length > 0 && (
-                  <div className="flex flex-col gap-1 mt-auto pt-2 border-t">
-                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                      Documents
+                <CardContent className="flex flex-col gap-4 pt-4 flex-1">
+                  {/* Overall Score */}
+                  <Link
+                    href={`/site/${site._id}`}
+                    className="flex flex-col items-center gap-1 !no-underline group"
+                  >
+                    <ScoreVisualizer
+                      value={safeOverallScore / 100}
+                      size={96}
+                      displayNumber={`${safeOverallScore}`}
+                      className="transition-transform duration-200 group-hover:scale-105"
+                    />
+                    <span className="text-xs text-muted-foreground">
+                      Overall /100
                     </span>
-                    {site.policy_documents_urls.slice(0, 2).map((url) => (
-                      <Link
-                        key={url}
-                        href={url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-xs inline-flex items-center gap-1 truncate hover:underline"
+                  </Link>
+
+                  <Separator />
+
+                  {/* Reasoning */}
+                  {site.reasoning && (
+                    <div className="flex flex-col gap-1">
+                      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        Summary
+                      </span>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        {site.reasoning}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Category Scores */}
+                  <div className="flex flex-col gap-3">
+                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      Category Scores /10
+                    </span>
+                    {safeCategoryScores.map((cat) => (
+                      <div
+                        key={cat.category_name}
+                        className="flex items-center justify-between gap-2"
                       >
-                        <ExternalLink className="size-3 shrink-0" />
-                        <span className="truncate">
-                          {new URL(url).pathname.split("/").pop() || url}
+                        <span className="text-xs truncate">
+                          {cat.category_name}
                         </span>
-                      </Link>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span
+                            className={cn(
+                              "text-xs font-mono tabular-nums",
+                              cat.category_score >= 7 && "text-chart-1",
+                              cat.category_score >= 4 &&
+                                cat.category_score < 7 &&
+                                "text-chart-3",
+                              cat.category_score < 4 && "text-destructive",
+                            )}
+                          >
+                            {cat.category_score}
+                          </span>
+                          <ScoreVisualizer
+                            value={cat.category_score / 10}
+                            size={24}
+                            displayNumber=""
+                          />
+                        </div>
+                      </div>
                     ))}
                   </div>
-                )}
 
-              {/* View full details link */}
-              <Link
-                href={`/site/${site._id}`}
-                className="text-xs text-center text-primary hover:underline mt-1"
-              >
-                View full analysis &rarr;
-              </Link>
+                  {/* Policy docs link */}
+                  {site.policy_documents_urls &&
+                    site.policy_documents_urls.length > 0 && (
+                      <div className="flex flex-col gap-1 mt-auto pt-2 border-t">
+                        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                          Documents
+                        </span>
+                        {site.policy_documents_urls.slice(0, 2).map((url) => (
+                          <Link
+                            key={url}
+                            href={url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-xs inline-flex items-center gap-1 truncate hover:underline"
+                          >
+                            <ExternalLink className="size-3 shrink-0" />
+                            <span className="truncate">
+                              {new URL(url).pathname.split("/").pop() || url}
+                            </span>
+                          </Link>
+                        ))}
+                      </div>
+                    )}
 
-              {/* Last analyzed */}
-              <p className="text-[10px] text-muted-foreground text-center">
-                Analyzed {formatRelativeTime(site.last_analyzed)}
-              </p>
-            </CardContent>
-          </Card>
-        );
-      })}
+                  {/* View full details link */}
+                  <Link
+                    href={`/site/${site._id}`}
+                    className="text-xs text-center text-primary hover:underline mt-1"
+                  >
+                    View full analysis &rarr;
+                  </Link>
+
+                  {/* Last analyzed */}
+                  <p className="text-[10px] text-muted-foreground text-center">
+                    Analyzed {formatRelativeTime(site.last_analyzed)}
+                  </p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          );
+        })}
+      </AnimatePresence>
     </div>
   );
 }

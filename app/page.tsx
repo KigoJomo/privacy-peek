@@ -1,21 +1,58 @@
+import { motion } from 'framer-motion';
 import RecentSites from './_components/recent-sites';
 import SearchComponent from './_components/SearchComponent';
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.12,
+      delayChildren: 0.08,
+    },
+  },
+};
+
+const childVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] as const },
+  },
+};
+
 export default function Home() {
   return (
-    <>
-      <section className="flex flex-col items-center gap-16">
-        <div className="w-full flex flex-col items-center gap-2 text-center">
-          <h1 className="capitalize leading-none">your privacy matters</h1>
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <section className="flex flex-col items-center gap-10 md:gap-14">
+        <motion.div
+          variants={childVariants}
+          className="w-full flex flex-col items-center gap-2 text-center"
+        >
+          <h1 className="capitalize leading-none">
+            your privacy matters
+          </h1>
           <p className="tagline">
             Get clear insights into how websites handle your personal data
           </p>
-        </div>
+        </motion.div>
 
-        <SearchComponent />
+        <motion.div variants={childVariants} className="w-full flex justify-center">
+          <SearchComponent />
+        </motion.div>
       </section>
 
-      <RecentSites />
-    </>
+      <motion.div
+        variants={childVariants}
+        className="mt-10 md:mt-16"
+      >
+        <RecentSites />
+      </motion.div>
+    </motion.div>
   );
 }

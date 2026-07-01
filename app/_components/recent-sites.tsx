@@ -6,7 +6,6 @@ import {
   CardAction,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -61,19 +60,25 @@ export default async function RecentSites() {
   }
 
   return (
-    <section className="flex flex-col gap-4 border-t pt-4">
+    <section className="flex flex-col gap-4">
       <div className="flex flex-col gap-1 md:flex-row md:items-end md:justify-between">
         <div>
           <h4>Recently Analyzed</h4>
           <p className="text-sm text-muted-foreground">
-            {recent_sites.length} recent scans, with a compact list for faster skimming.
+            {recent_sites.length} recent scan{recent_sites.length !== 1 ? "s" : ""}.
           </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:hidden xl:gap-8">
-        {recent_sites.map((site) => (
-          <SiteCard key={site._id} site_details={site} />
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:hidden xl:gap-6">
+        {recent_sites.map((site, i) => (
+          <div
+            key={site._id}
+            className="animate-fade-in-up"
+            style={{ animationDelay: `${i * 0.04}s` }}
+          >
+            <SiteCard site_details={site} />
+          </div>
         ))}
       </div>
 
@@ -95,11 +100,15 @@ function RecentSitesTable({ sites }: { sites: RecentSite[] }) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {sites.map((site) => {
+          {sites.map((site, i) => {
             const safeOverallScore = getOverallScoreDisplay(site.overall_score);
 
             return (
-              <TableRow key={site._id}>
+              <TableRow
+                key={site._id}
+                className="animate-fade-in"
+                style={{ animationDelay: `${i * 0.03}s` }}
+              >
                 <TableCell className="font-medium whitespace-normal">
                   <Link href={`/site/${site._id}`} className="hover:underline">
                     {site.site_name}
@@ -185,12 +194,12 @@ export function SiteCard({
       href={`/site/${_id}`}
       className={cn(
         "!no-underline border-b-4",
-        "rounded-xl transition-all",
+        "rounded-xl transition-all duration-200",
         "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] outline-none",
         "hover:border-ring hover:ring-ring/50 hover:ring-[3px]",
       )}
     >
-      <Card>
+      <Card className="transition-shadow duration-200 hover:shadow-md">
         <CardHeader className="border-b">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="space-y-1">
