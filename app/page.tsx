@@ -1,3 +1,4 @@
+"use client";
 import { motion } from 'framer-motion';
 import RecentSites from './_components/recent-sites';
 import SearchComponent from './_components/SearchComponent';
