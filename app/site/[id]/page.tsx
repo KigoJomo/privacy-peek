@@ -236,7 +236,7 @@ export async function generateMetadata({
     return {
       title: "Privacy Peek",
       description: "Full privacy policy analysis.",
-      metadataBase: new URL("https://privacypeek.vercel.app"),
+      metadataBase: new URL("https://privacy-peek.vercel.app"),
     };
   }
 
@@ -251,7 +251,7 @@ export async function generateMetadata({
       : "Full privacy policy analysis.",
     creator: "Roci",
     keywords: ["privacy peek", "privacy", "policy analysis", "online privacy"],
-    metadataBase: new URL("https://privacypeek.vercel.app"),
+    metadataBase: new URL("https://privacy-peek.vercel.app"),
     authors: [
       { name: "Roci", url: "https://jomo.aqutte.co.ke" },
       { name: "Privacy Peek" },

@@ -6,7 +6,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   if (!process.env.NEXT_PUBLIC_CONVEX_URL) {
     return [
       {
-        url: "https://privacypeek.vercel.app",
+        url: "https://privacy-peek.vercel.app",
         lastModified: new Date(),
         changeFrequency: "daily",
         priority: 1,
@@ -27,7 +27,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     {
-      url: "https://privacypeek.vercel.app",
+      url: "https://privacy-peek.vercel.app",
       lastModified: new Date(),
       changeFrequency: 'daily',
       priority: 1,

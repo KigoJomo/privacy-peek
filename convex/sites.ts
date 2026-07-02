@@ -152,6 +152,7 @@ export const getSitesBrief = query({
   handler: async (ctx, { limit }) => {
     const results = await ctx.db
       .query("sites")
+      .withIndex("by_last_analyzed")
       .order("desc")
       .take(limit ?? 100);
     return results.map((s) => ({

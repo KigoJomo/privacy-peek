@@ -38,6 +38,7 @@ export interface SiteDetails {
     category_name: CategoryName;
     category_score: number;
     reasoning: string;
+    supporting_clauses: string[];
   }>;
 }
 

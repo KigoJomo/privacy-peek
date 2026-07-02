@@ -154,7 +154,7 @@ export const reanalyzeSite = action({
         site_id,
         overall_score: overallScore.overall_score,
         reasoning: overallScore.reasoning || "",
-        category_scores: categoryScores as any,
+        category_scores: categoryScores,
         last_analyzed: new Date().toISOString(),
       });
 
