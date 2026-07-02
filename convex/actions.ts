@@ -250,7 +250,7 @@ const getCategoryScores = async ({
   }
 
   const promises = categoriesClauses.map(async (category) => {
-    const filteredClauses = category.clauses.filter((c) => c.relevance >= 0.3);
+    const filteredClauses = (category.clauses ?? []).filter((c) => c.relevance >= 0.3);
 
     if (filteredClauses.length === 0) {
       console.warn(
@@ -274,7 +274,7 @@ const getCategoryScores = async ({
       rubric: categoryRubric,
     });
 
-    if (!category_score || !reasoning) {
+    if (category_score == null || !reasoning) {
       throw new Error(
         `An unknown error occured scoring ${category.category_name}`,
       );
