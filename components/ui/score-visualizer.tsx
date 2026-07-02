@@ -38,6 +38,8 @@ const ScoreVisualizer: React.FC<ScoreVisualizerProps> = ({
     <div
       className={cn('relative inline-block', className)}
       style={{ width: size, height: size }}
+      role="img"
+      aria-label={`Score: ${displayNumber ? displayNumber : Math.round(score * 100) + '%'} out of 100`}
     >
       <motion.div
         initial={{ opacity: 0, scale: 0.85 }}
@@ -51,7 +53,7 @@ const ScoreVisualizer: React.FC<ScoreVisualizerProps> = ({
           viewBox={`0 0 ${size} ${size}`}
           className="transform -rotate-90"
         >
-          {/* Background track — more visible */}
+          {/* Background track */}
           <circle
             cx={size / 2}
             cy={size / 2}
@@ -60,7 +62,6 @@ const ScoreVisualizer: React.FC<ScoreVisualizerProps> = ({
             className="stroke-border"
             strokeWidth={sw * 0.6}
           />
-
           {/* Score track */}
           <motion.circle
             cx={size / 2}

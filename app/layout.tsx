@@ -4,6 +4,7 @@ import './globals.css';
 import { ConvexClientProvider } from './ConvexClientProvider';
 import { ThemeProvider } from '@/components/theme-provider';
 import { NavBar } from '@/components/global/Navbar';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://privacy-peek.vercel.app'),
@@ -46,7 +47,9 @@ export default function RootLayout({
             <NavBar />
             <div className="fixed -top-24 -left-24 -z-10 w-128 aspect-square rounded-full bg-gradient-to-br from-primary/10 via-accent/60 to-transparent blur-3xl" />
             <div className="fixed -bottom-24 -right-24 -z-10 w-128 aspect-square rounded-full bg-gradient-to-tl from-accent/60 via-primary/10 to-transparent blur-3xl" />
-            {children}
+            <ErrorBoundary>
+              {children}
+            </ErrorBoundary>
           </ConvexClientProvider>
         </ThemeProvider>
       </body>

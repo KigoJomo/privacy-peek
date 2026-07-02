@@ -166,28 +166,29 @@ export default function SearchComponent() {
                       className="text-lg! text-center h-fit! px-6! py-3! rounded-full pr-10!"
                       {...field}
                     />
-                    {field.value && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          form.setValue("search_term", "", {
-                            shouldDirty: true,
-                            shouldTouch: true,
-                          });
-                          setDisplayedResults(null);
-                        }}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 size-6 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                        aria-label="Clear search"
-                      >
-                        <X className="size-4" />
-                      </button>
-                    )}
                   </div>
                 </FormControl>
                 {form.formState.errors.search_term && (
                   <p className="text-sm text-destructive text-center" role="alert">
                     {form.formState.errors.search_term.message}
                   </p>
+                )}
+                {field.value && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      form.setValue("search_term", "", {
+                        shouldDirty: true,
+                        shouldTouch: true,
+                      });
+                      setDisplayedResults(null);
+                      setJobId(null);
+                    }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 size-6 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                    aria-label="Clear search"
+                  >
+                    <X className="size-4" />
+                  </button>
                 )}
               </FormItem>
             )}
@@ -344,6 +345,14 @@ function JobStatus({ job_id }: { job_id: Id<"analysisJobs"> }) {
   }
 
   const display = STATUS_DISPLAY[status];
+  if (!display) {
+    return (
+      <div className="w-full flex items-center justify-center gap-2 py-1">
+        <Clock className="size-3 text-muted-foreground" />
+        <span className="text-sm text-muted-foreground">Processing...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full flex items-center justify-center gap-2 py-1">
