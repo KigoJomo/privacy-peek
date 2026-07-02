@@ -38,7 +38,9 @@ const ScoreVisualizer: React.FC<ScoreVisualizerProps> = ({
   return (
     <div
       className={cn('relative inline-block', className)}
-      style={{ width: size, height: size }}>
+      style={{ width: size, height: size }}
+      role="img"
+      aria-label={`Score: ${displayNumber ? displayNumber : Math.round(score * 100) + '%'} out of 100`}>
       <svg
         width={size}
         height={size}

@@ -104,6 +104,6 @@ export function slugify(text: string): string {
     .trim()
     .replace(/\s+/g, '-')
     .replace(/&/g, '-and-')
-    .replace(/[^w\-]+/g, '')
+    .replace(/[^\w\-]+/g, '')
     .replace(/\-\-+/g, '-');
 }
