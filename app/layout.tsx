@@ -4,6 +4,7 @@ import './globals.css';
 import { ConvexClientProvider } from './ConvexClientProvider';
 import { ThemeProvider } from '@/components/theme-provider';
 import { NavBar } from '@/components/global/Navbar';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://privacy-peek.vercel.app'),
@@ -44,7 +45,9 @@ export default function RootLayout({
           disableTransitionOnChange>
           <ConvexClientProvider>
             <NavBar />
-            {children}
+            <ErrorBoundary>
+              {children}
+            </ErrorBoundary>
           </ConvexClientProvider>
         </ThemeProvider>
       </body>

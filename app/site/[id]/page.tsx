@@ -75,10 +75,14 @@ export default async function SitePage({ params }: SitePageProps) {
               displayNumber={`${safeOverallScore}`}
               className="md:hidden mx-auto"
             />
-            <h2 className="leading-16">{site_name}</h2>
-            <Link href={normalized_base_url} target="_blank">
-              {normalized_base_url}
-            </Link>
+            <h2 className="leading-16">{site_name || "Unnamed Site"}</h2>
+            {normalized_base_url ? (
+              <Link href={normalized_base_url} target="_blank">
+                {normalized_base_url}
+              </Link>
+            ) : (
+              <span className="text-muted-foreground">No URL available</span>
+            )}
             <span className="">
               Last analysed {formatRelativeTime(last_analyzed)}.
             </span>

@@ -33,6 +33,7 @@ import {
   Globe,
   History,
   Settings2,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { startTransition, useActionState, useEffect, useState } from "react";
@@ -171,6 +172,7 @@ export default function SearchComponent() {
                         shouldTouch: true,
                       });
                       setDisplayedResults(null);
+                      setJobId(null);
                     }}
                     className="absolute right-3 top-1/2 -translate-y-1/2 size-6 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                     aria-label="Clear search"

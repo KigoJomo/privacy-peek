@@ -103,11 +103,11 @@ export default function ComparePage() {
               role="combobox"
               aria-expanded={open}
               className="w-full max-w-md justify-between"
-              disabled={!allSites}
+              disabled={!allSites || selectedIds.length >= 4}
             >
               <span className="flex items-center gap-2">
                 <Plus className="size-4" />
-                Add site to compare
+                {selectedIds.length >= 4 ? "Maximum 4 sites" : "Add site to compare"}
               </span>
               <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
             </Button>
