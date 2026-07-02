@@ -8,6 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   Table,
   TableBody,
   TableCell,
@@ -46,6 +52,9 @@ import {
   GitCompareArrowsIcon,
   ListIcon,
   ExternalLink,
+  Download,
+  AlertTriangle,
+  ChartNoAxesColumnIncreasing,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -56,6 +65,8 @@ const ITEMS_PER_PAGE = 20;
 
 export default function SitesDirectory() {
   const allSites = useQuery(api.sites.getSitesBrief, { limit: 200 });
+  const exportData = useQuery(api.sites.getAllSitesExportData);
+  const stats = useQuery(api.sites.getSitesStats);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [sortField, setSortField] = useState<SortField>("last_analyzed");
@@ -116,6 +127,66 @@ export default function SitesDirectory() {
     ) : (
       <ArrowDown className="size-3" />
     );
+  };
+
+  const downloadCSV = () => {
+    if (!exportData || exportData.length === 0) return;
+
+    const headers = [
+      "Site Name",
+      "Domain",
+      "Overall Score",
+      "Reasoning",
+      "Last Analyzed",
+      "Data Collection",
+      "Data Sharing",
+      "Data Retention and Security",
+      "User Rights and Controls",
+      "Transparency and Clarity",
+      "Policy Documents",
+    ];
+
+    const rows = exportData.map((site) => {
+      const domain = (() => {
+        try {
+          return new URL(site.normalized_base_url).hostname.replace(/^www\./, "");
+        } catch {
+          return site.normalized_base_url;
+        }
+      })();
+
+      const catScores: Record<string, number | string> = {};
+      for (const c of site.category_scores ?? []) {
+        catScores[c.category_name] = c.category_score;
+      }
+
+      return [
+        site.site_name,
+        domain,
+        site.overall_score,
+        `"${(site.reasoning ?? "").replace(/"/g, '""')}"`,
+        site.last_analyzed,
+        catScores["Data Collection"] ?? "",
+        catScores["Data Sharing"] ?? "",
+        catScores["Data Retention and Security"] ?? "",
+        catScores["User Rights and Controls"] ?? "",
+        catScores["Transparency and Clarity"] ?? "",
+        `"${(site.policy_documents_urls ?? []).join("; ")}"`,
+      ];
+    });
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row) => row.join(",")),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `privacy-peek-sites-${new Date().toISOString().split("T")[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
   const renderPageNumbers = () => {
@@ -201,6 +272,48 @@ export default function SitesDirectory() {
             Browse, search, and sort through all analyzed sites.
           </p>
         </div>
+
+        {/* Stats summary */}
+        {stats && stats.total > 0 && (
+          <div className="flex flex-wrap items-center gap-4 rounded-2xl border bg-card px-5 py-3">
+            <div className="flex items-center gap-3">
+              <ChartNoAxesColumnIncreasing className="size-4 text-muted-foreground" />
+              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm">
+                <span className="text-muted-foreground">
+                  <strong className="text-foreground font-semibold">{stats.total}</strong> sites
+                </span>
+                <span className="text-muted-foreground">
+                  Avg: <strong className="text-foreground font-semibold">{stats.avgScore.toFixed(1)}</strong>/100
+                </span>
+                {stats.staleCount > 0 && (
+                  <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400">
+                    <AlertTriangle className="size-3.5" />
+                    <strong className="font-semibold">{stats.staleCount}</strong> stale
+                  </span>
+                )}
+              </div>
+            </div>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={downloadCSV}
+                    disabled={!exportData || exportData.length === 0}
+                    className="ml-auto gap-1.5 shrink-0"
+                  >
+                    <Download className="size-3.5" />
+                    <span className="hidden sm:inline">Export CSV</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Download all analysis data as a CSV file
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        )}
 
         {/* Search */}
         <div className="relative w-full max-w-md">

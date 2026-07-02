@@ -172,6 +172,45 @@ export const getFullSiteDetail = internalQuery({
   },
 });
 
+export const getAllSitesExportData = query({
+  handler: async (ctx) => {
+    const allSites = await ctx.db.query("sites").collect();
+    return allSites.map((s) => ({
+      _id: s._id,
+      site_name: s.site_name,
+      normalized_base_url: s.normalized_base_url,
+      overall_score: s.overall_score,
+      reasoning: s.reasoning,
+      last_analyzed: s.last_analyzed,
+      category_scores: s.category_scores,
+      policy_documents_urls: s.policy_documents_urls,
+    }));
+  },
+});
+
+export const getSitesStats = query({
+  handler: async (ctx) => {
+    const allSites = await ctx.db.query("sites").collect();
+    const total = allSites.length;
+    if (total === 0) {
+      return { total: 0, avgScore: 0, staleCount: 0 };
+    }
+
+    const sumScores = allSites.reduce((acc, s) => acc + s.overall_score, 0);
+    const avgScore = Math.round((sumScores / total) * 100) / 100;
+
+    // Check staleness client-side by returning last_analyzed dates
+    const now = Date.now();
+    const STALE_MS = 14 * 24 * 60 * 60 * 1000;
+    const staleCount = allSites.filter((s) => {
+      const analyzed = new Date(s.last_analyzed).getTime();
+      return !Number.isNaN(analyzed) && now - analyzed >= STALE_MS;
+    }).length;
+
+    return { total, avgScore, staleCount };
+  },
+});
+
 export const updateSiteAnalysis = internalMutation({
   args: {
     site_id: v.id("sites"),
