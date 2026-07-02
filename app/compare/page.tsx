@@ -46,7 +46,7 @@ import Link from "next/link";
 import type { Doc } from "@/convex/_generated/dataModel";
 
 type SiteBrief = NonNullable<
-  ReturnType<typeof api.sites.getSitesBrief._returnType>
+  typeof api.sites.getSitesBrief._returnType
 >[number];
 
 export default function ComparePage() {
@@ -197,7 +197,7 @@ function ComparisonGrid({
   sites,
   onRemove,
 }: {
-  sites: NonNullable<ReturnType<typeof api.sites.getSitesByIds._returnType>>;
+  sites: NonNullable<typeof api.sites.getSitesByIds._returnType>;
   onRemove: (id: Id<"sites">) => void;
 }) {
   const cols = Math.min(sites.length, 4);
