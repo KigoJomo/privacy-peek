@@ -33,6 +33,7 @@ import {
   Globe,
   History,
   Settings2,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { startTransition, useActionState, useEffect, useState } from "react";
