@@ -10,7 +10,7 @@ import {
 import Logo from './Logo';
 import { ModeToggle } from '@/components/ModeToggle';
 import { cn } from '@/lib/utils';
-import { BarChart3Icon } from 'lucide-react';
+import { BarChart3Icon, ListIcon } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 
 export function NavBar() {
@@ -31,6 +31,20 @@ export function NavBar() {
       </NavigationMenuList>
 
       <NavigationMenuItem className="ml-auto flex items-center gap-1 list-none">
+        <NavigationMenuLink asChild>
+          <Link
+            href="/sites"
+            className={cn(
+              'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-colors',
+              pathname === '/sites'
+                ? 'bg-accent text-accent-foreground'
+                : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
+            )}
+          >
+            <ListIcon className="size-4" />
+            <span className="hidden sm:inline">Sites</span>
+          </Link>
+        </NavigationMenuLink>
         <NavigationMenuLink asChild>
           <Link
             href="/compare"
