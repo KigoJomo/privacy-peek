@@ -1,11 +1,51 @@
+"use client";
+
+import { motion } from "framer-motion";
+import { ShieldQuestion, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <section className="min-h-[90vh] flex flex-col items-center justify-center gap-12">
-      <h1>404</h1>
-      <h3>This page could not be found.</h3>
-      <Link href="/">Click here to go back to the home page.</Link>
+    <section className="min-h-[90dvh] flex flex-col items-center justify-center gap-8 px-4">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <ShieldQuestion className="size-20 text-muted-foreground/30" />
+      </motion.div>
+
+      <motion.h1
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15, duration: 0.4 }}
+        className="text-center"
+      >
+        Page not found
+      </motion.h1>
+
+      <motion.p
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.25, duration: 0.4 }}
+        className="text-muted-foreground text-center max-w-md"
+      >
+        The page you&apos;re looking for doesn&apos;t exist or has been moved.
+      </motion.p>
+
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.35, duration: 0.4 }}
+      >
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 rounded-xl border px-5 py-2.5 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground !no-underline"
+        >
+          <ArrowLeft className="size-4" />
+          Back to home
+        </Link>
+      </motion.div>
     </section>
   );
 }

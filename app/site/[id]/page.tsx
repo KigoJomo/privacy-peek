@@ -89,7 +89,7 @@ export default async function SitePage({ params }: SitePageProps) {
               displayNumber={`${safeOverallScore}`}
               className="md:hidden mx-auto"
             />
-            <h2 className="leading-16">{site_name || "Unnamed Site"}</h2>
+            <h2>{site_name || "Unnamed Site"}</h2>
             {normalized_base_url ? (
               <Link href={normalized_base_url} target="_blank">
                 {normalized_base_url}
@@ -201,7 +201,7 @@ export default async function SitePage({ params }: SitePageProps) {
           <Separator />
 
           <Link
-            href={`/compare`}
+            href={`/compare?add=${id}`}
             className="w-full inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground !no-underline"
           >
             <GitCompareArrowsIcon className="size-4" />
