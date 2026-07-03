@@ -49,7 +49,8 @@ const SearchSchema = z.object({
   search_term: z
     .string()
     .trim()
-    .min(3, "search term must be at least 3 characters."),
+    .min(3, "search term must be at least 3 characters.")
+    .max(500, "search term must be less than 500 characters."),
 });
 
 type SearchValue = z.infer<typeof SearchSchema>;
