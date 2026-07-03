@@ -48,6 +48,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 type SortField = "site_name" | "overall_score" | "last_analyzed";
 type SortDir = "asc" | "desc";
@@ -55,6 +56,7 @@ type SortDir = "asc" | "desc";
 const ITEMS_PER_PAGE = 20;
 
 export default function SitesDirectory() {
+  const router = useRouter();
   const allSites = useQuery(api.sites.getSitesBrief, { limit: 200 });
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -409,7 +411,18 @@ export default function SitesDirectory() {
                         <span className="text-xs text-muted-foreground">
                           Analyzed {formatRelativeTime(site.last_analyzed)}
                         </span>
-                        <GitCompareArrowsIcon className="size-3.5 text-muted-foreground" />
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            router.push(`/compare?add=${site._id}`);
+                          }}
+                          className="inline-flex items-center justify-center size-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                          aria-label={`Compare ${site.site_name}`}
+                        >
+                          <GitCompareArrowsIcon className="size-3.5" />
+                        </button>
                       </CardContent>
                     </Card>
                   </Link>
@@ -450,9 +463,6 @@ export default function SitesDirectory() {
           </>
         )}
       </section>
-
-      <div className="fixed -top-24 -left-24 -z-10 w-128 aspect-square rounded-full bg-accent/70 blur-3xl" />
-      <div className="fixed -bottom-24 -right-24 -z-10 w-128 aspect-square rounded-full bg-accent/70 blur-3xl" />
     </>
   );
 }
