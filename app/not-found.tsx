@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { motion } from "framer-motion";
 import { ShieldQuestion, ArrowLeft } from "lucide-react";
@@ -6,13 +6,13 @@ import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <section className="min-h-[80dvh] flex flex-col items-center justify-center gap-6 px-4">
+    <section className="min-h-[90dvh] flex flex-col items-center justify-center gap-8 px-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       >
-        <ShieldQuestion className="size-16 text-muted-foreground/40" />
+        <ShieldQuestion className="size-20 text-muted-foreground/30" />
       </motion.div>
 
       <motion.h1
@@ -30,8 +30,7 @@ export default function NotFound() {
         transition={{ delay: 0.25, duration: 0.4 }}
         className="text-muted-foreground text-center max-w-md"
       >
-        This page doesn&apos;t exist or has been moved. Check the URL or head
-        back home.
+        This page doesn&apos;t exist or has been moved. Check the URL or head back home.
       </motion.p>
 
       <motion.div

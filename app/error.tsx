@@ -47,6 +47,7 @@ export default function Error({
       >
         <button
           onClick={() => reset()}
+          type="button"
           className="inline-flex items-center justify-center gap-2 rounded-xl border px-5 py-2.5 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground cursor-pointer"
         >
           <RotateCcw className="size-4" />

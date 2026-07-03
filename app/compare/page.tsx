@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -11,7 +11,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   Command,
   CommandEmpty,
@@ -32,6 +31,7 @@ import {
   getCategoryScoreDisplay,
   getOverallScoreDisplay,
   formatRelativeTime,
+  getUrlFilename,
 } from "@/lib/utils";
 import {
   Check,
@@ -43,6 +43,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import Link from "next/link";
+import { useSearchParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Doc } from "@/convex/_generated/dataModel";
 
@@ -54,14 +55,52 @@ type SiteBrief = {
   last_analyzed: string;
 };
 
-export default function ComparePage() {
+export default function ComparePageWrapper() {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    >
+      <section className="flex flex-col gap-8 min-h-[60dvh]">
+        {/* <Suspense> boundary required for useSearchParams() in static generation */}
+        <React.Suspense fallback={
+          <div className="flex-1 flex items-center justify-center">
+            <p className="text-muted-foreground animate-pulse">Loading...</p>
+          </div>
+        }>
+          <ComparePageContent />
+        </React.Suspense>
+      </section>
+    </motion.div>
+  );
+}
+
+function ComparePageContent() {
   const [selectedIds, setSelectedIds] = useState<Id<"sites">[]>([]);
   const [open, setOpen] = useState(false);
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
   const allSites = useQuery(api.sites.getSitesBrief, { limit: 100 });
   const selectedSites = useQuery(api.sites.getSitesByIds, {
     ids: selectedIds,
   });
+
+  // Handle ?add= param from other pages — only add if the ID actually exists
+  useEffect(() => {
+    const addId = searchParams.get("add") as Id<"sites"> | null;
+    if (addId && allSites && !selectedIds.includes(addId)) {
+      const exists = allSites.some((s) => s._id === addId);
+      if (exists) {
+        setSelectedIds((prev) => [...prev, addId]);
+      }
+      // Clean the URL without a full navigation
+      const url = new URL(window.location.href);
+      url.searchParams.delete("add");
+      router.replace(url.pathname, { scroll: false });
+    }
+  }, [searchParams, allSites, selectedIds, router]);
 
   const availableSites = useMemo(() => {
     if (!allSites) return [];
@@ -267,11 +306,11 @@ function ComparisonGrid({
                           href={`/site/${site._id}`}
                           className="hover:underline"
                         >
-                          {site.site_name}
+                          {site.site_name || "Unnamed Site"}
                         </Link>
                       </CardTitle>
                       <p className="text-xs text-muted-foreground truncate mt-0.5">
-                        {site.normalized_base_url}
+                        {site.normalized_base_url || ""}
                       </p>
                     </div>
                     <Button
@@ -279,7 +318,7 @@ function ComparisonGrid({
                       size="icon"
                       className="size-6 shrink-0 -mr-1 -mt-1"
                       onClick={() => onRemove(site._id)}
-                      aria-label={`Remove ${site.site_name} from comparison`}
+                      aria-label={`Remove ${site.site_name || "site"} from comparison`}
                     >
                       <X className="size-3.5" />
                     </Button>
@@ -370,7 +409,7 @@ function ComparisonGrid({
                           >
                             <ExternalLink className="size-3 shrink-0" />
                             <span className="truncate">
-                              {new URL(url).pathname.split("/").pop() || url}
+                              {getUrlFilename(url)}
                             </span>
                           </Link>
                         ))}

@@ -98,6 +98,23 @@ export function getCategoryScoreDisplay(
   return clampScore(value, 10);
 }
 
+export function getDomainLabel(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return url;
+  }
+}
+
+/** Safely extract the last path segment from a URL, or return the raw url as fallback if it's malformed. */
+export function getUrlFilename(url: string): string {
+  try {
+    return new URL(url).pathname.split("/").pop() || url;
+  } catch {
+    return url;
+  }
+}
+
 export function slugify(text: string): string {
   return text
     .toLowerCase()

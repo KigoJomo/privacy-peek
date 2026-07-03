@@ -26,6 +26,7 @@ import {
   isAnalysisStale,
   getCategoryScoreDisplay,
   getOverallScoreDisplay,
+  getDomainLabel,
 } from "@/lib/utils";
 import Link from "next/link";
 import ScoreVisualizer from "@/components/ui/score-visualizer";
@@ -116,10 +117,15 @@ function RecentSitesTable({ sites }: { sites: RecentSite[] }) {
                 </TableCell>
                 <TableCell>
                   <Link
-                    href={site.normalized_base_url}
+                    href={site.normalized_base_url || "#"}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground hover:underline"
+                    className={cn(
+                      "inline-flex items-center gap-1 hover:underline",
+                      site.normalized_base_url
+                        ? "text-muted-foreground hover:text-foreground"
+                        : "text-muted-foreground/50 pointer-events-none",
+                    )}
                   >
                     <span className="max-w-56 truncate">
                       {getDomainLabel(site.normalized_base_url)}
@@ -254,10 +260,4 @@ export function SiteCard({
   );
 }
 
-function getDomainLabel(url: string) {
-  try {
-    return new URL(url).hostname.replace(/^www\./, "");
-  } catch {
-    return url;
-  }
-}
+

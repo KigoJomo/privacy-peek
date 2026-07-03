@@ -36,7 +36,7 @@ import {
   Settings2,
 } from "lucide-react";
 import Link from "next/link";
-import { startTransition, useActionState, useEffect, useState } from "react";
+import { startTransition, useActionState, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { motion, AnimatePresence } from "framer-motion";
 import z from "zod";
@@ -49,7 +49,8 @@ const SearchSchema = z.object({
   search_term: z
     .string()
     .trim()
-    .min(3, "search term must be at least 3 characters."),
+    .min(3, "search term must be at least 3 characters.")
+    .max(500, "search term must be less than 500 characters."),
 });
 
 type SearchValue = z.infer<typeof SearchSchema>;
@@ -79,23 +80,34 @@ export default function SearchComponent() {
     jobId ? { job_id: jobId } : "skip",
   );
 
+  // Track the latest submission to avoid stale results from racing requests
+  const latestRequestId = useRef(0);
+
   const [state, submit, isPending] = useActionState(
     async (_prev: ActionState, value: SearchValue): Promise<ActionState> => {
       const normalizedSearchTerm = value.search_term.trim();
+      const requestId = ++latestRequestId.current;
+
       setDisplayedResults([]);
 
       try {
         const analysisJobId = await createJob({
           site_input: normalizedSearchTerm,
         });
-        setJobId(analysisJobId);
+        // Only set jobId if this request is still the latest
+        if (requestId === latestRequestId.current) {
+          setJobId(analysisJobId);
+        }
 
         const searchResults = await searchSite({
           user_input: normalizedSearchTerm,
           job_id: analysisJobId,
         });
 
-        setDisplayedResults(searchResults);
+        // Only update results if this request is still the latest
+        if (requestId === latestRequestId.current) {
+          setDisplayedResults(searchResults);
+        }
 
         return {
           ok: true,
@@ -103,6 +115,10 @@ export default function SearchComponent() {
           results: searchResults,
         };
       } catch (error: unknown) {
+        // Only show error for the latest request
+        if (requestId !== latestRequestId.current) {
+          return _prev;
+        }
         if (error instanceof Error) {
           console.error(error.message);
           return { ok: false, message: error.message };

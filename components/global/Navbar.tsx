@@ -29,7 +29,8 @@ export function NavBar() {
           </NavigationMenuLink>
         </NavigationMenuItem>
 
-        <NavigationMenuItem className="ml-auto flex items-center gap-1 list-none">
+        {/* Nav links section */}
+        <NavigationMenuItem>
           <NavigationMenuLink asChild>
             <Link
               href="/sites"
@@ -44,6 +45,8 @@ export function NavBar() {
               <span className="hidden sm:inline">Sites</span>
             </Link>
           </NavigationMenuLink>
+        </NavigationMenuItem>
+        <NavigationMenuItem>
           <NavigationMenuLink asChild>
             <Link
               href="/compare"
@@ -58,6 +61,8 @@ export function NavBar() {
               <span className="hidden sm:inline">Compare</span>
             </Link>
           </NavigationMenuLink>
+        </NavigationMenuItem>
+        <NavigationMenuItem>
           <NavigationMenuLink asChild>
             <Link
               href="/stale"
@@ -72,6 +77,8 @@ export function NavBar() {
               <span className="hidden sm:inline">Stale</span>
             </Link>
           </NavigationMenuLink>
+        </NavigationMenuItem>
+        <NavigationMenuItem>
           <ModeToggle />
         </NavigationMenuItem>
       </NavigationMenuList>
