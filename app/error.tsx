@@ -1,7 +1,7 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { motion } from "framer-motion";
+import { AlertTriangle, RotateCcw } from "lucide-react";
 
 export default function Error({
   error,
@@ -11,13 +11,16 @@ export default function Error({
   reset: () => void;
 }) {
   return (
-    <section className="min-h-[60dvh] flex flex-col items-center justify-center gap-6 px-4 text-center" role="alert">
+    <section
+      className="min-h-[80dvh] flex flex-col items-center justify-center gap-6 px-4 text-center"
+      role="alert"
+    >
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       >
-        <AlertTriangle className="size-16 text-destructive/40" />
+        <AlertTriangle className="size-16 text-destructive/60" />
       </motion.div>
 
       <motion.h2
@@ -34,7 +37,7 @@ export default function Error({
         transition={{ delay: 0.25, duration: 0.4 }}
         className="text-muted-foreground max-w-md"
       >
-        {error.message || 'An unexpected error occurred. Please try again.'}
+        {error.message || "An unexpected error occurred. Please try again."}
       </motion.p>
 
       <motion.div
@@ -44,9 +47,10 @@ export default function Error({
       >
         <button
           onClick={() => reset()}
-          className="inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+          type="button"
+          className="inline-flex items-center justify-center gap-2 rounded-xl border px-5 py-2.5 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground cursor-pointer"
         >
-          <RefreshCw className="size-4" />
+          <RotateCcw className="size-4" />
           Try again
         </button>
       </motion.div>

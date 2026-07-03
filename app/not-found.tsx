@@ -21,7 +21,7 @@ export default function NotFound() {
         transition={{ delay: 0.15, duration: 0.4 }}
         className="text-center"
       >
-        Page not found
+        404 — Page Not Found
       </motion.h1>
 
       <motion.p
@@ -30,7 +30,7 @@ export default function NotFound() {
         transition={{ delay: 0.25, duration: 0.4 }}
         className="text-muted-foreground text-center max-w-md"
       >
-        The page you&apos;re looking for doesn&apos;t exist or has been moved.
+        This page doesn&apos;t exist or has been moved. Check the URL or head back home.
       </motion.p>
 
       <motion.div
