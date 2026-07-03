@@ -8,11 +8,16 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://privacy-peek.vercel.app'),
-  title: 'Privacy Peek',
-  description: 'Privacy Peek',
+  title: {
+    default: 'Privacy Peek — Understand How Sites Handle Your Data',
+    template: '%s | Privacy Peek',
+  },
+  description:
+    'Scan and analyze privacy policies to get clear, actionable insights into how websites handle your personal data. Compare privacy practices across sites.',
   openGraph: {
-    title: 'Privacy Peek',
-    description: 'Privacy Peek',
+    title: 'Privacy Peek — Privacy Policy Analyzer',
+    description:
+      'Get clear, actionable insights into how websites handle your personal data.',
     type: 'website',
     url: 'https://privacy-peek.vercel.app',
     siteName: 'Privacy Peek',
