@@ -36,9 +36,21 @@ export default async function SitePage({ params }: SitePageProps) {
 
   const { id } = await params;
 
-  const full_site_details = await fetchQuery(api.sites.getFullSiteDetails, {
-    site_id: id,
-  });
+  let full_site_details: Awaited<ReturnType<typeof fetchQuery<typeof api.sites.getFullSiteDetails>>>;
+  try {
+    full_site_details = await fetchQuery(api.sites.getFullSiteDetails, {
+      site_id: id,
+    });
+  } catch {
+    return (
+      <section className="min-h-[60dvh] flex flex-col items-center justify-center gap-4 px-4 text-center">
+        <h2>Unable to load site</h2>
+        <p className="text-muted-foreground max-w-md">
+          Could not fetch site details. Please try again later or check that the site exists.
+        </p>
+      </section>
+    );
+  }
 
   if (full_site_details === undefined) {
     return <Loading />;
@@ -225,8 +237,13 @@ export async function generateStaticParams() {
     return [];
   }
 
-  const all_ids = await fetchQuery(api.sites.getAllSiteIds);
-  return all_ids.map((id) => ({ id }));
+  try {
+    const all_ids = await fetchQuery(api.sites.getAllSiteIds);
+    return all_ids.map((id) => ({ id }));
+  } catch {
+    console.warn("Failed to fetch site IDs for static params — returning empty.");
+    return [];
+  }
 }
 
 export async function generateMetadata({
@@ -242,7 +259,16 @@ export async function generateMetadata({
 
   const { id } = await params;
 
-  const site = await fetchQuery(api.sites.getFullSiteDetails, { site_id: id });
+  let site: Awaited<ReturnType<typeof fetchQuery<typeof api.sites.getFullSiteDetails>>>;
+  try {
+    site = await fetchQuery(api.sites.getFullSiteDetails, { site_id: id });
+  } catch {
+    return {
+      title: "Privacy Peek",
+      description: "Full privacy policy analysis.",
+      metadataBase: new URL("https://privacy-peek.vercel.app"),
+    };
+  }
 
   return {
     title: site ? `${site.site_name} Analysis | Privacy Peek` : "Privacy Peek",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -15,9 +15,21 @@ export function ReanalyzeButton({ siteId }: { siteId: Id<"sites"> }) {
   const reanalyze = useAction(api.actions.reanalyzeSite);
   const router = useRouter();
 
+  // Auto-clear error state after 8 seconds
+  const errorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (state === "error" && error) {
+      errorTimerRef.current = setTimeout(() => setError(null), 8000);
+    }
+    return () => {
+      if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
+    };
+  }, [state, error]);
+
   const handleReanalyze = async () => {
     setState("analyzing");
     setError(null);
+    if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
     try {
       await reanalyze({ site_id: siteId });
       setState("done");

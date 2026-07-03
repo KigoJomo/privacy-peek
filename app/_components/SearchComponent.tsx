@@ -406,14 +406,14 @@ export function ResultCard({ site }: { site: ResultItem }) {
             <span className="text-sm">Overall Score /100</span>
             <ScoreVisualizer
               value={(overall_score ?? 0) / 100}
-              displayNumber={Math.round(overall_score)}
+              displayNumber={overall_score != null ? Math.round(overall_score) : '—'}
               className="md:mr-1"
               size={48}
             />
           </CardAction>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          <span className="text-muted-foreground">{reasoning}</span>
+          <span className="text-muted-foreground">{reasoning || 'No analysis summary available.'}</span>
 
           <span className="text-accent-foreground text-sm font-medium">
             Click for more details &rarr;
