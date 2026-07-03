@@ -11,7 +11,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   Command,
   CommandEmpty,
@@ -32,6 +31,7 @@ import {
   getCategoryScoreDisplay,
   getOverallScoreDisplay,
   formatRelativeTime,
+  getUrlFilename,
 } from "@/lib/utils";
 import {
   Check,
@@ -87,11 +87,14 @@ function ComparePageContent() {
     ids: selectedIds,
   });
 
-  // Handle ?add= param from other pages
+  // Handle ?add= param from other pages — only add if the ID actually exists
   useEffect(() => {
     const addId = searchParams.get("add") as Id<"sites"> | null;
     if (addId && allSites && !selectedIds.includes(addId)) {
-      setSelectedIds((prev) => [...prev, addId]);
+      const exists = allSites.some((s) => s._id === addId);
+      if (exists) {
+        setSelectedIds((prev) => [...prev, addId]);
+      }
       // Clean the URL without a full navigation
       const url = new URL(window.location.href);
       url.searchParams.delete("add");
@@ -303,11 +306,11 @@ function ComparisonGrid({
                           href={`/site/${site._id}`}
                           className="hover:underline"
                         >
-                          {site.site_name}
+                          {site.site_name || "Unnamed Site"}
                         </Link>
                       </CardTitle>
                       <p className="text-xs text-muted-foreground truncate mt-0.5">
-                        {site.normalized_base_url}
+                        {site.normalized_base_url || ""}
                       </p>
                     </div>
                     <Button
@@ -315,7 +318,7 @@ function ComparisonGrid({
                       size="icon"
                       className="size-6 shrink-0 -mr-1 -mt-1"
                       onClick={() => onRemove(site._id)}
-                      aria-label={`Remove ${site.site_name} from comparison`}
+                      aria-label={`Remove ${site.site_name || "site"} from comparison`}
                     >
                       <X className="size-3.5" />
                     </Button>
@@ -406,7 +409,7 @@ function ComparisonGrid({
                           >
                             <ExternalLink className="size-3 shrink-0" />
                             <span className="truncate">
-                              {new URL(url).pathname.split("/").pop() || url}
+                              {getUrlFilename(url)}
                             </span>
                           </Link>
                         ))}

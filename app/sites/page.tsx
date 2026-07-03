@@ -420,7 +420,7 @@ export default function SitesDirectory() {
                             href={`/site/${site._id}`}
                             className="hover:underline"
                           >
-                            {site.site_name}
+                            {site.site_name || "Unnamed Site"}
                           </Link>
                           <div className="text-xs text-muted-foreground truncate max-w-72">
                             {getDomainLabel(site.normalized_base_url)}
@@ -458,11 +458,16 @@ export default function SitesDirectory() {
                               <GitCompareArrowsIcon className="size-3.5" />
                             </Link>
                             <Link
-                              href={site.normalized_base_url}
+                              href={site.normalized_base_url || "#"}
                               target="_blank"
                               rel="noreferrer"
-                              className="inline-flex items-center justify-center size-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                              aria-label={`Visit ${site.site_name}`}
+                              className={cn(
+                                "inline-flex items-center justify-center size-7 rounded-md transition-colors",
+                                site.normalized_base_url
+                                  ? "text-muted-foreground hover:text-foreground hover:bg-accent"
+                                  : "text-muted-foreground/30 pointer-events-none",
+                              )}
+                              aria-label={`Visit ${site.site_name || "site"}`}
                             >
                               <ExternalLink className="size-3.5" />
                             </Link>
@@ -494,7 +499,7 @@ export default function SitesDirectory() {
                         <div className="flex items-start justify-between gap-2">
                           <div className="min-w-0 flex-1">
                             <CardTitle className="text-base truncate">
-                              {site.site_name}
+                              {site.site_name || "Unnamed Site"}
                             </CardTitle>
                             <p className="text-xs text-muted-foreground truncate">
                               {getDomainLabel(site.normalized_base_url)}
