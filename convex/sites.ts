@@ -211,6 +211,76 @@ export const getSitesStats = query({
   },
 });
 
+export const getInsights = query({
+  handler: async (ctx) => {
+    const allSites = await ctx.db.query("sites").collect();
+
+    if (allSites.length === 0) {
+      return {
+        total: 0,
+        avgScore: 0,
+        scoreDistribution: { critical: 0, poor: 0, fair: 0, good: 0, excellent: 0 },
+        categoryAverages: [],
+        staleCount: 0,
+      };
+    }
+
+    const distribution = { critical: 0, poor: 0, fair: 0, good: 0, excellent: 0 };
+    let sumScore = 0;
+    const categoryTotals: Record<string, { sum: number; count: number }> = {};
+    const now = Date.now();
+    const STALE_MS = 14 * 24 * 60 * 60 * 1000;
+    let staleCount = 0;
+
+    for (const site of allSites) {
+      sumScore += site.overall_score;
+
+      const score = site.overall_score;
+      if (score < 20) distribution.critical++;
+      else if (score < 40) distribution.poor++;
+      else if (score < 60) distribution.fair++;
+      else if (score < 80) distribution.good++;
+      else distribution.excellent++;
+
+      for (const cat of site.category_scores ?? []) {
+        if (!categoryTotals[cat.category_name]) {
+          categoryTotals[cat.category_name] = { sum: 0, count: 0 };
+        }
+        categoryTotals[cat.category_name].sum += cat.category_score;
+        categoryTotals[cat.category_name].count++;
+      }
+
+      const analyzed = new Date(site.last_analyzed).getTime();
+      if (!Number.isNaN(analyzed) && now - analyzed >= STALE_MS) {
+        staleCount++;
+      }
+    }
+
+    const avgScore = Math.round((sumScore / allSites.length) * 100) / 100;
+
+    // Find strongest/weakest categories
+    let strongest = { category_name: "", avgScore: 0 };
+    let weakest = { category_name: "", avgScore: 10 };
+
+    const categoryAverages = Object.entries(categoryTotals).map(([name, { sum, count }]) => {
+      const avg = Math.round((sum / count) * 10) / 10;
+      if (avg > strongest.avgScore) strongest = { category_name: name, avgScore: avg };
+      if (avg < weakest.avgScore) weakest = { category_name: name, avgScore: avg };
+      return { category_name: name, avgScore: avg };
+    });
+
+    return {
+      total: allSites.length,
+      avgScore,
+      scoreDistribution: distribution,
+      categoryAverages,
+      strongestCategory: strongest.category_name ? strongest : null,
+      weakestCategory: weakest.category_name ? weakest : null,
+      staleCount,
+    };
+  },
+});
+
 export const updateSiteAnalysis = internalMutation({
   args: {
     site_id: v.id("sites"),
