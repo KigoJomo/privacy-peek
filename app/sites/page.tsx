@@ -42,6 +42,7 @@ import {
   cn,
   getOverallScoreDisplay,
   formatRelativeTime,
+  getDomainLabel,
 } from "@/lib/utils";
 import {
   Search,
@@ -570,10 +571,4 @@ export default function SitesDirectory() {
   );
 }
 
-function getDomainLabel(url: string) {
-  try {
-    return new URL(url).hostname.replace(/^www\./, "");
-  } catch {
-    return url;
-  }
-}
+
