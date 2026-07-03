@@ -26,6 +26,7 @@ import {
   isAnalysisStale,
   getCategoryScoreDisplay,
   getOverallScoreDisplay,
+  getDomainLabel,
 } from "@/lib/utils";
 import Link from "next/link";
 import ScoreVisualizer from "@/components/ui/score-visualizer";
@@ -254,10 +255,4 @@ export function SiteCard({
   );
 }
 
-function getDomainLabel(url: string) {
-  try {
-    return new URL(url).hostname.replace(/^www\./, "");
-  } catch {
-    return url;
-  }
-}
+

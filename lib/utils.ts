@@ -98,6 +98,14 @@ export function getCategoryScoreDisplay(
   return clampScore(value, 10);
 }
 
+export function getDomainLabel(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return url;
+  }
+}
+
 export function slugify(text: string): string {
   return text
     .toLowerCase()

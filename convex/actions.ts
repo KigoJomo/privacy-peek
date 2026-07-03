@@ -356,17 +356,24 @@ const getOverallScore = async ({
   const appliedWeights = categoryWeights.filter((weight) =>
     categoryScores.some((score) => score.category_name === weight.category),
   );
+  const weightByCategory = new Map(
+    appliedWeights.map((w) => [w.category, w.weight]),
+  );
   const weightsTotal = appliedWeights.reduce((sum, w) => sum + w.weight, 0);
   if (weightsTotal === 0) {
     throw new Error("No category weights available for computed scores.");
   }
 
   const weight_x_score_sum = categoryScores
-    .map(
-      (c) =>
-        categoryWeights.find((cw) => cw.category === c.category_name)!.weight *
-        c.category_score,
-    )
+    .map((c) => {
+      const weight = weightByCategory.get(c.category_name);
+      if (weight === undefined) {
+        throw new Error(
+          `Missing weight for category: ${c.category_name}`,
+        );
+      }
+      return weight * c.category_score;
+    })
     .reduce((sum, product) => sum + product, 0);
 
   const result = 10 * (weight_x_score_sum / weightsTotal);
