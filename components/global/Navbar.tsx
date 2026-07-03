@@ -10,7 +10,7 @@ import {
 import Logo from './Logo';
 import { ModeToggle } from '@/components/ModeToggle';
 import { cn } from '@/lib/utils';
-import { BarChart3Icon, ListIcon } from 'lucide-react';
+import { AlertTriangleIcon, BarChart3Icon, ListIcon } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 
 export function NavBar() {
@@ -57,6 +57,20 @@ export function NavBar() {
           >
             <BarChart3Icon className="size-4" />
             <span className="hidden sm:inline">Compare</span>
+          </Link>
+        </NavigationMenuLink>
+        <NavigationMenuLink asChild>
+          <Link
+            href="/stale"
+            className={cn(
+              'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-colors',
+              pathname === '/stale'
+                ? 'bg-accent text-accent-foreground'
+                : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
+            )}
+          >
+            <AlertTriangleIcon className="size-4" />
+            <span className="hidden sm:inline">Stale</span>
           </Link>
         </NavigationMenuLink>
         <ModeToggle />
