@@ -18,7 +18,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const sites: MetadataRoute.Sitemap = site_ids.map((id) => {
     return {
-      url: `https://privacypeek.vercel.app/site/${id}`,
+      url: `https://privacy-peek.vercel.app/site/${id}`,
       lastModified: new Date(),
       changeFrequency: 'daily',
       priority: 0.5,

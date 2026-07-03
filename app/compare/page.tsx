@@ -47,7 +47,15 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Doc } from "@/convex/_generated/dataModel";
 
-export default function ComparePage() {
+type SiteBrief = {
+  _id: Id<"sites">;
+  site_name: string;
+  normalized_base_url: string;
+  overall_score: number;
+  last_analyzed: string;
+};
+
+export default function ComparePageWrapper() {
   return (
     <motion.div
       initial={{ opacity: 0 }}
