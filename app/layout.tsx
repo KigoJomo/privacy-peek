@@ -44,11 +44,19 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange>
           <ConvexClientProvider>
+            <a
+              href="#main-content"
+              className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:bg-background focus:text-foreground focus:px-4 focus:py-2 focus:rounded-lg focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              Skip to main content
+            </a>
             <NavBar />
             <div className="fixed -top-24 -left-24 -z-10 w-128 aspect-square rounded-full bg-gradient-to-br from-primary/10 via-accent/60 to-transparent blur-3xl will-change-transform" />
             <div className="fixed -bottom-24 -right-24 -z-10 w-128 aspect-square rounded-full bg-gradient-to-tl from-accent/60 via-primary/10 to-transparent blur-3xl will-change-transform" />
             <ErrorBoundary>
-              {children}
+              <main id="main-content" tabIndex={-1}>
+                {children}
+              </main>
             </ErrorBoundary>
           </ConvexClientProvider>
         </ThemeProvider>
