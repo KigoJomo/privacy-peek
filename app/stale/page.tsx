@@ -15,6 +15,7 @@ import {
   cn,
   formatRelativeTime,
   getAnalysisAgeInDays,
+  getDomainLabel,
   getOverallScoreDisplay,
   isAnalysisStale,
 } from "@/lib/utils";
@@ -304,9 +305,7 @@ export default function StaleAnalysesPage() {
                           <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
                             <span className="truncate max-w-48">
                               {site.normalized_base_url
-                                ? new URL(
-                                    site.normalized_base_url,
-                                  ).hostname.replace(/^www\./, "")
+                                ? getDomainLabel(site.normalized_base_url)
                                 : "—"}
                             </span>
                             <span className="hidden xs:inline">·</span>

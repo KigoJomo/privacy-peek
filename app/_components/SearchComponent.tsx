@@ -144,8 +144,6 @@ export default function SearchComponent() {
     return () => window.clearTimeout(timeout);
   }, [jobId, ongoingJob?.status]);
 
-  const hasValue = form.watch("search_term");
-
   return (
     <Form {...form}>
       <form
