@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -14,18 +14,29 @@ export function ReanalyzeButton({ siteId }: { siteId: Id<"sites"> }) {
   const [error, setError] = useState<string | null>(null);
   const reanalyze = useAction(api.actions.reanalyzeSite);
   const router = useRouter();
+  const mountedRef = useRef(true);
+  const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+      if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
+    };
+  }, []);
 
   const handleReanalyze = async () => {
     setState("analyzing");
     setError(null);
     try {
       await reanalyze({ site_id: siteId });
+      if (!mountedRef.current) return;
       setState("done");
       // Give the user a moment to see the success state, then refresh
-      setTimeout(() => {
-        router.refresh();
+      refreshTimerRef.current = setTimeout(() => {
+        if (mountedRef.current) router.refresh();
       }, 1500);
     } catch (err) {
+      if (!mountedRef.current) return;
       setState("error");
       setError(err instanceof Error ? err.message : "Re-analysis failed. Please try again.");
     }

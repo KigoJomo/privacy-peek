@@ -56,6 +56,7 @@ import {
   Download,
   AlertTriangle,
   ChartNoAxesColumnIncreasing,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -135,61 +136,65 @@ export default function SitesDirectory() {
   const downloadCSV = () => {
     if (!exportData || exportData.length === 0) return;
 
-    const headers = [
-      "Site Name",
-      "Domain",
-      "Overall Score",
-      "Reasoning",
-      "Last Analyzed",
-      "Data Collection",
-      "Data Sharing",
-      "Data Retention and Security",
-      "User Rights and Controls",
-      "Transparency and Clarity",
-      "Policy Documents",
-    ];
-
-    const rows = exportData.map((site) => {
-      const domain = (() => {
-        try {
-          return new URL(site.normalized_base_url).hostname.replace(/^www\./, "");
-        } catch {
-          return site.normalized_base_url;
-        }
-      })();
-
-      const catScores: Record<string, number | string> = {};
-      for (const c of site.category_scores ?? []) {
-        catScores[c.category_name] = c.category_score;
-      }
-
-      return [
-        site.site_name,
-        domain,
-        site.overall_score,
-        `"${(site.reasoning ?? "").replace(/"/g, '""')}"`,
-        site.last_analyzed,
-        catScores["Data Collection"] ?? "",
-        catScores["Data Sharing"] ?? "",
-        catScores["Data Retention and Security"] ?? "",
-        catScores["User Rights and Controls"] ?? "",
-        catScores["Transparency and Clarity"] ?? "",
-        `"${(site.policy_documents_urls ?? []).join("; ")}"`,
+    try {
+      const headers = [
+        "Site Name",
+        "Domain",
+        "Overall Score",
+        "Reasoning",
+        "Last Analyzed",
+        "Data Collection",
+        "Data Sharing",
+        "Data Retention and Security",
+        "User Rights and Controls",
+        "Transparency and Clarity",
+        "Policy Documents",
       ];
-    });
 
-    const csvContent = [
-      headers.join(","),
-      ...rows.map((row) => row.join(",")),
-    ].join("\n");
+      const rows = exportData.map((site) => {
+        const domain = (() => {
+          try {
+            return new URL(site.normalized_base_url).hostname.replace(/^www\./, "");
+          } catch {
+            return site.normalized_base_url;
+          }
+        })();
 
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `privacy-peek-sites-${new Date().toISOString().split("T")[0]}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
+        const catScores: Record<string, number | string> = {};
+        for (const c of site.category_scores ?? []) {
+          catScores[c.category_name] = c.category_score;
+        }
+
+        return [
+          site.site_name,
+          domain,
+          site.overall_score,
+          `"${(site.reasoning ?? "").replace(/"/g, '""')}"`,
+          site.last_analyzed,
+          catScores["Data Collection"] ?? "",
+          catScores["Data Sharing"] ?? "",
+          catScores["Data Retention and Security"] ?? "",
+          catScores["User Rights and Controls"] ?? "",
+          catScores["Transparency and Clarity"] ?? "",
+          `"${(site.policy_documents_urls ?? []).join("; ")}"`,
+        ];
+      });
+
+      const csvContent = [
+        headers.join(","),
+        ...rows.map((row) => row.join(",")),
+      ].join("\n");
+
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `privacy-peek-sites-${new Date().toISOString().split("T")[0]}.csv`;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Failed to export CSV:", err);
+    }
   };
 
   const renderPageNumbers = () => {
@@ -328,8 +333,22 @@ export default function SitesDirectory() {
               setSearchQuery(e.target.value);
               setPage(1);
             }}
-            className="pl-9"
+            className="pl-9 pr-9"
+            aria-label="Search sites by name or domain"
           />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => {
+                setSearchQuery("");
+                setPage(1);
+              }}
+              className="absolute right-2 top-1/2 -translate-y-1/2 size-6 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+              aria-label="Clear search"
+            >
+              <X className="size-4" />
+            </button>
+          )}
         </div>
 
         {/* Loading state */}
@@ -386,6 +405,11 @@ export default function SitesDirectory() {
                       <button
                         onClick={() => toggleSort("site_name")}
                         className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+                        aria-label={`Sort by site name${
+                          sortField === "site_name"
+                            ? ` (${sortDir === "asc" ? "ascending" : "descending"})`
+                            : ""
+                        }`}
                       >
                         Site
                         <SortIcon field="site_name" />
@@ -395,6 +419,11 @@ export default function SitesDirectory() {
                       <button
                         onClick={() => toggleSort("last_analyzed")}
                         className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+                        aria-label={`Sort by last analyzed${
+                          sortField === "last_analyzed"
+                            ? ` (${sortDir === "asc" ? "ascending" : "descending"})`
+                            : ""
+                        }`}
                       >
                         Analyzed
                         <SortIcon field="last_analyzed" />
@@ -404,6 +433,11 @@ export default function SitesDirectory() {
                       <button
                         onClick={() => toggleSort("overall_score")}
                         className="inline-flex items-center gap-1 hover:text-foreground transition-colors ml-auto"
+                        aria-label={`Sort by overall score${
+                          sortField === "overall_score"
+                            ? ` (${sortDir === "asc" ? "ascending" : "descending"})`
+                            : ""
+                        }`}
                       >
                         Score
                         <SortIcon field="overall_score" />
