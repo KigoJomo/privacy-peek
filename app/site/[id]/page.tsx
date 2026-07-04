@@ -22,6 +22,7 @@ import NotFound from "../_components/not-found";
 import { fetchQuery } from "convex/nextjs";
 import { Metadata } from "next";
 import { ReanalyzeButton } from "@/components/reanalyze-button";
+import { TagBadges } from "@/components/tag-badges";
 
 interface SitePageProps {
   params: Promise<{
@@ -65,6 +66,14 @@ export default async function SitePage({ params }: SitePageProps) {
   const safePolicyDocuments = policy_documents_urls ?? [];
   const stale = isAnalysisStale(last_analyzed);
 
+  // Fetch tags for this site
+  let tags: { _id: string; tag: string; site_id: string }[] = [];
+  try {
+    tags = await fetchQuery(api.tags.getTagsForSite, { site_id: id });
+  } catch {
+    // tags are optional
+  }
+
   return (
     <>
       <section className={cn("flex flex-col gap-6")}>
@@ -96,6 +105,9 @@ export default async function SitePage({ params }: SitePageProps) {
               </Link>
             ) : (
               <span className="text-muted-foreground">No URL available</span>
+            )}
+            {tags.length > 0 && (
+              <TagBadges tags={tags.map((t) => t.tag)} />
             )}
             <span className="">
               Last analysed {formatRelativeTime(last_analyzed)}.
