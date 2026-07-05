@@ -77,7 +77,7 @@ export default function DashboardPage() {
     { name: "80-100", value: stats.scoreDistribution[4], fill: DISTRIBUTION_COLORS["80-100"] },
   ];
 
-  const categoryData = stats.categoryAverages.map((cat, i) => ({
+  const categoryData = stats.categoryAverages.map((cat: { category_name: string; avg_score: number }, i: number) => ({
     name: cat.category_name,
     value: cat.avg_score,
     fill: CATEGORY_COLORS[i % CATEGORY_COLORS.length],
@@ -173,7 +173,7 @@ export default function DashboardPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {scoreDistData.some((d) => d.value > 0) ? (
+              {scoreDistData.some((d: { value: number }) => d.value > 0) ? (
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={scoreDistData} margin={{ top: 8, right: 8, left: -16, bottom: 4 }}>
@@ -190,7 +190,7 @@ export default function DashboardPage() {
                         formatter={(value: number, _name: string) => [`${value} site${value !== 1 ? "s" : ""}`]}
                       />
                       <Bar dataKey="value" radius={[6, 6, 0, 0]} maxBarSize={60}>
-                        {scoreDistData.map((entry, i) => (
+                        {scoreDistData.map((entry: { fill: string; name: string; value: number }, i: number) => (
                           <Cell key={i} fill={entry.fill} />
                         ))}
                       </Bar>
@@ -257,7 +257,7 @@ export default function DashboardPage() {
                         formatter={(value: number) => [value.toFixed(1) + " /10"]}
                       />
                       <Bar dataKey="value" radius={[0, 6, 6, 0]} maxBarSize={24}>
-                        {categoryData.map((entry, i) => (
+                        {categoryData.map((entry: { fill: string }, i: number) => (
                           <Cell key={i} fill={entry.fill} />
                         ))}
                       </Bar>
@@ -286,7 +286,7 @@ export default function DashboardPage() {
             <CardContent className="pt-0">
               {stats.bestSites.length > 0 ? (
                 <div className="flex flex-col gap-1">
-                  {stats.bestSites.map((site, i) => {
+                  {stats.bestSites.map((site: { _id: string; site_name: string | undefined; overall_score: number }, i: number) => {
                     const safeScore = getOverallScoreDisplay(site.overall_score);
                     return (
                       <Link
@@ -332,7 +332,7 @@ export default function DashboardPage() {
             <CardContent className="pt-0">
               {stats.worstSites.length > 0 ? (
                 <div className="flex flex-col gap-1">
-                  {stats.worstSites.map((site, i) => {
+                  {stats.worstSites.map((site: { _id: string; site_name: string | undefined; overall_score: number }, i: number) => {
                     const safeScore = getOverallScoreDisplay(site.overall_score);
                     return (
                       <Link

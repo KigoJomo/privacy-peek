@@ -91,7 +91,7 @@ function ComparePageContent() {
   useEffect(() => {
     const addId = searchParams.get("add") as Id<"sites"> | null;
     if (addId && allSites && !selectedIds.includes(addId)) {
-      const exists = allSites.some((s) => s._id === addId);
+      const exists = allSites.some((s: { _id: Id<"sites"> }) => s._id === addId);
       if (exists) {
         setSelectedIds((prev) => [...prev, addId]);
       }
@@ -105,7 +105,7 @@ function ComparePageContent() {
   const availableSites = useMemo(() => {
     if (!allSites) return [];
     return allSites.filter(
-      (s) => !selectedIds.includes(s._id as Id<"sites">),
+      (s: { _id: Id<"sites"> }) => !selectedIds.includes(s._id as Id<"sites">),
     );
   }, [allSites, selectedIds]);
 
@@ -166,7 +166,7 @@ function ComparePageContent() {
               <CommandList>
                 <CommandEmpty>No sites found.</CommandEmpty>
                 <CommandGroup>
-                  {availableSites.map((site) => (
+                  {availableSites.map((site: { _id: Id<"sites">; site_name: string; normalized_base_url: string; overall_score: number }) => (
                     <CommandItem
                       key={site._id}
                       value={`${site.site_name} ${site.normalized_base_url}`}

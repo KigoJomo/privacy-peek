@@ -92,7 +92,7 @@ export default function SitesDirectory() {
 
     const q = searchQuery.toLowerCase().trim();
     return allSites.filter(
-      (site) =>
+      (site: { _id: Id<"sites">; site_name: string; normalized_base_url: string; overall_score: number; last_analyzed: string }) =>
         site.site_name?.toLowerCase().includes(q) ||
         site.normalized_base_url?.toLowerCase().includes(q),
     );
@@ -149,7 +149,16 @@ export default function SitesDirectory() {
       "Policy Documents",
     ];
 
-    const rows = exportData.map((site) => {
+    const rows = exportData.map((site: {
+          _id: Id<"sites">;
+          site_name?: string;
+          normalized_base_url: string;
+          overall_score: number;
+          last_analyzed: string;
+          reasoning?: string;
+          policy_documents_urls?: string[];
+          category_scores?: { category_name: string; category_score: number }[];
+        }) => {
       const domain = (() => {
         try {
           return new URL(site.normalized_base_url).hostname.replace(/^www\./, "");
@@ -180,7 +189,7 @@ export default function SitesDirectory() {
 
     const csvContent = [
       headers.join(","),
-      ...rows.map((row) => row.join(",")),
+      ...rows.map((row: (string | number | undefined)[]) => row.join(",")),
     ].join("\n");
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -414,7 +423,13 @@ export default function SitesDirectory() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {paginatedSites.map((site) => {
+                  {paginatedSites.map((site: {
+                    _id: Id<"sites">;
+                    site_name?: string;
+                    normalized_base_url: string;
+                    overall_score: number;
+                    last_analyzed: string;
+                  }) => {
                     const safeScore = getOverallScoreDisplay(site.overall_score);
                     return (
                       <TableRow key={site._id}>
@@ -485,7 +500,13 @@ export default function SitesDirectory() {
 
             {/* Mobile cards */}
             <div className="grid grid-cols-1 gap-3 xl:hidden">
-              {paginatedSites.map((site) => {
+              {paginatedSites.map((site: {
+                _id: Id<"sites">;
+                site_name?: string;
+                normalized_base_url: string;
+                overall_score: number;
+                last_analyzed: string;
+              }) => {
                 const safeScore = getOverallScoreDisplay(site.overall_score);
                 return (
                   <Link

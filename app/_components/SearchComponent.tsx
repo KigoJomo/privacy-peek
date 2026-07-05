@@ -40,7 +40,7 @@ import { startTransition, useActionState, useEffect, useRef, useState } from "re
 import { useForm } from "react-hook-form";
 import { motion, AnimatePresence } from "framer-motion";
 import z from "zod";
-import { ResultItem } from "@/convex/actions";
+import type { ResultItem } from "@/convex/lib";
 import ScoreVisualizer from "@/components/ui/score-visualizer";
 import { Id } from "@/convex/_generated/dataModel";
 import type { AnalysisStatus } from "@/convex/lib";
@@ -297,7 +297,7 @@ export default function SearchComponent() {
 
 function JobStatus({ job_id }: { job_id: Id<"analysisJobs"> }) {
   const ongoingJob = useQuery(api.analysisJobs.getJob, { job_id });
-  const status = ongoingJob?.status;
+  const status = ongoingJob?.status as AnalysisStatus | undefined;
 
   type StatusColor =
     | "text-muted-foreground"

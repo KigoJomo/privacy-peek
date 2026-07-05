@@ -11,13 +11,9 @@ import {
   categoryWeights,
   SiteDetails,
   RequireOnly,
+  ResultItem,
   AnalysisStatus,
 } from "./lib";
-
-export type ResultItem = RequireOnly<
-  SiteDetails,
-  "_id" | "normalized_base_url" | "site_name" | "overall_score" | "reasoning"
->;
 
 const groq = createGroq({
   apiKey: process.env.GROQ_API_KEY,
@@ -74,6 +70,7 @@ export const getSiteAnalysis = action({
           console.log("\nFound Matching Record");
           console.log(`\nAdded new tags for site ${site._id} => ${new_tag}`);
           await statusUpdate("complete");
+          sites.push(site as any);
           return sites;
         } else {
           console.log("\nNo Matching Records. Beginning Analysis.");
@@ -94,7 +91,9 @@ export const getSiteAnalysis = action({
             site_name: siteMetaData.site_name,
             policy_documents_urls: siteMetaData.policy_documents_urls,
              tags: [
-               ...siteMetaData.tags.map((tag) => tag.toLowerCase()),
+               ...(siteMetaData.tags ?? []).map((tag: string) =>
+                 tag.toLowerCase(),
+               ),
                user_input.toLowerCase(),
                siteMetaData.normalized_base_url.toLowerCase(),
              ],
