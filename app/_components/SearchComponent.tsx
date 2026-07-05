@@ -179,6 +179,7 @@ export default function SearchComponent() {
                     <Input
                       placeholder="Enter a name or url..."
                       className="text-lg! h-fit! py-3! rounded-full pl-12! pr-10!"
+                      autoFocus
                       {...field}
                     />
                   </div>
