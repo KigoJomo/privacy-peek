@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { api } from "@/convex/_generated/api";
-import { cn } from "@/lib/utils";
+import { cn, safeSiteName } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAction, useMutation, useQuery } from "convex/react";
 import {
@@ -143,8 +143,6 @@ export default function SearchComponent() {
 
     return () => window.clearTimeout(timeout);
   }, [jobId, ongoingJob?.status]);
-
-  const hasValue = form.watch("search_term");
 
   return (
     <Form {...form}>
@@ -401,7 +399,7 @@ export function ResultCard({ site }: { site: ResultItem }) {
       >
         <CardHeader>
           <CardTitle className="h-full flex items-center row-span-2">
-            <h4>{site_name}</h4>
+            <h4>{safeSiteName(site_name)}</h4>
           </CardTitle>
           <CardAction className="flex items-center gap-2">
             <span className="text-sm">Overall Score /100</span>
@@ -414,7 +412,7 @@ export function ResultCard({ site }: { site: ResultItem }) {
           </CardAction>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          <span className="text-muted-foreground">{reasoning}</span>
+          <span className="text-foreground/80">{reasoning}</span>
 
           <span className="text-accent-foreground text-sm font-medium">
             Click for more details &rarr;

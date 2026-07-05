@@ -106,6 +106,36 @@ export function getDomainLabel(url: string): string {
   }
 }
 
+/** Filter out malformed or non-http(s) URLs */
+export function filterValidUrls(urls: (string | undefined | null)[]): string[] {
+  return (urls ?? []).filter((u): u is string => {
+    if (!u || typeof u !== "string") return false;
+    try {
+      const parsed = new URL(u);
+      return parsed.protocol === "http:" || parsed.protocol === "https:";
+    } catch {
+      return false;
+    }
+  });
+}
+
+/** Provide a safe fallback for site_name */
+export function safeSiteName(name: string | undefined | null): string {
+  return name && typeof name === "string" && name.trim().length > 0
+    ? name
+    : "Unnamed Site";
+}
+
+/** Provide a safe fallback for relative timestamps */
+export function safeRelativeTime(dateStr: string | undefined | null): string {
+  if (!dateStr) return "Unknown";
+  try {
+    return formatRelativeTime(dateStr);
+  } catch {
+    return "Unknown";
+  }
+}
+
 /** Safely extract the last path segment from a URL, or return the raw url as fallback if it's malformed. */
 export function getUrlFilename(url: string): string {
   try {
