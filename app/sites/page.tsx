@@ -132,15 +132,20 @@ export default function SitesDirectory() {
     );
   };
 
+  /** Escape a single CSV field — handles commas, quotes, and newlines */
+  const csvField = (value: unknown): string => {
+    const str = String(value ?? "");
+    // RFC 4180: wrap in quotes if contains comma, quote, or newline
+    if (/[",\n\r]/.test(str)) {
+      return `"${str.replace(/"/g, '""')}"`;
+    }
+    return str;
+  };
+
   const downloadCSV = () => {
     if (!exportData || exportData.length === 0) return;
 
     try {
-      const esc = (val: unknown) => {
-        const s = val == null ? "" : String(val);
-        return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-      };
-
       const headers = [
         "Site Name",
         "Domain",
@@ -162,17 +167,17 @@ export default function SitesDirectory() {
         }
 
         return [
-          esc(site.site_name),
-          esc(getDomainLabel(site.normalized_base_url || "")),
-          esc(site.overall_score),
-          esc(site.reasoning),
-          esc(site.last_analyzed),
-          esc(catScores["Data Collection"] ?? ""),
-          esc(catScores["Data Sharing"] ?? ""),
-          esc(catScores["Data Retention and Security"] ?? ""),
-          esc(catScores["User Rights and Controls"] ?? ""),
-          esc(catScores["Transparency and Clarity"] ?? ""),
-          esc((site.policy_documents_urls ?? []).join("; ")),
+          csvField(site.site_name),
+          csvField(getDomainLabel(site.normalized_base_url || "")),
+          csvField(site.overall_score),
+          csvField(site.reasoning ?? ""),
+          csvField(site.last_analyzed),
+          csvField(catScores["Data Collection"] ?? ""),
+          csvField(catScores["Data Sharing"] ?? ""),
+          csvField(catScores["Data Retention and Security"] ?? ""),
+          csvField(catScores["User Rights and Controls"] ?? ""),
+          csvField(catScores["Transparency and Clarity"] ?? ""),
+          csvField((site.policy_documents_urls ?? []).join("; ")),
         ];
       });
 
@@ -186,8 +191,12 @@ export default function SitesDirectory() {
       const link = document.createElement("a");
       link.href = url;
       link.download = `privacy-peek-sites-${new Date().toISOString().split("T")[0]}.csv`;
+      const cleanup = () => URL.revokeObjectURL(url);
+      link.addEventListener("click", () => requestAnimationFrame(cleanup), {
+        once: true,
+      });
       link.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      setTimeout(cleanup, 10000);
     } catch (err) {
       console.error("Failed to export CSV:", err);
     }
@@ -586,4 +595,3 @@ export default function SitesDirectory() {
     </>
   );
 }
-

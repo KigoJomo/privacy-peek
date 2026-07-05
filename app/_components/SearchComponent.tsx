@@ -383,7 +383,6 @@ export function ResultCard({ site }: { site: ResultItem }) {
     typeof overall_score === "number" && Number.isFinite(overall_score)
       ? getOverallScoreDisplay(overall_score)
       : "—";
-
   return (
     <Link
       href={`/site/${site._id}`}

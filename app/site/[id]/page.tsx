@@ -38,12 +38,20 @@ export default async function SitePage({ params }: SitePageProps) {
 
   const { id } = await params;
 
+  const isLikelyValidId = (str: string): boolean =>
+    /^[a-zA-Z0-9_-]{28}$/.test(str);
+
+  if (!isLikelyValidId(id)) {
+    return <NotFound />;
+  }
+
   let full_site_details: Awaited<ReturnType<typeof fetchQuery<typeof api.sites.getFullSiteDetails>>>;
   try {
     full_site_details = await fetchQuery(api.sites.getFullSiteDetails, {
       site_id: id,
     });
-  } catch {
+  } catch (err) {
+    console.error("SitePage failed to load site details", { siteId: id, err });
     return (
       <section className="min-h-[60dvh] flex flex-col items-center justify-center gap-4 px-4 text-center">
         <h2>Unable to load site</h2>

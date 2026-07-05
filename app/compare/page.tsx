@@ -224,6 +224,23 @@ function ComparePageContent() {
           </motion.div>
         )}
 
+        {/* Loading state when sites are selected but data hasn't arrived yet */}
+        {!selectedSites && selectedIds.length > 0 && (
+          <div className="flex-1 flex items-center justify-center">
+            <p className="text-muted-foreground animate-pulse">
+              Loading selected sites...
+            </p>
+          </div>
+        )}
+
+        {!selectedSites && selectedIds.length === 0 && (
+          <div className="flex-1 flex items-center justify-center">
+            <p className="text-muted-foreground animate-pulse">
+              Loading available sites...
+            </p>
+          </div>
+        )}
+
         {selectedSites && selectedSites.length === 1 && (
           <motion.div
             key="single"
@@ -251,14 +268,6 @@ function ComparePageContent() {
           >
             <ComparisonGrid sites={selectedSites} onRemove={removeSite} />
           </motion.div>
-        )}
-
-        {!selectedSites && (
-          <div className="flex-1 flex items-center justify-center">
-            <p className="text-muted-foreground animate-pulse">
-              Loading sites...
-            </p>
-          </div>
         )}
       </section>
     </motion.div>
