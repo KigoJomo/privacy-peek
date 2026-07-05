@@ -51,8 +51,8 @@ export default function RootLayout({
               Skip to main content
             </a>
             <NavBar />
-            <div className="fixed -top-24 -left-24 -z-10 w-128 aspect-square rounded-full bg-gradient-to-br from-primary/10 via-accent/60 to-transparent blur-3xl will-change-transform" />
-            <div className="fixed -bottom-24 -right-24 -z-10 w-128 aspect-square rounded-full bg-gradient-to-tl from-accent/60 via-primary/10 to-transparent blur-3xl will-change-transform" />
+            <div className="fixed -top-24 -left-24 -z-10 w-128 aspect-square rounded-full bg-gradient-to-br from-primary/15 via-accent/60 to-transparent blur-3xl animate-blob" />
+            <div className="fixed -bottom-24 -right-24 -z-10 w-128 aspect-square rounded-full bg-gradient-to-tl from-accent/60 via-primary/15 to-transparent blur-3xl animate-blob-delayed" />
             <ErrorBoundary>
               <main id="main-content" tabIndex={-1}>
                 {children}

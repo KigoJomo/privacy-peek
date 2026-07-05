@@ -37,7 +37,7 @@ export function NavBar() {
               className={cn(
                 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-colors',
                 pathname === '/sites'
-                  ? 'bg-accent text-accent-foreground'
+                  ? 'bg-accent text-accent-foreground font-medium'
                   : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
               )}
             >
@@ -53,7 +53,7 @@ export function NavBar() {
               className={cn(
                 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-colors',
                 pathname === '/compare'
-                  ? 'bg-accent text-accent-foreground'
+                  ? 'bg-accent text-accent-foreground font-medium'
                   : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
               )}
             >
@@ -69,7 +69,7 @@ export function NavBar() {
               className={cn(
                 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-colors',
                 pathname === '/stale'
-                  ? 'bg-accent text-accent-foreground'
+                  ? 'bg-accent text-accent-foreground font-medium'
                   : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
               )}
             >
@@ -85,7 +85,7 @@ export function NavBar() {
               className={cn(
                 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-colors',
                 pathname === '/dashboard'
-                  ? 'bg-accent text-accent-foreground'
+                  ? 'bg-accent text-accent-foreground font-medium'
                   : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
               )}
             >

@@ -33,8 +33,12 @@ export default function Home() {
       <section className="flex flex-col items-center gap-10 md:gap-14">
         <motion.div
           variants={childVariants}
-          className="w-full flex flex-col items-center gap-2 text-center"
+          className="w-full flex flex-col items-center gap-3 text-center"
         >
+          <span className="inline-flex items-center gap-1.5 rounded-full border bg-accent/50 px-3.5 py-1 text-xs font-medium text-accent-foreground tracking-wide">
+            <span className="size-1.5 rounded-full bg-accent-foreground" />
+            Privacy Policy Scanner
+          </span>
           <h1 className="capitalize leading-none">
             your privacy matters
           </h1>

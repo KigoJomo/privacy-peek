@@ -304,6 +304,7 @@ html {
   height: 100dvh;
   transition: height 0.3s ease-in-out;
   padding: 0;
+  scroll-behavior: smooth;
 
   body {
     height: 100dvh;
@@ -360,13 +361,77 @@ html {
   scrollbar-width: none; /* Firefox */
 }
 
+@keyframes blob-drift {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  33% {
+    transform: translate(30px, -25px) rotate(2deg);
+  }
+  66% {
+    transform: translate(-25px, 20px) rotate(-1deg);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+@keyframes scale-in-up {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-blob {
+  animation: blob-drift 24s ease-in-out infinite;
+}
+
+.animate-blob-delayed {
+  animation: blob-drift 28s ease-in-out 6s infinite;
+}
+
+.animate-scale-in-up {
+  animation: scale-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--muted-foreground) 8%, transparent) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-in-up,
   .animate-fade-in,
-  .animate-scale-in {
+  .animate-scale-in,
+  .animate-scale-in-up,
+  .animate-blob,
+  .animate-blob-delayed,
+  .animate-shimmer {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;
+  }
+
+  html {
+    scroll-behavior: auto !important;
   }
 
   *,
@@ -375,6 +440,5 @@ html {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
   }
 }
