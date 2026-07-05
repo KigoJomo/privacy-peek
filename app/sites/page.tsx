@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/pagination";
 import { Separator } from "@/components/ui/separator";
 import ScoreVisualizer from "@/components/ui/score-visualizer";
+import { TagBadges } from "@/components/tag-badges";
 import {
   cn,
   getOverallScoreDisplay,
@@ -56,9 +57,12 @@ import {
   Download,
   AlertTriangle,
   ChartNoAxesColumnIncreasing,
+  X,
+  Tags,
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import React, { Suspense } from "react";
 
 type SortField = "site_name" | "overall_score" | "last_analyzed";
 type SortDir = "asc" | "desc";
@@ -66,12 +70,30 @@ type SortDir = "asc" | "desc";
 const ITEMS_PER_PAGE = 20;
 
 export default function SitesDirectory() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex-1 flex items-center justify-center min-h-[40dvh]">
+          <p className="text-muted-foreground animate-pulse">Loading sites...</p>
+        </div>
+      }
+    >
+      <SitesContent />
+    </Suspense>
+  );
+}
+
+function SitesContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const activeTag = searchParams.get("tag");
+
   const allSites = useQuery(api.sites.getSitesBrief, { limit: 200 });
   const exportData = useQuery(api.sites.getAllSitesExportData);
   const stats = useQuery(api.sites.getSitesStats);
+  const allTags = useQuery(api.tags.getAllUniqueTags);
 
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(activeTag ?? "");
   const [sortField, setSortField] = useState<SortField>("last_analyzed");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [page, setPage] = useState(1);
@@ -86,17 +108,37 @@ export default function SitesDirectory() {
     setPage(1);
   };
 
+  // Fetch tag mappings for all sites relevant to the current view
+  const siteTags = useQuery(api.tags.getTagsForSites, {
+    site_ids: (allSites ?? []).map((s) => s._id),
+  });
+
   const filteredSites = useMemo(() => {
     if (!allSites) return [];
-    if (!searchQuery.trim()) return allSites;
 
-    const q = searchQuery.toLowerCase().trim();
-    return allSites.filter(
-      (site) =>
-        site.site_name?.toLowerCase().includes(q) ||
-        site.normalized_base_url?.toLowerCase().includes(q),
-    );
-  }, [allSites, searchQuery]);
+    let result = [...allSites];
+
+    // Filter by tag (always applied when activeTag is set)
+    if (activeTag) {
+      const lowerTag = activeTag.toLowerCase().trim();
+      result = result.filter((site) => {
+        const tags = siteTags?.[site._id] ?? [];
+        return tags.some((t) => t.toLowerCase().includes(lowerTag));
+      });
+    }
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      result = result.filter(
+        (site) =>
+          site.site_name?.toLowerCase().includes(q) ||
+          site.normalized_base_url?.toLowerCase().includes(q),
+      );
+    }
+
+    return result;
+  }, [allSites, searchQuery, activeTag, siteTags]);
 
   const sortedSites = useMemo(() => {
     const sorted = [...filteredSites];
@@ -122,6 +164,14 @@ export default function SitesDirectory() {
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE,
   );
+
+  const clearTagFilter = () => {
+    const url = new URL(window.location.href);
+    url.searchParams.delete("tag");
+    router.replace(url.pathname, { scroll: false });
+    setSearchQuery("");
+    setPage(1);
+  };
 
   const SortIcon = ({ field }: { field: SortField }) => {
     if (sortField !== field) return <ArrowUpDown className="size-3 opacity-40" />;
@@ -286,6 +336,47 @@ export default function SitesDirectory() {
           </p>
         </div>
 
+        {/* Active tag filter chip */}
+        {activeTag && (
+          <div className="flex items-center gap-2 rounded-2xl border bg-accent/30 px-4 py-2.5">
+            <Tags className="size-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">
+              Filtering by tag:
+            </span>
+            <Badge variant="secondary" className="text-xs font-normal">
+              {activeTag}
+            </Badge>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearTagFilter}
+              className="ml-auto h-7 gap-1 text-xs"
+            >
+              <X className="size-3" />
+              Clear
+            </Button>
+          </div>
+        )}
+
+        {/* Popular tags cloud */}
+        {!activeTag && allTags && allTags.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2 rounded-2xl border bg-card px-4 py-2.5">
+            <Tags className="size-4 text-muted-foreground shrink-0" />
+            <span className="text-xs text-muted-foreground mr-1">Browse by tag:</span>
+            {allTags.slice(0, 15).map(({ tag, count }) => (
+              <Link key={tag} href={`/sites?tag=${encodeURIComponent(tag)}`}>
+                <Badge
+                  variant="secondary"
+                  className="cursor-pointer text-xs font-normal hover:bg-secondary/80 transition-colors"
+                >
+                  {tag}
+                  <span className="ml-1 text-muted-foreground/60">{count}</span>
+                </Badge>
+              </Link>
+            ))}
+          </div>
+        )}
+
         {/* Stats summary */}
         {stats && stats.total > 0 && (
           <div className="flex flex-wrap items-center gap-4 rounded-2xl border bg-card px-5 py-3">
@@ -357,16 +448,31 @@ export default function SitesDirectory() {
             <ListIcon className="size-12 opacity-40" />
             <div className="max-w-sm">
               <p className="font-medium text-foreground">
-                {searchQuery
-                  ? "No sites match your search"
-                  : "No sites analyzed yet"}
+                {activeTag
+                  ? `No sites tagged "${activeTag}"`
+                  : searchQuery
+                    ? "No sites match your search"
+                    : "No sites analyzed yet"}
               </p>
               <p className="text-sm">
-                {searchQuery
-                  ? "Try a different search term or browse all sites."
-                  : "Search for a site on the home page to get started."}
+                {activeTag
+                  ? "Try a different tag or browse all sites."
+                  : searchQuery
+                    ? "Try a different search term or browse all sites."
+                    : "Search for a site on the home page to get started."}
               </p>
             </div>
+            {activeTag && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={clearTagFilter}
+                className="gap-1"
+              >
+                <X className="size-3.5" />
+                Clear tag filter
+              </Button>
+            )}
           </div>
         )}
 
@@ -375,7 +481,8 @@ export default function SitesDirectory() {
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <span>
               {sortedSites.length} site{sortedSites.length !== 1 ? "s" : ""}
-              {searchQuery && ` matching "${searchQuery}"`}
+              {searchQuery && !activeTag && ` matching "${searchQuery}"`}
+              {activeTag && ` tagged "${activeTag}"`}
             </span>
             {totalPages > 1 && (
               <span>
@@ -401,6 +508,7 @@ export default function SitesDirectory() {
                         <SortIcon field="site_name" />
                       </button>
                     </TableHead>
+                    <TableHead>Tags</TableHead>
                     <TableHead>
                       <button
                         onClick={() => toggleSort("last_analyzed")}
@@ -425,6 +533,7 @@ export default function SitesDirectory() {
                 <TableBody>
                   {paginatedSites.map((site) => {
                     const safeScore = getOverallScoreDisplay(site.overall_score);
+                    const tags = siteTags?.[site._id] ?? [];
                     return (
                       <TableRow key={site._id}>
                         <TableCell className="font-medium whitespace-normal">
@@ -437,6 +546,9 @@ export default function SitesDirectory() {
                           <div className="text-xs text-muted-foreground truncate max-w-72">
                             {getDomainLabel(site.normalized_base_url)}
                           </div>
+                        </TableCell>
+                        <TableCell>
+                          <TagBadges tags={tags} variant="compact" />
                         </TableCell>
                         <TableCell className="text-muted-foreground">
                           {formatRelativeTime(site.last_analyzed)}
@@ -496,6 +608,7 @@ export default function SitesDirectory() {
             <div className="grid grid-cols-1 gap-3 xl:hidden">
               {paginatedSites.map((site) => {
                 const safeScore = getOverallScoreDisplay(site.overall_score);
+                const tags = siteTags?.[site._id] ?? [];
                 return (
                   <Link
                     key={site._id}
@@ -536,22 +649,27 @@ export default function SitesDirectory() {
                           </div>
                         </div>
                       </CardHeader>
-                      <CardContent className="py-2 px-4 flex items-center justify-between">
-                        <span className="text-xs text-muted-foreground">
-                          Analyzed {formatRelativeTime(site.last_analyzed)}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            router.push(`/compare?add=${site._id}`);
-                          }}
-                          className="inline-flex items-center justify-center size-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                          aria-label={`Compare ${site.site_name}`}
-                        >
-                          <GitCompareArrowsIcon className="size-3.5" />
-                        </button>
+                      <CardContent className="py-2 px-4 flex flex-col gap-2">
+                        {tags.length > 0 && (
+                          <TagBadges tags={tags} variant="compact" />
+                        )}
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-muted-foreground">
+                            Analyzed {formatRelativeTime(site.last_analyzed)}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              router.push(`/compare?add=${site._id}`);
+                            }}
+                            className="inline-flex items-center justify-center size-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                            aria-label={`Compare ${site.site_name}`}
+                          >
+                            <GitCompareArrowsIcon className="size-3.5" />
+                          </button>
+                        </div>
                       </CardContent>
                     </Card>
                   </Link>
