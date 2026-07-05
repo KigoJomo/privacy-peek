@@ -5,6 +5,7 @@ import { useAction, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -32,6 +33,7 @@ import {
 
 export default function StaleAnalysesPage() {
   const allSites = useQuery(api.sites.getSitesBrief, { limit: 500 });
+  const router = useRouter();
   const [batchState, setBatchState] = useState<
     "idle" | "analyzing" | "done"
   >("idle");
@@ -87,6 +89,10 @@ export default function StaleAnalysesPage() {
 
     setBatchState("done");
     setProgress({ current: staleSites.length, total: staleSites.length });
+    // Refresh the page data so Convex refetches and stale status updates
+    setTimeout(() => {
+      router.refresh();
+    }, 500);
   };
 
   const handleIndividualReanalyze = async (siteId: Id<"sites">) => {

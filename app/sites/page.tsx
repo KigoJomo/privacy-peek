@@ -132,6 +132,16 @@ export default function SitesDirectory() {
     );
   };
 
+  /** Escape a single CSV field — handles commas, quotes, and newlines */
+  const csvField = (value: unknown): string => {
+    const str = String(value ?? "");
+    // RFC 4180: wrap in quotes if contains comma, quote, or newline
+    if (/[",\n\r]/.test(str)) {
+      return `"${str.replace(/"/g, '""')}"`;
+    }
+    return str;
+  };
+
   const downloadCSV = () => {
     if (!exportData || exportData.length === 0) return;
 
@@ -164,17 +174,17 @@ export default function SitesDirectory() {
       }
 
       return [
-        site.site_name,
-        domain,
-        site.overall_score,
-        `"${(site.reasoning ?? "").replace(/"/g, '""')}"`,
-        site.last_analyzed,
-        catScores["Data Collection"] ?? "",
-        catScores["Data Sharing"] ?? "",
-        catScores["Data Retention and Security"] ?? "",
-        catScores["User Rights and Controls"] ?? "",
-        catScores["Transparency and Clarity"] ?? "",
-        `"${(site.policy_documents_urls ?? []).join("; ")}"`,
+        csvField(site.site_name),
+        csvField(domain),
+        csvField(site.overall_score),
+        csvField(site.reasoning ?? ""),
+        csvField(site.last_analyzed),
+        csvField(catScores["Data Collection"] ?? ""),
+        csvField(catScores["Data Sharing"] ?? ""),
+        csvField(catScores["Data Retention and Security"] ?? ""),
+        csvField(catScores["User Rights and Controls"] ?? ""),
+        csvField(catScores["Transparency and Clarity"] ?? ""),
+        csvField((site.policy_documents_urls ?? []).join("; ")),
       ];
     });
 
@@ -188,9 +198,13 @@ export default function SitesDirectory() {
     const link = document.createElement("a");
     link.href = url;
     link.download = `privacy-peek-sites-${new Date().toISOString().split("T")[0]}.csv`;
+
+    // Revoke the blob URL once the download starts (or after 10s as fallback)
+    const cleanup = () => URL.revokeObjectURL(url);
+    link.addEventListener("click", () => requestAnimationFrame(cleanup));
     link.click();
-    // Delay revocation so the browser has time to initiate the download
-    setTimeout(() => URL.revokeObjectURL(url), 100);
+    // Fallback: if the download was blocked or didn't start, release after 10s
+    setTimeout(cleanup, 10000);
   };
 
   const renderPageNumbers = () => {

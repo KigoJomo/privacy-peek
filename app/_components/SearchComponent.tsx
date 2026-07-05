@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { api } from "@/convex/_generated/api";
-import { cn, safeSiteName } from "@/lib/utils";
+import { cn, getOverallScoreDisplay, safeSiteName } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAction, useMutation, useQuery } from "convex/react";
 import {
@@ -379,6 +379,7 @@ function JobStatus({ job_id }: { job_id: Id<"analysisJobs"> }) {
 
 export function ResultCard({ site }: { site: ResultItem }) {
   const { site_name, overall_score, reasoning } = site;
+  const safeScore = getOverallScoreDisplay(overall_score);
   return (
     <Link
       href={`/site/${site._id}`}
@@ -404,8 +405,8 @@ export function ResultCard({ site }: { site: ResultItem }) {
           <CardAction className="flex items-center gap-2">
             <span className="text-sm">Overall Score /100</span>
             <ScoreVisualizer
-              value={(overall_score ?? 0) / 100}
-              displayNumber={Math.round(overall_score)}
+              value={(safeScore) / 100}
+              displayNumber={safeScore}
               className="md:mr-1"
               size={48}
             />

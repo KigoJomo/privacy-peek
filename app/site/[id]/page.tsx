@@ -36,6 +36,15 @@ export default async function SitePage({ params }: SitePageProps) {
 
   const { id } = await params;
 
+  // Validate the site ID format before querying — catches malformed/injected IDs early
+  const isLikelyValidId = (str: string): boolean => {
+    // Convex IDs are 28-character base64url strings
+    return /^[a-zA-Z0-9_-]{28}$/.test(str);
+  };
+  if (!isLikelyValidId(id)) {
+    return <NotFound />;
+  }
+
   const full_site_details = await fetchQuery(api.sites.getFullSiteDetails, {
     site_id: id,
   });
