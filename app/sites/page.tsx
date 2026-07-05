@@ -163,18 +163,24 @@ export default function SitesDirectory() {
         catScores[c.category_name] = c.category_score;
       }
 
+      // Escape fields that may contain commas or quotes
+      const esc = (val: unknown) => {
+        const s = val == null ? "" : String(val);
+        return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+      };
+
       return [
-        site.site_name,
-        domain,
+        esc(site.site_name),
+        esc(domain),
         site.overall_score,
-        `"${(site.reasoning ?? "").replace(/"/g, '""')}"`,
+        esc(site.reasoning),
         site.last_analyzed,
-        catScores["Data Collection"] ?? "",
-        catScores["Data Sharing"] ?? "",
-        catScores["Data Retention and Security"] ?? "",
-        catScores["User Rights and Controls"] ?? "",
-        catScores["Transparency and Clarity"] ?? "",
-        `"${(site.policy_documents_urls ?? []).join("; ")}"`,
+        esc(catScores["Data Collection"] ?? ""),
+        esc(catScores["Data Sharing"] ?? ""),
+        esc(catScores["Data Retention and Security"] ?? ""),
+        esc(catScores["User Rights and Controls"] ?? ""),
+        esc(catScores["Transparency and Clarity"] ?? ""),
+        esc((site.policy_documents_urls ?? []).join("; ")),
       ];
     });
 

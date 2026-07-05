@@ -304,7 +304,7 @@ export default function StaleAnalysesPage() {
                           </Link>
                           <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
                             <span className="truncate max-w-48">
-                              {getDomainLabel(site.normalized_base_url) || "—"}
+                              {getDomainLabel(site.normalized_base_url || "") || "—"}
                             </span>
                             <span className="hidden xs:inline">·</span>
                             <span>

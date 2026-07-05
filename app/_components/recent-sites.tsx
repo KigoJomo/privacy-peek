@@ -41,10 +41,16 @@ export default async function RecentSites() {
     return null;
   }
 
-  const recent_sites: RecentSite[] = await fetchQuery(
-    api.sites.getRecentSites,
-    { limit: 32 },
-  );
+  let recent_sites: RecentSite[];
+  try {
+    recent_sites = await fetchQuery(
+      api.sites.getRecentSites,
+      { limit: 32 },
+    );
+  } catch {
+    console.warn("Failed to fetch recent sites — Convex may be unreachable.");
+    return null;
+  }
 
   if (recent_sites.length === 0) {
     return (
