@@ -105,55 +105,55 @@ export default function DashboardPage() {
         </div>
 
         {/* Summary cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <Card className="border-b-4 border-chart-1/40">
-            <CardContent className="pt-4 pb-3 px-4">
-              <div className="flex items-center gap-2 text-chart-1 mb-1">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Card className="border-t-4 border-t-chart-1 shadow-sm">
+            <CardContent className="pt-6 pb-4 px-5">
+              <div className="flex items-center gap-2 text-chart-1 mb-2">
                 <ChartNoAxesColumnIncreasing className="size-4" />
-                <span className="text-xs font-medium uppercase tracking-wider">Total Sites</span>
+                <span className="text-xs font-semibold uppercase tracking-wider">Total Sites</span>
               </div>
-              <p className="text-2xl font-bold tabular-nums">{stats.total}</p>
-              <p className="text-xs text-muted-foreground">analyzed</p>
+              <p className="text-3xl font-bold tabular-nums tracking-tight">{stats.total}</p>
+              <p className="text-xs text-muted-foreground mt-1">analyzed to date</p>
             </CardContent>
           </Card>
 
-          <Card className="border-b-4">
-            <CardContent className="pt-4 pb-3 px-4">
-              <div className="flex items-center gap-2 text-muted-foreground mb-1">
+          <Card className="border-t-4 border-t-chart-2 shadow-sm">
+            <CardContent className="pt-6 pb-4 px-5">
+              <div className="flex items-center gap-2 text-chart-2 mb-2">
                 <Shield className="size-4" />
-                <span className="text-xs font-medium uppercase tracking-wider">Avg Score</span>
+                <span className="text-xs font-semibold uppercase tracking-wider">Avg Score</span>
               </div>
-              <p className="text-2xl font-bold tabular-nums">{Number.isFinite(stats.avgScore) ? stats.avgScore.toFixed(1) : "—"}</p>
-              <p className="text-xs text-muted-foreground">/100 overall</p>
+              <p className="text-3xl font-bold tabular-nums tracking-tight">{Number.isFinite(stats.avgScore) ? stats.avgScore.toFixed(1) : "—"}</p>
+              <p className="text-xs text-muted-foreground mt-1">out of 100</p>
             </CardContent>
           </Card>
 
-          <Card className="border-b-4">
-            <CardContent className="pt-4 pb-3 px-4">
-              <div className="flex items-center gap-2 text-muted-foreground mb-1">
+          <Card className="border-t-4 border-t-chart-3 shadow-sm">
+            <CardContent className="pt-6 pb-4 px-5">
+              <div className="flex items-center gap-2 text-chart-3 mb-2">
                 <Globe className="size-4" />
-                <span className="text-xs font-medium uppercase tracking-wider">Best Score</span>
+                <span className="text-xs font-semibold uppercase tracking-wider">Best Score</span>
               </div>
-              <p className="text-2xl font-bold tabular-nums text-chart-1">
+              <p className="text-3xl font-bold tabular-nums tracking-tight text-chart-3">
                 {stats.bestSites.length > 0 ? getOverallScoreDisplay(stats.bestSites[0].overall_score) : "—"}
               </p>
-              <p className="text-xs text-muted-foreground truncate">
+              <p className="text-xs text-muted-foreground mt-1 truncate">
                 {stats.bestSites.length > 0 ? getDomainLabel(stats.bestSites[0].site_name) : "—"}
               </p>
             </CardContent>
           </Card>
 
-          <Card className="border-b-4">
-            <CardContent className="pt-4 pb-3 px-4">
-              <div className="flex items-center gap-2 text-destructive mb-1">
+          <Card className="border-t-4 border-t-destructive shadow-sm">
+            <CardContent className="pt-6 pb-4 px-5">
+              <div className="flex items-center gap-2 text-destructive mb-2">
                 <AlertTriangle className="size-4" />
-                <span className="text-xs font-medium uppercase tracking-wider">
+                <span className="text-xs font-semibold uppercase tracking-wider">
                   {stats.staleCount > 0 ? "Stale" : "All Fresh"}
                 </span>
               </div>
-              <p className="text-2xl font-bold tabular-nums">{stats.staleCount}</p>
-              <p className="text-xs text-muted-foreground">
-                {stats.staleCount === 1 ? "site needs refresh" : stats.staleCount > 0 ? "sites need refresh" : "up to date"}
+              <p className="text-3xl font-bold tabular-nums tracking-tight">{stats.staleCount}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {stats.staleCount === 1 ? "site needs update" : stats.staleCount > 0 ? "sites need updates" : "up to date"}
               </p>
             </CardContent>
           </Card>
