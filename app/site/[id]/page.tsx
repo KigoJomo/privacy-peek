@@ -12,6 +12,8 @@ import {
   cn,
   formatRelativeTime,
   getCategoryScoreDisplay,
+  getCategoryScoreLabel,
+  getCategoryScoreToneClass,
   getOverallScoreDisplay,
   isAnalysisStale,
 } from "@/lib/utils";
@@ -92,7 +94,7 @@ export default async function SitePage({ params }: SitePageProps) {
           </div>
         )}
 
-        <div className={cn("grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-24")}>
+        <div className={cn("grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12")}>
         <div className="w-full md:col-span-2 flex flex-col gap-6">
           <div className="animate-fade-in-up title flex flex-col items-center md:items-start gap-2">
             <ScoreVisualizer
@@ -142,13 +144,8 @@ export default async function SitePage({ params }: SitePageProps) {
                         size={48}
                         displayNumber={`${c.category_score} /10`}
                       />
-                      <span className={cn(
-                        "text-sm",
-                        c.category_score >= 7 && "text-chart-1",
-                        c.category_score >= 4 && c.category_score < 7 && "text-chart-3",
-                        c.category_score < 4 && "text-destructive",
-                      )}>
-                        {c.category_score >= 7 ? "Good" : c.category_score >= 4 ? "Fair" : "Poor"}
+                      <span className={cn("text-sm", getCategoryScoreToneClass(c.category_score))}>
+                        {getCategoryScoreLabel(c.category_score)}
                       </span>
                     </div>
                   </div>

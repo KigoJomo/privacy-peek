@@ -98,6 +98,20 @@ export function getCategoryScoreDisplay(
   return clampScore(value, 10);
 }
 
+export function getCategoryScoreLabel(score: number): "Good" | "Fair" | "Poor" {
+  if (score >= 7) return "Good";
+  if (score >= 4) return "Fair";
+  return "Poor";
+}
+
+export function getCategoryScoreToneClass(score: number): string {
+  const label = getCategoryScoreLabel(score);
+
+  if (label === "Good") return "text-chart-1";
+  if (label === "Fair") return "text-chart-3";
+  return "text-destructive";
+}
+
 export function getDomainLabel(url: string): string {
   try {
     return new URL(url).hostname.replace(/^www\./, "");

@@ -175,10 +175,10 @@ export default function SearchComponent() {
                 </FormLabel>
                 <FormControl>
                   <div className="relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-muted-foreground pointer-events-none" />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
                     <Input
                       placeholder="Enter a name or url..."
-                      className="text-lg! text-center h-fit! px-6! py-3! rounded-full pr-10! pl-12!"
+                      className="text-lg! h-fit! py-3! rounded-full pl-12! pr-10!"
                       {...field}
                     />
                   </div>

@@ -360,6 +360,7 @@ html {
   scrollbar-width: none; /* Firefox */
 }
 
+/* Respect OS-level reduced motion preferences */
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-in-up,
   .animate-fade-in,

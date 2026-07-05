@@ -29,6 +29,7 @@ import ScoreVisualizer from "@/components/ui/score-visualizer";
 import {
   cn,
   getCategoryScoreDisplay,
+  getCategoryScoreToneClass,
   getOverallScoreDisplay,
   formatRelativeTime,
   getUrlFilename,
@@ -373,11 +374,7 @@ function ComparisonGrid({
                           <span
                             className={cn(
                               "text-xs font-mono tabular-nums",
-                              cat.category_score >= 7 && "text-chart-1",
-                              cat.category_score >= 4 &&
-                                cat.category_score < 7 &&
-                                "text-chart-3",
-                              cat.category_score < 4 && "text-destructive",
+                              getCategoryScoreToneClass(cat.category_score),
                             )}
                           >
                             {cat.category_score}
