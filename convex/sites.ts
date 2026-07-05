@@ -211,6 +211,82 @@ export const getSitesStats = query({
   },
 });
 
+export const getDashboardStats = query({
+  handler: async (ctx) => {
+    const allSites = await ctx.db.query("sites").collect();
+    const total = allSites.length;
+    if (total === 0) {
+      return {
+        total: 0,
+        avgScore: 0,
+        staleCount: 0,
+        scoreDistribution: [0, 0, 0, 0, 0],
+        categoryAverages: [],
+        bestSites: [],
+        worstSites: [],
+      };
+    }
+
+    // Score distribution buckets: <20, 20-39, 40-59, 60-79, 80-100
+    const scoreDistribution = [0, 0, 0, 0, 0];
+    const sumScores = allSites.reduce((acc, site) => {
+      const score = site.overall_score ?? 0;
+      if (score < 20) scoreDistribution[0]++;
+      else if (score < 40) scoreDistribution[1]++;
+      else if (score < 60) scoreDistribution[2]++;
+      else if (score < 80) scoreDistribution[3]++;
+      else scoreDistribution[4]++;
+      return acc + score;
+    }, 0);
+    const avgScore = total > 0 ? Math.round((sumScores / total) * 100) / 100 : 0;
+
+    // Staleness
+    const now = Date.now();
+    const STALE_MS = 14 * 24 * 60 * 60 * 1000;
+    const staleCount = allSites.filter((s) => {
+      const analyzed = new Date(s.last_analyzed).getTime();
+      return !Number.isNaN(analyzed) && now - analyzed >= STALE_MS;
+    }).length;
+
+    // Category averages
+    const categoryMap = new Map<string, { sum: number; count: number }>();
+    for (const site of allSites) {
+      for (const cat of site.category_scores ?? []) {
+        const entry = categoryMap.get(cat.category_name) ?? { sum: 0, count: 0 };
+        entry.sum += cat.category_score;
+        entry.count++;
+        categoryMap.set(cat.category_name, entry);
+      }
+    }
+    const categoryAverages = Array.from(categoryMap.entries()).map(([name, { sum, count }]) => ({
+      category_name: name,
+      avg_score: Math.round((sum / count) * 10) / 10,
+    }));
+
+    // Best and worst sites
+    const scored = allSites
+      .filter((s) => s.overall_score != null)
+      .map((s) => ({
+        _id: s._id,
+        site_name: s.site_name,
+        overall_score: s.overall_score,
+      }));
+    scored.sort((a, b) => b.overall_score - a.overall_score);
+    const bestSites = scored.slice(0, 5);
+    const worstSites = scored.slice(-5).reverse();
+
+    return {
+      total,
+      avgScore,
+      staleCount,
+      scoreDistribution,
+      categoryAverages,
+      bestSites,
+      worstSites,
+    };
+  },
+});
+
 export const updateSiteAnalysis = internalMutation({
   args: {
     site_id: v.id("sites"),
