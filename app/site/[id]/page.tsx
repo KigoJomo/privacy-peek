@@ -103,9 +103,9 @@ export default async function SitePage({ params }: SitePageProps) {
               displayNumber={`${safeOverallScore}`}
               className="md:hidden mx-auto"
             />
-            <h2>{site_name || "Unnamed Site"}</h2>
+            <h2 className="truncate max-w-full">{site_name || "Unnamed Site"}</h2>
             {normalized_base_url ? (
-              <Link href={normalized_base_url} target="_blank">
+              <Link href={normalized_base_url} target="_blank" className="truncate max-w-full hover:underline">
                 {normalized_base_url}
               </Link>
             ) : (

@@ -135,68 +135,62 @@ export default function SitesDirectory() {
   const downloadCSV = () => {
     if (!exportData || exportData.length === 0) return;
 
-    const headers = [
-      "Site Name",
-      "Domain",
-      "Overall Score",
-      "Reasoning",
-      "Last Analyzed",
-      "Data Collection",
-      "Data Sharing",
-      "Data Retention and Security",
-      "User Rights and Controls",
-      "Transparency and Clarity",
-      "Policy Documents",
-    ];
-
-    const rows = exportData.map((site) => {
-      const domain = (() => {
-        try {
-          return new URL(site.normalized_base_url).hostname.replace(/^www\./, "");
-        } catch {
-          return site.normalized_base_url;
-        }
-      })();
-
-      const catScores: Record<string, number | string> = {};
-      for (const c of site.category_scores ?? []) {
-        catScores[c.category_name] = c.category_score;
-      }
-
-      // Escape fields that may contain commas or quotes
+    try {
       const esc = (val: unknown) => {
         const s = val == null ? "" : String(val);
         return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
       };
 
-      return [
-        esc(site.site_name),
-        esc(domain),
-        site.overall_score,
-        esc(site.reasoning),
-        site.last_analyzed,
-        esc(catScores["Data Collection"] ?? ""),
-        esc(catScores["Data Sharing"] ?? ""),
-        esc(catScores["Data Retention and Security"] ?? ""),
-        esc(catScores["User Rights and Controls"] ?? ""),
-        esc(catScores["Transparency and Clarity"] ?? ""),
-        esc((site.policy_documents_urls ?? []).join("; ")),
+      const headers = [
+        "Site Name",
+        "Domain",
+        "Overall Score",
+        "Reasoning",
+        "Last Analyzed",
+        "Data Collection",
+        "Data Sharing",
+        "Data Retention and Security",
+        "User Rights and Controls",
+        "Transparency and Clarity",
+        "Policy Documents",
       ];
-    });
 
-    const csvContent = [
-      headers.join(","),
-      ...rows.map((row) => row.join(",")),
-    ].join("\n");
+      const rows = exportData.map((site) => {
+        const catScores: Record<string, number | string> = {};
+        for (const c of site.category_scores ?? []) {
+          catScores[c.category_name] = c.category_score;
+        }
 
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `privacy-peek-sites-${new Date().toISOString().split("T")[0]}.csv`;
-    link.click();
-    // Delay revocation so the browser has time to initiate the download
-    setTimeout(() => URL.revokeObjectURL(url), 100);
+        return [
+          esc(site.site_name),
+          esc(getDomainLabel(site.normalized_base_url || "")),
+          esc(site.overall_score),
+          esc(site.reasoning),
+          esc(site.last_analyzed),
+          esc(catScores["Data Collection"] ?? ""),
+          esc(catScores["Data Sharing"] ?? ""),
+          esc(catScores["Data Retention and Security"] ?? ""),
+          esc(catScores["User Rights and Controls"] ?? ""),
+          esc(catScores["Transparency and Clarity"] ?? ""),
+          esc((site.policy_documents_urls ?? []).join("; ")),
+        ];
+      });
+
+      const csvContent = [
+        headers.join(","),
+        ...rows.map((row) => row.join(",")),
+      ].join("\n");
+
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `privacy-peek-sites-${new Date().toISOString().split("T")[0]}.csv`;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (err) {
+      console.error("Failed to export CSV:", err);
+    }
   };
 
   const renderPageNumbers = () => {
@@ -592,5 +586,4 @@ export default function SitesDirectory() {
     </>
   );
 }
-
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -88,19 +88,28 @@ function ComparePageContent() {
     ids: selectedIds,
   });
 
+  // Ref ensures we only handle ?add= once per mount — prevents the race
+  // where allSites is still loading and the URL param gets cleaned up before
+  // the site can be added.
+  const handledAdd = useRef(false);
+
   // Handle ?add= param from other pages — only add if the ID actually exists
   useEffect(() => {
+    if (handledAdd.current) return;
     const addId = searchParams.get("add") as Id<"sites"> | null;
-    if (addId && allSites && !selectedIds.includes(addId)) {
-      const exists = allSites.some((s) => s._id === addId);
-      if (exists) {
-        setSelectedIds((prev) => [...prev, addId]);
-      }
-      // Clean the URL without a full navigation
-      const url = new URL(window.location.href);
-      url.searchParams.delete("add");
-      router.replace(url.pathname, { scroll: false });
+    if (!addId) return;
+    // Wait until allSites has loaded before making a decision
+    if (!allSites) return;
+
+    handledAdd.current = true;
+    const exists = allSites.some((s) => s._id === addId);
+    if (exists && !selectedIds.includes(addId)) {
+      setSelectedIds((prev) => [...prev, addId]);
     }
+    // Clean the URL without a full navigation
+    const url = new URL(window.location.href);
+    url.searchParams.delete("add");
+    router.replace(url.pathname, { scroll: false });
   }, [searchParams, allSites, selectedIds, router]);
 
   const availableSites = useMemo(() => {
