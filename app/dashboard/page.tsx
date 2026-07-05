@@ -28,14 +28,11 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import ScoreVisualizer from "@/components/ui/score-visualizer";
 import {
   cn,
   getOverallScoreDisplay,
   getDomainLabel,
-  formatRelativeTime,
 } from "@/lib/utils";
 
 const DISTRIBUTION_COLORS: Record<string, string> = {
@@ -187,7 +184,7 @@ export default function DashboardPage() {
                           borderRadius: "8px",
                           fontSize: "13px",
                         }}
-                        formatter={(value: number, _name: string) => [`${value} site${value !== 1 ? "s" : ""}`]}
+                        formatter={(value: number) => [`${value} site${value !== 1 ? "s" : ""}`]}
                       />
                       <Bar dataKey="value" radius={[6, 6, 0, 0]} maxBarSize={60}>
                         {scoreDistData.map((entry, i) => (

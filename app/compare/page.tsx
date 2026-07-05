@@ -3,7 +3,6 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -46,15 +45,7 @@ import {
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import type { Doc } from "@/convex/_generated/dataModel";
-
-type SiteBrief = {
-  _id: Id<"sites">;
-  site_name: string;
-  normalized_base_url: string;
-  overall_score: number;
-  last_analyzed: string;
-};
+import type { Doc, Id } from "@/convex/_generated/dataModel";
 
 export default function ComparePageWrapper() {
   return (
