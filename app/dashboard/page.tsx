@@ -123,7 +123,7 @@ export default function DashboardPage() {
                 <Shield className="size-4" />
                 <span className="text-xs font-medium uppercase tracking-wider">Avg Score</span>
               </div>
-              <p className="text-2xl font-bold tabular-nums">{stats.avgScore.toFixed(1)}</p>
+              <p className="text-2xl font-bold tabular-nums">{Number.isFinite(stats.avgScore) ? stats.avgScore.toFixed(1) : "—"}</p>
               <p className="text-xs text-muted-foreground">/100 overall</p>
             </CardContent>
           </Card>

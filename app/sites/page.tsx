@@ -147,9 +147,13 @@ function SitesContent() {
       } else if (sortField === "overall_score") {
         cmp = (a.overall_score ?? 0) - (b.overall_score ?? 0);
       } else if (sortField === "last_analyzed") {
-        cmp =
-          new Date(a.last_analyzed ?? 0).getTime() -
-          new Date(b.last_analyzed ?? 0).getTime();
+        const aTime = new Date(a.last_analyzed ?? 0).getTime();
+        const bTime = new Date(b.last_analyzed ?? 0).getTime();
+        // Invalid dates produce NaN — sort them to the end consistently
+        if (Number.isNaN(aTime) && Number.isNaN(bTime)) cmp = 0;
+        else if (Number.isNaN(aTime)) cmp = 1;
+        else if (Number.isNaN(bTime)) cmp = -1;
+        else cmp = aTime - bTime;
       }
       return sortDir === "asc" ? cmp : -cmp;
     });

@@ -145,22 +145,32 @@ function ComparePageContent() {
           </p>
         </div>
 
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              role="combobox"
-              aria-expanded={open}
-              className="w-full max-w-md justify-between"
-              disabled={!allSites || selectedIds.length >= 4}
-            >
-              <span className="flex items-center gap-2">
-                <Plus className="size-4" />
-                {selectedIds.length >= 4 ? "Maximum 4 sites" : "Add site to compare"}
-              </span>
-              <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
-            </Button>
-          </PopoverTrigger>
+        {allSites && allSites.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-3 rounded-2xl border border-dashed px-5 py-4 text-sm text-muted-foreground max-w-md"
+          >
+            <BarChart3Icon className="size-5 shrink-0 opacity-40" />
+            <span>No sites analyzed yet — search for a site on the home page to get started.</span>
+          </motion.div>
+        ) : (
+          <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={open}
+                className="w-full max-w-md justify-between"
+                disabled={!allSites || selectedIds.length >= 4}
+              >
+                <span className="flex items-center gap-2">
+                  <Plus className="size-4" />
+                  {selectedIds.length >= 4 ? "Maximum 4 sites" : "Add site to compare"}
+                </span>
+                <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
           <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
             <Command>
               <CommandInput placeholder="Search analyzed sites..." />
@@ -194,6 +204,7 @@ function ComparePageContent() {
             </Command>
           </PopoverContent>
         </Popover>
+        )}
 
         {selectedSites && selectedSites.length === 0 && (
           <motion.div
