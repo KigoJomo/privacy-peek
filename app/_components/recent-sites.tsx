@@ -27,6 +27,7 @@ import {
   getCategoryScoreDisplay,
   getOverallScoreDisplay,
   getDomainLabel,
+  safeSiteName,
 } from "@/lib/utils";
 import Link from "next/link";
 import ScoreVisualizer from "@/components/ui/score-visualizer";
@@ -112,7 +113,7 @@ function RecentSitesTable({ sites }: { sites: RecentSite[] }) {
               >
                 <TableCell className="font-medium whitespace-normal">
                   <Link href={`/site/${site._id}`} className="hover:underline">
-                    {site.site_name}
+                    {safeSiteName(site.site_name)}
                   </Link>
                 </TableCell>
                 <TableCell>
@@ -210,7 +211,7 @@ export function SiteCard({
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="space-y-1">
               <CardTitle>
-                <h4>{site_name}</h4>
+                <h4>{safeSiteName(site_name)}</h4>
               </CardTitle>
               <CardDescription className="flex flex-col gap-1">
                 <span className="truncate">{getDomainLabel(normalized_base_url)}</span>

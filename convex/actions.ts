@@ -71,7 +71,6 @@ export const getSiteAnalysis = action({
             site_id: site._id,
             tag: user_input,
           });
-          const sites: ResultItem[] = [site];
           console.log("\nFound Matching Record");
           console.log(`\nAdded new tags for site ${site._id} => ${new_tag}`);
           await statusUpdate("complete");
@@ -140,11 +139,12 @@ export const reanalyzeSite = action({
     }
 
     const { policy_documents_urls } = site;
+    const safePolicyUrls = policy_documents_urls ?? [];
 
     try {
       console.log(`\nRe-analyzing site ${site.site_name} (${site.normalized_base_url})`);
 
-      const categoriesClauses = await extractClauses({ policy_documents_urls });
+      const categoriesClauses = await extractClauses({ policy_documents_urls: safePolicyUrls });
 
       const categoryScores = await getCategoryScores({ categoriesClauses });
 

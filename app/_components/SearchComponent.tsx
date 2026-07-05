@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { api } from "@/convex/_generated/api";
-import { cn } from "@/lib/utils";
+import { cn, safeSiteName } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAction, useMutation, useQuery } from "convex/react";
 import {
@@ -144,8 +144,6 @@ export default function SearchComponent() {
     return () => window.clearTimeout(timeout);
   }, [jobId, ongoingJob?.status]);
 
-  const hasValue = form.watch("search_term");
-
   return (
     <Form {...form}>
       <form
@@ -177,9 +175,10 @@ export default function SearchComponent() {
                 </FormLabel>
                 <FormControl>
                   <div className="relative">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-muted-foreground pointer-events-none" />
                     <Input
                       placeholder="Enter a name or url..."
-                      className="text-lg! text-center h-fit! px-6! py-3! rounded-full pr-10!"
+                      className="text-lg! text-center h-fit! px-6! py-3! rounded-full pr-10! pl-12!"
                       {...field}
                     />
                   </div>
@@ -400,7 +399,7 @@ export function ResultCard({ site }: { site: ResultItem }) {
       >
         <CardHeader>
           <CardTitle className="h-full flex items-center row-span-2">
-            <h4>{site_name}</h4>
+            <h4>{safeSiteName(site_name)}</h4>
           </CardTitle>
           <CardAction className="flex items-center gap-2">
             <span className="text-sm">Overall Score /100</span>
@@ -413,7 +412,7 @@ export function ResultCard({ site }: { site: ResultItem }) {
           </CardAction>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          <span className="text-muted-foreground">{reasoning}</span>
+          <span className="text-foreground/80">{reasoning}</span>
 
           <span className="text-accent-foreground text-sm font-medium">
             Click for more details &rarr;

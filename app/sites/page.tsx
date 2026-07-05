@@ -189,7 +189,8 @@ export default function SitesDirectory() {
     link.href = url;
     link.download = `privacy-peek-sites-${new Date().toISOString().split("T")[0]}.csv`;
     link.click();
-    URL.revokeObjectURL(url);
+    // Delay revocation so the browser has time to initiate the download
+    setTimeout(() => URL.revokeObjectURL(url), 100);
   };
 
   const renderPageNumbers = () => {

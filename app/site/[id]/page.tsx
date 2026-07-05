@@ -130,8 +130,13 @@ export default async function SitePage({ params }: SitePageProps) {
                         size={48}
                         displayNumber={`${c.category_score} /10`}
                       />
-                      <span className="text-sm text-muted-foreground">
-                        {c.category_score > 4 ? "Good" : "Bad"}
+                      <span className={cn(
+                        "text-sm",
+                        c.category_score >= 7 && "text-chart-1",
+                        c.category_score >= 4 && c.category_score < 7 && "text-chart-3",
+                        c.category_score < 4 && "text-destructive",
+                      )}>
+                        {c.category_score >= 7 ? "Good" : c.category_score >= 4 ? "Fair" : "Poor"}
                       </span>
                     </div>
                   </div>
