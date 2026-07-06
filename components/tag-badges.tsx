@@ -13,7 +13,7 @@ export function TagBadges({
   if (tags.length === 0) return null;
 
   const displayTags = variant === "compact" ? tags.slice(0, 3) : tags;
-  const remaining = variant === "compact" ? tags.length - 3 : 0;
+  const remaining = variant === "compact" ? Math.max(0, tags.length - 3) : 0;
 
   return (
     <div className="flex flex-wrap items-center gap-1.5">
