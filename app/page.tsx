@@ -2,6 +2,7 @@
 import { motion } from 'framer-motion';
 import RecentSites from './_components/recent-sites';
 import SearchComponent from './_components/SearchComponent';
+import QuickStats from './_components/quick-stats';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -51,6 +52,13 @@ export default function Home() {
           <SearchComponent />
         </motion.div>
       </section>
+
+      <motion.div
+        variants={childVariants}
+        className="w-full mt-10"
+      >
+        <QuickStats />
+      </motion.div>
 
       <motion.div
         variants={childVariants}
