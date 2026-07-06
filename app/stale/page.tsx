@@ -45,7 +45,7 @@ export default function StaleAnalysesPage() {
 
   const staleSites = useMemo(() => {
     if (!allSites) return [];
-    return allSites.filter((site) =>
+    return allSites.filter((site: { last_analyzed: string }) =>
       isAnalysisStale(site.last_analyzed ?? ""),
     );
   }, [allSites]);
@@ -54,7 +54,7 @@ export default function StaleAnalysesPage() {
     if (staleSites.length === 0) return null;
     const avgScore =
       staleSites.reduce(
-        (sum, s) => sum + getOverallScoreDisplay(s.overall_score),
+        (sum: number, s: { overall_score: number }) => sum + getOverallScoreDisplay(s.overall_score),
         0,
       ) / staleSites.length;
     return { avgScore: Math.round(avgScore * 10) / 10 };
@@ -63,7 +63,7 @@ export default function StaleAnalysesPage() {
   const oldestDays = useMemo(() => {
     if (staleSites.length === 0) return null;
     const sorted = [...staleSites].sort(
-      (a, b) =>
+      (a: { last_analyzed: string }, b: { last_analyzed: string }) =>
         new Date(a.last_analyzed ?? 0).getTime() -
         new Date(b.last_analyzed ?? 0).getTime(),
     );
@@ -280,7 +280,7 @@ export default function StaleAnalysesPage() {
 
             {/* Stale sites list */}
             <div className="grid grid-cols-1 gap-3">
-              {staleSites.map((site, i) => {
+              {staleSites.map((site: { _id: Id<"sites">; site_name: string; overall_score: number; last_analyzed: string; normalized_base_url: string }, i: number) => {
                 const safeScore = getOverallScoreDisplay(site.overall_score);
                 const daysStale = getAnalysisAgeInDays(
                   site.last_analyzed ?? "",

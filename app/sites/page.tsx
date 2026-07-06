@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +43,7 @@ import {
   getOverallScoreDisplay,
   formatRelativeTime,
   getDomainLabel,
+  safeUrl,
 } from "@/lib/utils";
 import {
   Search,
@@ -108,7 +110,7 @@ function SitesContent() {
 
   // Fetch tag mappings for all sites relevant to the current view
   const siteTags = useQuery(api.tags.getTagsForSites, {
-    site_ids: (allSites ?? []).map((s) => s._id),
+    site_ids: ((allSites ?? []).map((s) => s._id) as Id<"sites">[]),
   });
 
   const filteredSites = useMemo(() => {
@@ -119,9 +121,9 @@ function SitesContent() {
     // Filter by tag (always applied when activeTag is set)
     if (activeTag) {
       const lowerTag = activeTag.toLowerCase().trim();
-      result = result.filter((site) => {
+      result = result.filter((site: { _id: string; site_name: string; normalized_base_url: string; overall_score: number; last_analyzed: string }) => {
         const tags = siteTags?.[site._id] ?? [];
-        return tags.some((t) => t.toLowerCase().includes(lowerTag));
+        return tags.some((t: string) => t.toLowerCase().includes(lowerTag));
       });
     }
 
@@ -129,7 +131,7 @@ function SitesContent() {
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
       result = result.filter(
-        (site) =>
+        (site: { _id: string; site_name: string; normalized_base_url: string; overall_score: number; last_analyzed: string }) =>
           site.site_name?.toLowerCase().includes(q) ||
           site.normalized_base_url?.toLowerCase().includes(q),
       );
@@ -140,7 +142,7 @@ function SitesContent() {
 
   const sortedSites = useMemo(() => {
     const sorted = [...filteredSites];
-    sorted.sort((a, b) => {
+    sorted.sort((a: { site_name: string; overall_score: number; last_analyzed: string }, b: { site_name: string; overall_score: number; last_analyzed: string }) => {
       let cmp = 0;
       if (sortField === "site_name") {
         cmp = (a.site_name ?? "").localeCompare(b.site_name ?? "");
@@ -212,7 +214,7 @@ function SitesContent() {
         "Policy Documents",
       ];
 
-      const rows = exportData.map((site) => {
+      const rows = exportData.map((site: { _id: string; site_name: string; normalized_base_url: string; overall_score: number; reasoning: string; last_analyzed: string; category_scores: Array<{ category_name: string; category_score: number; reasoning: string; supporting_clauses: string[] }>; policy_documents_urls: string[] }) => {
         const catScores: Record<string, number | string> = {};
         for (const c of site.category_scores ?? []) {
           catScores[c.category_name] = c.category_score;
@@ -235,7 +237,7 @@ function SitesContent() {
 
       const csvContent = [
         headers.join(","),
-        ...rows.map((row) => row.join(",")),
+        ...rows.map((row: string[]) => row.join(",")),
       ].join("\n");
 
       const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -365,7 +367,7 @@ function SitesContent() {
           <div className="flex flex-wrap items-center gap-2 rounded-2xl border bg-card px-4 py-2.5">
             <Tags className="size-4 text-muted-foreground shrink-0" />
             <span className="text-xs text-muted-foreground mr-1">Browse by tag:</span>
-            {allTags.slice(0, 15).map(({ tag, count }) => (
+            {allTags.slice(0, 15).map(({ tag, count }: { tag: string; count: number }) => (
               <Link key={tag} href={`/sites?tag=${encodeURIComponent(tag)}`}>
                 <Badge
                   variant="secondary"
@@ -584,7 +586,7 @@ function SitesContent() {
                               <GitCompareArrowsIcon className="size-3.5" />
                             </Link>
                             <Link
-                              href={site.normalized_base_url || "#"}
+                              href={safeUrl(site.normalized_base_url)}
                               target="_blank"
                               rel="noreferrer"
                               className={cn(

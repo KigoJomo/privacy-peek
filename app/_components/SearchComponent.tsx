@@ -134,7 +134,7 @@ export default function SearchComponent() {
   useEffect(() => {
     if (!jobId) return;
 
-    const status = ongoingJob?.status;
+    const status: AnalysisStatus | undefined = ongoingJob?.status;
     if (status !== "complete" && status !== "error") return;
 
     const timeout = window.setTimeout(() => {
@@ -297,7 +297,7 @@ export default function SearchComponent() {
 
 function JobStatus({ job_id }: { job_id: Id<"analysisJobs"> }) {
   const ongoingJob = useQuery(api.analysisJobs.getJob, { job_id });
-  const status = ongoingJob?.status;
+  const status: AnalysisStatus | undefined = ongoingJob?.status;
 
   type StatusColor =
     | "text-muted-foreground"

@@ -16,6 +16,7 @@ import {
   getCategoryScoreToneClass,
   getOverallScoreDisplay,
   isAnalysisStale,
+  safeUrl,
 } from "@/lib/utils";
 import { QuoteIcon, GitCompareArrowsIcon, AlertTriangleIcon } from "lucide-react";
 import Link from "next/link";
@@ -80,7 +81,7 @@ export default async function SitePage({ params }: SitePageProps) {
     category_scores,
   } = full_site_details;
   const safeOverallScore = getOverallScoreDisplay(overall_score);
-  const safeCategoryScores = (category_scores ?? []).map((category) => ({
+  const safeCategoryScores = (category_scores ?? []).map((category: { category_name: string; category_score: number; reasoning: string; supporting_clauses?: string[] }) => ({
     ...category,
     category_score: getCategoryScoreDisplay(category.category_score),
     supporting_clauses: category.supporting_clauses ?? [],
@@ -122,7 +123,7 @@ export default async function SitePage({ params }: SitePageProps) {
             />
             <h2 className="truncate max-w-full">{site_name || "Unnamed Site"}</h2>
             {normalized_base_url ? (
-              <Link href={normalized_base_url} target="_blank" className="truncate max-w-full hover:underline">
+              <Link href={safeUrl(normalized_base_url)} target="_blank" className="truncate max-w-full hover:underline">
                 {normalized_base_url}
               </Link>
             ) : (
@@ -147,7 +148,7 @@ export default async function SitePage({ params }: SitePageProps) {
               className="w-full"
               defaultValue={safeCategoryScores[0]?.category_name}
             >
-              {safeCategoryScores.map((c, i) => (
+              {safeCategoryScores.map((c: { category_name: string; category_score: number; reasoning: string; supporting_clauses: string[] }, i: number) => (
                 <AccordionItem
                   key={c.category_name}
                   value={c.category_name}
@@ -220,8 +221,8 @@ export default async function SitePage({ params }: SitePageProps) {
           <div className="w-full flex flex-col gap-3">
             <h5>Policy Documents</h5>
             {safePolicyDocuments.length > 0 ? (
-              safePolicyDocuments.map((url) => (
-                <Link key={url} href={url} target="_blank" className="text-sm truncate hover:underline">
+              safePolicyDocuments.map((url: string) => (
+                <Link key={url} href={safeUrl(url)} target="_blank" className="text-sm truncate hover:underline">
                   {url}
                 </Link>
               ))
@@ -261,7 +262,7 @@ export async function generateStaticParams() {
 
   try {
     const all_ids = await fetchQuery(api.sites.getAllSiteIds);
-    return all_ids.map((id) => ({ id }));
+    return all_ids.map((id: Id<"sites">) => ({ id }));
   } catch {
     console.warn("Failed to fetch site IDs for static params — returning empty.");
     return [];

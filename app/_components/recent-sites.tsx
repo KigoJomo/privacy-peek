@@ -28,6 +28,7 @@ import {
   getOverallScoreDisplay,
   getDomainLabel,
   safeSiteName,
+  safeUrl,
 } from "@/lib/utils";
 import Link from "next/link";
 import ScoreVisualizer from "@/components/ui/score-visualizer";
@@ -124,7 +125,7 @@ function RecentSitesTable({ sites }: { sites: RecentSite[] }) {
                 </TableCell>
                 <TableCell>
                   <Link
-                    href={site.normalized_base_url || "#"}
+                    href={safeUrl(site.normalized_base_url)}
                     target="_blank"
                     rel="noreferrer"
                     className={cn(

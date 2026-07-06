@@ -1,3 +1,4 @@
+import { Id } from "@/convex/_generated/dataModel";
 import { api } from "@/convex/_generated/api";
 import { fetchQuery } from "convex/nextjs";
 import { MetadataRoute } from "next";
@@ -16,7 +17,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const site_ids = await fetchQuery(api.sites.getAllSiteIds);
 
-  const sites: MetadataRoute.Sitemap = site_ids.map((id) => {
+  const sites: MetadataRoute.Sitemap = site_ids.map((id: Id<"sites">) => {
     return {
       url: `https://privacy-peek.vercel.app/site/${id}`,
       lastModified: new Date(),

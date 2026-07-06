@@ -32,6 +32,7 @@ import {
   getOverallScoreDisplay,
   formatRelativeTime,
   getUrlFilename,
+  safeUrl,
 } from "@/lib/utils";
 import {
   Check,
@@ -93,7 +94,7 @@ function ComparePageContent() {
     if (!allSites) return;
 
     handledAdd.current = true;
-    const exists = allSites.some((s) => s._id === addId);
+    const exists = allSites.some((s: { _id: Id<"sites"> }) => s._id === addId);
     if (exists && !selectedIds.includes(addId)) {
       setSelectedIds((prev) => [...prev, addId]);
     }
@@ -106,7 +107,7 @@ function ComparePageContent() {
   const availableSites = useMemo(() => {
     if (!allSites) return [];
     return allSites.filter(
-      (s) => !selectedIds.includes(s._id as Id<"sites">),
+      (s: { _id: Id<"sites"> }) => !selectedIds.includes(s._id as Id<"sites">),
     );
   }, [allSites, selectedIds]);
 
@@ -177,7 +178,7 @@ function ComparePageContent() {
               <CommandList>
                 <CommandEmpty>No sites found.</CommandEmpty>
                 <CommandGroup>
-                  {availableSites.map((site) => (
+                  {availableSites.map((site: { _id: Id<"sites">; site_name: string; normalized_base_url: string; overall_score: number; last_analyzed: string }) => (
                     <CommandItem
                       key={site._id}
                       value={`${site.site_name} ${site.normalized_base_url}`}
@@ -419,7 +420,7 @@ function ComparisonGrid({
                         {site.policy_documents_urls.slice(0, 2).map((url) => (
                           <Link
                             key={url}
-                            href={url}
+                            href={safeUrl(url)}
                             target="_blank"
                             rel="noreferrer"
                             className="text-xs inline-flex items-center gap-1 truncate hover:underline"
