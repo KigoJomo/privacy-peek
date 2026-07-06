@@ -252,14 +252,15 @@ export default function SearchComponent() {
         </AnimatePresence>
 
         {state && !state.ok && (
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="!text-sm text-center text-destructive"
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="w-full max-w-xl rounded-2xl border border-dashed border-destructive px-6 py-8 text-center text-destructive"
             role="alert"
           >
-            {state.message}
-          </motion.p>
+            <p className="font-semibold mb-1">Analysis Failed</p>
+            <p className="text-sm">{state.message}</p>
+          </motion.div>
         )}
       </form>
 

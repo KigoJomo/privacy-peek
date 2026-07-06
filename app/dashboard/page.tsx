@@ -32,9 +32,7 @@ import ScoreVisualizer from "@/components/ui/score-visualizer";
 import {
   cn,
   getOverallScoreDisplay,
-  getDomainLabel,
 } from "@/lib/utils";
-
 const DISTRIBUTION_COLORS: Record<string, string> = {
   "0-19": "hsl(var(--destructive))",
   "20-39": "hsl(var(--destructive) / 0.7)",
@@ -138,7 +136,7 @@ export default function DashboardPage() {
                 {stats.bestSites.length > 0 ? getOverallScoreDisplay(stats.bestSites[0].overall_score) : "—"}
               </p>
               <p className="text-xs text-muted-foreground mt-1 truncate">
-                {stats.bestSites.length > 0 ? getDomainLabel(stats.bestSites[0].site_name) : "—"}
+                {stats.bestSites.length > 0 ? stats.bestSites[0].site_name : "—"}
               </p>
             </CardContent>
           </Card>

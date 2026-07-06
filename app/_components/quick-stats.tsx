@@ -15,7 +15,7 @@ import {
   TrendingDown,
 } from "lucide-react";
 import Link from "next/link";
-import { getOverallScoreDisplay, getDomainLabel } from "@/lib/utils";
+import { getOverallScoreDisplay } from "@/lib/utils";
 
 export default async function QuickStats() {
   if (!process.env.NEXT_PUBLIC_CONVEX_URL) {
@@ -129,7 +129,7 @@ export default async function QuickStats() {
             </p>
             <p className="text-xs text-muted-foreground mt-0.5 truncate max-w-full">
               {stats.bestSites.length > 0
-                ? getDomainLabel(stats.bestSites[0].site_name)
+                ? stats.bestSites[0].site_name
                 : "—"}
             </p>
           </CardContent>
