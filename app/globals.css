@@ -211,6 +211,8 @@
   }
 }
 
+/* ── Shared keyframes ── */
+
 @keyframes fade-in-up {
   from {
     opacity: 0;
@@ -238,6 +240,28 @@
   }
 }
 
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+@keyframes scale-in-up {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* ── Utility classes ── */
+
 .animate-fade-in-up {
   animation: fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
@@ -249,6 +273,23 @@
 .animate-scale-in {
   animation: scale-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
+
+.animate-scale-in-up {
+  animation: scale-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--muted-foreground) 8%, transparent) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+/* ── Typography (fluid scale) ── */
 
 h1 {
   font-size: calc(
@@ -282,6 +323,8 @@ img {
   object-position: center;
 }
 
+/* ── Shared elements ── */
+
 .tagline {
   font-size: calc(var(--font-size));
   color: var(--muted-foreground);
@@ -299,6 +342,8 @@ img {
   }
 }
 
+/* ── Layout ── */
+
 html {
   width: 100vw;
   height: 100dvh;
@@ -313,25 +358,26 @@ html {
 
     section {
       width: 100%;
-      max-width: 84rem; /* 1280px  */
+      max-width: 84rem;
       margin-inline: auto;
       flex-shrink: none;
     }
 
     @media (width < 40rem) {
-      /* padding: y x */
       section {
-        padding: 1.5rem 1.2rem 3rem !important;
+        padding: 1.5rem 1.2rem 3rem;
       }
     }
 
-    @media (width >= 48rem /* md */) {
+    @media (width >= 48rem) {
       section {
-        padding: 1.5rem 2rem 4rem !important;
+        padding: 1.5rem 2rem 4rem;
       }
     }
   }
 }
+
+/* ── Scrollbar ── */
 
 @media (width < 40rem) {
   .custom-scrollbar::-webkit-scrollbar {
@@ -357,46 +403,12 @@ html {
 }
 
 .hide-scrollbar {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
-@keyframes shimmer {
-  0% {
-    background-position: -200% center;
-  }
-  100% {
-    background-position: 200% center;
-  }
-}
+/* ── Reduced motion ── */
 
-@keyframes scale-in-up {
-  from {
-    opacity: 0;
-    transform: scale(0.9) translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-.animate-scale-in-up {
-  animation: scale-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-.animate-shimmer {
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    color-mix(in srgb, var(--muted-foreground) 8%, transparent) 50%,
-    transparent 100%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 2s ease-in-out infinite;
-}
-
-/* Respect OS-level reduced motion preferences */
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-in-up,
   .animate-fade-in,

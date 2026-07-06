@@ -66,7 +66,7 @@ export default function SearchComponent() {
   const form = useForm<SearchValue>({
     resolver: zodResolver(SearchSchema),
     defaultValues: { search_term: "" },
-    mode: "onSubmit",
+    mode: "onChange",
   });
 
   const searchSite = useAction(api.actions.getSiteAnalysis);
@@ -174,37 +174,50 @@ export default function SearchComponent() {
                   Search an app or website to see how it performs.
                 </FormLabel>
                 <FormControl>
-                  <div className="relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+                  <div className="relative group">
+                    <Search className={cn(
+                      "absolute left-4 top-1/2 -translate-y-1/2 size-4 pointer-events-none transition-colors duration-200",
+                      "text-muted-foreground group-focus-within:text-foreground",
+                    )} />
                     <Input
-                      placeholder="Enter a name or url..."
-                      className="text-lg! h-fit! py-3! rounded-full pl-12! pr-10!"
+                      placeholder="Search any app or website..."
+                      className="text-lg! h-fit! py-3! rounded-full pl-12! pr-10! transition-shadow duration-200 focus-visible:shadow-[0_0_0_2px_var(--ring),0_0_0_4px_color-mix(in_srgb,var(--ring)_15%,transparent)]"
                       autoFocus
+                      aria-describedby={form.formState.errors.search_term ? "search-error" : "search-hint"}
                       {...field}
                     />
+                    {field.value && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          form.setValue("search_term", "", {
+                            shouldDirty: true,
+                            shouldTouch: true,
+                          });
+                          setDisplayedResults(null);
+                          setJobId(null);
+                        }}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 size-6 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                        aria-label="Clear search"
+                      >
+                        <X className="size-4" />
+                      </button>
+                    )}
+                    <kbd className="absolute right-3 top-1/2 -translate-y-1/2 hidden sm:group-focus-within:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground/60 bg-muted/50 rounded border pointer-events-none select-none">
+                        &#x23CE; Enter
+                      </kbd>
                   </div>
                 </FormControl>
                 {form.formState.errors.search_term && (
-                  <p className="text-sm text-destructive text-center" role="alert">
-                    {form.formState.errors.search_term.message}
-                  </p>
-                )}
-                {field.value && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      form.setValue("search_term", "", {
-                        shouldDirty: true,
-                        shouldTouch: true,
-                      });
-                      setDisplayedResults(null);
-                      setJobId(null);
-                    }}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 size-6 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                    aria-label="Clear search"
+                  <motion.p
+                    id="search-error"
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-sm text-destructive text-center"
+                    role="alert"
                   >
-                    <X className="size-4" />
-                  </button>
+                    {form.formState.errors.search_term.message}
+                  </motion.p>
                 )}
               </FormItem>
             )}
@@ -239,14 +252,15 @@ export default function SearchComponent() {
         </AnimatePresence>
 
         {state && !state.ok && (
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="!text-sm text-center text-destructive"
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="w-full max-w-xl rounded-2xl border border-dashed border-destructive px-6 py-8 text-center text-destructive"
             role="alert"
           >
-            {state.message}
-          </motion.p>
+            <p className="font-semibold mb-1">Analysis Failed</p>
+            <p className="text-sm">{state.message}</p>
+          </motion.div>
         )}
       </form>
 
