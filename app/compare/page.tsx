@@ -46,6 +46,15 @@ import {
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  RadarChart,
+  Radar,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  ResponsiveContainer,
+  Legend,
+} from "recharts";
 import type { Doc, Id } from "@/convex/_generated/dataModel";
 
 export default function ComparePageWrapper() {
@@ -268,7 +277,86 @@ function ComparePageContent() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3 }}
+            className="flex flex-col gap-6"
           >
+            {/* Radar Chart */}
+            <div className="w-full">
+              <h3 className="text-lg font-semibold mb-1">
+                Category Comparison
+              </h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Visual overview of how each site scores across privacy
+                categories.
+              </p>
+              <div className="bg-card rounded-2xl border p-4 sm:p-6">
+                <ResponsiveContainer width="100%" height={360}>
+                  <RadarChart
+                    data={(() => {
+                      const categories = [
+                        "Data Collection",
+                        "Data Sharing",
+                        "Data Retention and Security",
+                        "User Rights and Controls",
+                        "Transparency and Clarity",
+                      ];
+                      return categories.map((cat) => {
+                        const row: Record<string, string | number> = {
+                          category: cat,
+                        };
+                        for (const site of selectedSites) {
+                          const cs = (
+                            site.category_scores ?? []
+                          ).find(
+                            (c: { category_name: string }) =>
+                              c.category_name === cat,
+                          );
+                          row[site.site_name ?? "Unnamed"] = cs
+                            ? cs.category_score
+                            : 0;
+                        }
+                        return row;
+                      });
+                    })()}
+                  >
+                    <PolarGrid className="stroke-border/50" />
+                    <PolarAngleAxis
+                      dataKey="category"
+                      tick={{ fontSize: 11 }}
+                      className="fill-muted-foreground"
+                    />
+                    <PolarRadiusAxis
+                      angle={30}
+                      domain={[0, 10]}
+                      tick={{ fontSize: 10 }}
+                      className="fill-muted-foreground"
+                    />
+                    {selectedSites.map(
+                      (
+                        site: { _id: string; site_name?: string; category_scores?: Array<{ category_name: string; category_score: number }> },
+                        i: number,
+                      ) => (
+                        <Radar
+                          key={site._id}
+                          name={site.site_name ?? "Unnamed"}
+                          dataKey={site.site_name ?? "Unnamed"}
+                          stroke={`hsl(var(--chart-${(i % 5) + 1}))`}
+                          fill={`hsl(var(--chart-${(i % 5) + 1}))`}
+                          fillOpacity={0.15}
+                          strokeWidth={2}
+                        />
+                      ),
+                    )}
+                    <Legend
+                      wrapperStyle={{
+                        fontSize: "12px",
+                        paddingTop: "8px",
+                      }}
+                    />
+                  </RadarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
             <ComparisonGrid sites={selectedSites} onRemove={removeSite} />
           </motion.div>
         )}

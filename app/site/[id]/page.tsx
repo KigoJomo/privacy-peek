@@ -243,11 +243,9 @@ export default async function SitePage({ params }: SitePageProps) {
             Compare with another site
           </Link>
 
-          {stale && (
-            <div className="w-full border-t pt-4">
-              <ReanalyzeButton siteId={id} />
-            </div>
-          )}
+          <div className="w-full border-t pt-4">
+            <ReanalyzeButton siteId={id} />
+          </div>
         </div>
       </div>
     </section>
