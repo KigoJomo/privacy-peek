@@ -42,6 +42,11 @@ export interface SiteDetails {
   }>;
 }
 
+export type ResultItem = RequireOnly<
+  SiteDetails,
+  "_id" | "normalized_base_url" | "site_name" | "overall_score" | "reasoning"
+>;
+
 interface ScoringCategory {
   category_name: CategoryName;
   rubric: {

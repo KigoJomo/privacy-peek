@@ -40,7 +40,7 @@ import { startTransition, useActionState, useEffect, useRef, useState } from "re
 import { useForm } from "react-hook-form";
 import { motion, AnimatePresence } from "framer-motion";
 import z from "zod";
-import { ResultItem } from "@/convex/actions";
+import type { ResultItem } from "@/convex/lib";
 import ScoreVisualizer from "@/components/ui/score-visualizer";
 import { Id } from "@/convex/_generated/dataModel";
 import type { AnalysisStatus } from "@/convex/lib";

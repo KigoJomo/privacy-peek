@@ -254,6 +254,41 @@ function SitesContent() {
     } catch (err) {
       console.error("Failed to export CSV:", err);
     }
+
+        return [
+          csvField(site.site_name),
+          csvField(getDomainLabel(site.normalized_base_url || "")),
+          csvField(site.overall_score),
+          csvField(site.reasoning ?? ""),
+          csvField(site.last_analyzed),
+          csvField(catScores["Data Collection"] ?? ""),
+          csvField(catScores["Data Sharing"] ?? ""),
+          csvField(catScores["Data Retention and Security"] ?? ""),
+          csvField(catScores["User Rights and Controls"] ?? ""),
+          csvField(catScores["Transparency and Clarity"] ?? ""),
+          csvField((site.policy_documents_urls ?? []).join("; ")),
+        ];
+      });
+
+      const csvContent = [
+        headers.join(","),
+        ...rows.map((row: string[]) => row.join(",")),
+      ].join("\n");
+
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `privacy-peek-sites-${new Date().toISOString().split("T")[0]}.csv`;
+      const cleanup = () => URL.revokeObjectURL(url);
+      link.addEventListener("click", () => requestAnimationFrame(cleanup), {
+        once: true,
+      });
+      link.click();
+      setTimeout(cleanup, 10000);
+    } catch (err) {
+      console.error("Failed to export CSV:", err);
+    }
   };
 
   const renderPageNumbers = () => {
@@ -535,7 +570,13 @@ function SitesContent() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {paginatedSites.map((site) => {
+                  {paginatedSites.map((site: {
+                    _id: Id<"sites">;
+                    site_name?: string;
+                    normalized_base_url: string;
+                    overall_score: number;
+                    last_analyzed: string;
+                  }) => {
                     const safeScore = getOverallScoreDisplay(site.overall_score);
                     const tags = siteTags?.[site._id] ?? [];
                     return (
@@ -610,7 +651,13 @@ function SitesContent() {
 
             {/* Mobile cards */}
             <div className="grid grid-cols-1 gap-3 xl:hidden">
-              {paginatedSites.map((site) => {
+              {paginatedSites.map((site: {
+                _id: Id<"sites">;
+                site_name?: string;
+                normalized_base_url: string;
+                overall_score: number;
+                last_analyzed: string;
+              }) => {
                 const safeScore = getOverallScoreDisplay(site.overall_score);
                 const tags = siteTags?.[site._id] ?? [];
                 return (

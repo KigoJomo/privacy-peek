@@ -186,7 +186,7 @@ export default async function SitePage({ params }: SitePageProps) {
                   <AccordionContent>
                     <ul className="list-disc px-6 flex flex-col gap-2">
                       {c.supporting_clauses.length > 0 ? (
-                        c.supporting_clauses.map((cl, index) => (
+                        c.supporting_clauses.map((cl: string, index: number) => (
                           <li
                             key={index}
                             className="text-sm! text-muted-foreground italic"
