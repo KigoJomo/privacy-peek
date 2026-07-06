@@ -12,8 +12,11 @@ import {
   cn,
   formatRelativeTime,
   getCategoryScoreDisplay,
+  getCategoryScoreLabel,
+  getCategoryScoreToneClass,
   getOverallScoreDisplay,
   isAnalysisStale,
+  safeUrl,
 } from "@/lib/utils";
 import { QuoteIcon, GitCompareArrowsIcon, AlertTriangleIcon } from "lucide-react";
 import Link from "next/link";
@@ -22,6 +25,7 @@ import NotFound from "../_components/not-found";
 import { fetchQuery } from "convex/nextjs";
 import { Metadata } from "next";
 import { ReanalyzeButton } from "@/components/reanalyze-button";
+import { TagBadges } from "@/components/tag-badges";
 
 interface SitePageProps {
   params: Promise<{
@@ -36,9 +40,29 @@ export default async function SitePage({ params }: SitePageProps) {
 
   const { id } = await params;
 
-  const full_site_details = await fetchQuery(api.sites.getFullSiteDetails, {
-    site_id: id,
-  });
+  const isLikelyValidId = (str: string): boolean =>
+    /^[a-zA-Z0-9_-]{28}$/.test(str);
+
+  if (!isLikelyValidId(id)) {
+    return <NotFound />;
+  }
+
+  let full_site_details: Awaited<ReturnType<typeof fetchQuery<typeof api.sites.getFullSiteDetails>>>;
+  try {
+    full_site_details = await fetchQuery(api.sites.getFullSiteDetails, {
+      site_id: id,
+    });
+  } catch (err) {
+    console.error("SitePage failed to load site details", { siteId: id, err });
+    return (
+      <section className="min-h-[60dvh] flex flex-col items-center justify-center gap-4 px-4 text-center">
+        <h2>Unable to load site</h2>
+        <p className="text-muted-foreground max-w-md">
+          Could not fetch site details. Please try again later or check that the site exists.
+        </p>
+      </section>
+    );
+  }
 
   if (full_site_details === undefined) {
     return <Loading />;
@@ -57,13 +81,21 @@ export default async function SitePage({ params }: SitePageProps) {
     category_scores,
   } = full_site_details;
   const safeOverallScore = getOverallScoreDisplay(overall_score);
-  const safeCategoryScores = (category_scores ?? []).map((category: { category_name: string; category_score: number; supporting_clauses?: string[] }) => ({
+  const safeCategoryScores = (category_scores ?? []).map((category: { category_name: string; category_score: number; reasoning: string; supporting_clauses?: string[] }) => ({
     ...category,
     category_score: getCategoryScoreDisplay(category.category_score),
     supporting_clauses: category.supporting_clauses ?? [],
   }));
   const safePolicyDocuments = policy_documents_urls ?? [];
   const stale = isAnalysisStale(last_analyzed);
+
+  // Fetch tags for this site
+  let tags: { _id: string; tag: string; site_id: string }[] = [];
+  try {
+    tags = await fetchQuery(api.tags.getTagsForSite, { site_id: id });
+  } catch {
+    // tags are optional
+  }
 
   return (
     <>
@@ -80,7 +112,7 @@ export default async function SitePage({ params }: SitePageProps) {
           </div>
         )}
 
-        <div className={cn("grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-24")}>
+        <div className={cn("grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12")}>
         <div className="w-full md:col-span-2 flex flex-col gap-6">
           <div className="animate-fade-in-up title flex flex-col items-center md:items-start gap-2">
             <ScoreVisualizer
@@ -89,13 +121,16 @@ export default async function SitePage({ params }: SitePageProps) {
               displayNumber={`${safeOverallScore}`}
               className="md:hidden mx-auto"
             />
-            <h2>{site_name || "Unnamed Site"}</h2>
+            <h2 className="truncate max-w-full">{site_name || "Unnamed Site"}</h2>
             {normalized_base_url ? (
-              <Link href={normalized_base_url} target="_blank">
+              <Link href={safeUrl(normalized_base_url)} target="_blank" className="truncate max-w-full hover:underline">
                 {normalized_base_url}
               </Link>
             ) : (
               <span className="text-muted-foreground">No URL available</span>
+            )}
+            {tags.length > 0 && (
+              <TagBadges tags={tags.map((t) => t.tag)} />
             )}
             <span className="">
               Last analysed {formatRelativeTime(last_analyzed)}.
@@ -113,7 +148,7 @@ export default async function SitePage({ params }: SitePageProps) {
               className="w-full"
               defaultValue={safeCategoryScores[0]?.category_name}
             >
-              {safeCategoryScores.map((c: { category_name: string; category_score: number; supporting_clauses: string[]; reasoning?: string }, i: number) => (
+              {safeCategoryScores.map((c: { category_name: string; category_score: number; reasoning: string; supporting_clauses: string[] }, i: number) => (
                 <AccordionItem
                   key={c.category_name}
                   value={c.category_name}
@@ -130,13 +165,8 @@ export default async function SitePage({ params }: SitePageProps) {
                         size={48}
                         displayNumber={`${c.category_score} /10`}
                       />
-                      <span className={cn(
-                        "text-sm",
-                        c.category_score >= 7 && "text-chart-1",
-                        c.category_score >= 4 && c.category_score < 7 && "text-chart-3",
-                        c.category_score < 4 && "text-destructive",
-                      )}>
-                        {c.category_score >= 7 ? "Good" : c.category_score >= 4 ? "Fair" : "Poor"}
+                      <span className={cn("text-sm", getCategoryScoreToneClass(c.category_score))}>
+                        {getCategoryScoreLabel(c.category_score)}
                       </span>
                     </div>
                   </div>
@@ -192,7 +222,7 @@ export default async function SitePage({ params }: SitePageProps) {
             <h5>Policy Documents</h5>
             {safePolicyDocuments.length > 0 ? (
               safePolicyDocuments.map((url: string) => (
-                <Link key={url} href={url} target="_blank" className="text-sm truncate hover:underline">
+                <Link key={url} href={safeUrl(url)} target="_blank" className="text-sm truncate hover:underline">
                   {url}
                 </Link>
               ))
@@ -230,8 +260,13 @@ export async function generateStaticParams() {
     return [];
   }
 
-  const all_ids = await fetchQuery(api.sites.getAllSiteIds);
-  return all_ids.map((id: string) => ({ id }));
+  try {
+    const all_ids = await fetchQuery(api.sites.getAllSiteIds);
+    return all_ids.map((id: Id<"sites">) => ({ id }));
+  } catch {
+    console.warn("Failed to fetch site IDs for static params — returning empty.");
+    return [];
+  }
 }
 
 export async function generateMetadata({
@@ -247,7 +282,16 @@ export async function generateMetadata({
 
   const { id } = await params;
 
-  const site = await fetchQuery(api.sites.getFullSiteDetails, { site_id: id });
+  let site: Awaited<ReturnType<typeof fetchQuery<typeof api.sites.getFullSiteDetails>>>;
+  try {
+    site = await fetchQuery(api.sites.getFullSiteDetails, { site_id: id });
+  } catch {
+    return {
+      title: "Privacy Peek",
+      description: "Full privacy policy analysis.",
+      metadataBase: new URL("https://privacy-peek.vercel.app"),
+    };
+  }
 
   return {
     title: site ? `${site.site_name} Analysis | Privacy Peek` : "Privacy Peek",

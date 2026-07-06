@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { internalMutation, internalQuery, mutation, query } from "./_generated/server";
+import { internalMutation, internalQuery, query } from "./_generated/server";
 import { CategoryNameValidator } from "./lib";
 
 const normalizeTag = (tag: string) => tag.trim().toLowerCase();

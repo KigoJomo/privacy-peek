@@ -28,6 +28,7 @@ import {
   getOverallScoreDisplay,
   getDomainLabel,
   safeSiteName,
+  safeUrl,
 } from "@/lib/utils";
 import Link from "next/link";
 import ScoreVisualizer from "@/components/ui/score-visualizer";
@@ -41,10 +42,16 @@ export default async function RecentSites() {
     return null;
   }
 
-  const recent_sites: RecentSite[] = await fetchQuery(
-    api.sites.getRecentSites,
-    { limit: 32 },
-  );
+  let recent_sites: RecentSite[];
+  try {
+    recent_sites = await fetchQuery(
+      api.sites.getRecentSites,
+      { limit: 32 },
+    );
+  } catch {
+    console.warn("Failed to fetch recent sites — Convex may be unreachable.");
+    return null;
+  }
 
   if (recent_sites.length === 0) {
     return (
@@ -118,7 +125,7 @@ function RecentSitesTable({ sites }: { sites: RecentSite[] }) {
                 </TableCell>
                 <TableCell>
                   <Link
-                    href={site.normalized_base_url || "#"}
+                    href={safeUrl(site.normalized_base_url)}
                     target="_blank"
                     rel="noreferrer"
                     className={cn(

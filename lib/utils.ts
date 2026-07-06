@@ -98,6 +98,20 @@ export function getCategoryScoreDisplay(
   return clampScore(value, 10);
 }
 
+export function getCategoryScoreLabel(score: number): "Good" | "Fair" | "Poor" {
+  if (score >= 7) return "Good";
+  if (score >= 4) return "Fair";
+  return "Poor";
+}
+
+export function getCategoryScoreToneClass(score: number): string {
+  const label = getCategoryScoreLabel(score);
+
+  if (label === "Good") return "text-chart-1";
+  if (label === "Fair") return "text-chart-3";
+  return "text-destructive";
+}
+
 export function getDomainLabel(url: string): string {
   try {
     return new URL(url).hostname.replace(/^www\./, "");
@@ -119,11 +133,16 @@ export function filterValidUrls(urls: (string | undefined | null)[]): string[] {
   });
 }
 
-/** Provide a safe fallback for site_name */
-export function safeSiteName(name: string | undefined | null): string {
-  return name && typeof name === "string" && name.trim().length > 0
+/** Provide a safe fallback for site names */
+export function safeSiteName(
+  name: string | undefined | null,
+  baseUrl?: string | undefined | null,
+): string {
+  return name?.trim()
     ? name
-    : "Unnamed Site";
+    : baseUrl?.trim()
+      ? getDomainLabel(baseUrl)
+      : "Unnamed Site";
 }
 
 /** Provide a safe fallback for relative timestamps */
@@ -142,6 +161,21 @@ export function getUrlFilename(url: string): string {
     return new URL(url).pathname.split("/").pop() || url;
   } catch {
     return url;
+  }
+}
+
+/**
+ * Validate and sanitize a URL for use in an `<a href>` or `<Link href>`.
+ * Returns "#" for malformed, missing, or non-http(s) URLs so the browser
+ * never treats a relative path as an external link.
+ */
+export function safeUrl(url: string | undefined | null): string {
+  if (!url) return "#";
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === "http:" || parsed.protocol === "https:" ? url : "#";
+  } catch {
+    return "#";
   }
 }
 

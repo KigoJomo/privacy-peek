@@ -8,11 +8,16 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://privacy-peek.vercel.app'),
-  title: 'Privacy Peek',
-  description: 'Privacy Peek',
+  title: {
+    default: 'Privacy Peek — Understand How Sites Handle Your Data',
+    template: '%s | Privacy Peek',
+  },
+  description:
+    'Scan and analyze privacy policies to get clear, actionable insights into how websites handle your personal data. Compare privacy practices across sites.',
   openGraph: {
-    title: 'Privacy Peek',
-    description: 'Privacy Peek',
+    title: 'Privacy Peek — Privacy Policy Analyzer',
+    description:
+      'Get clear, actionable insights into how websites handle your personal data.',
     type: 'website',
     url: 'https://privacy-peek.vercel.app',
     siteName: 'Privacy Peek',
@@ -51,8 +56,6 @@ export default function RootLayout({
               Skip to main content
             </a>
             <NavBar />
-            <div className="fixed -top-24 -left-24 -z-10 w-128 aspect-square rounded-full bg-gradient-to-br from-primary/15 via-accent/60 to-transparent blur-3xl animate-blob" />
-            <div className="fixed -bottom-24 -right-24 -z-10 w-128 aspect-square rounded-full bg-gradient-to-tl from-accent/60 via-primary/15 to-transparent blur-3xl animate-blob-delayed" />
             <ErrorBoundary>
               <main id="main-content" tabIndex={-1}>
                 {children}

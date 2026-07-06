@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
+import type { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -36,13 +36,14 @@ import {
   PaginationPrevious,
   PaginationEllipsis,
 } from "@/components/ui/pagination";
-import { Separator } from "@/components/ui/separator";
 import ScoreVisualizer from "@/components/ui/score-visualizer";
+import { TagBadges } from "@/components/tag-badges";
 import {
   cn,
   getOverallScoreDisplay,
   formatRelativeTime,
   getDomainLabel,
+  safeUrl,
 } from "@/lib/utils";
 import {
   Search,
@@ -56,9 +57,12 @@ import {
   Download,
   AlertTriangle,
   ChartNoAxesColumnIncreasing,
+  X,
+  Tags,
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import React, { Suspense } from "react";
 
 type SortField = "site_name" | "overall_score" | "last_analyzed";
 type SortDir = "asc" | "desc";
@@ -66,12 +70,30 @@ type SortDir = "asc" | "desc";
 const ITEMS_PER_PAGE = 20;
 
 export default function SitesDirectory() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex-1 flex items-center justify-center min-h-[40dvh]">
+          <p className="text-muted-foreground animate-pulse">Loading sites...</p>
+        </div>
+      }
+    >
+      <SitesContent />
+    </Suspense>
+  );
+}
+
+function SitesContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const activeTag = searchParams.get("tag");
+
   const allSites = useQuery(api.sites.getSitesBrief, { limit: 200 });
   const exportData = useQuery(api.sites.getAllSitesExportData);
   const stats = useQuery(api.sites.getSitesStats);
+  const allTags = useQuery(api.tags.getAllUniqueTags);
 
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(activeTag ?? "");
   const [sortField, setSortField] = useState<SortField>("last_analyzed");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [page, setPage] = useState(1);
@@ -86,30 +108,54 @@ export default function SitesDirectory() {
     setPage(1);
   };
 
+  // Fetch tag mappings for all sites relevant to the current view
+  const siteTags = useQuery(api.tags.getTagsForSites, {
+    site_ids: ((allSites ?? []).map((s) => s._id) as Id<"sites">[]),
+  });
+
   const filteredSites = useMemo(() => {
     if (!allSites) return [];
-    if (!searchQuery.trim()) return allSites;
 
-    const q = searchQuery.toLowerCase().trim();
-    return allSites.filter(
-      (site: { _id: Id<"sites">; site_name: string; normalized_base_url: string; overall_score: number; last_analyzed: string }) =>
-        site.site_name?.toLowerCase().includes(q) ||
-        site.normalized_base_url?.toLowerCase().includes(q),
-    );
-  }, [allSites, searchQuery]);
+    let result = [...allSites];
+
+    // Filter by tag (always applied when activeTag is set)
+    if (activeTag) {
+      const lowerTag = activeTag.toLowerCase().trim();
+      result = result.filter((site: { _id: string; site_name: string; normalized_base_url: string; overall_score: number; last_analyzed: string }) => {
+        const tags = siteTags?.[site._id] ?? [];
+        return tags.some((t: string) => t.toLowerCase().includes(lowerTag));
+      });
+    }
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      result = result.filter(
+        (site: { _id: string; site_name: string; normalized_base_url: string; overall_score: number; last_analyzed: string }) =>
+          site.site_name?.toLowerCase().includes(q) ||
+          site.normalized_base_url?.toLowerCase().includes(q),
+      );
+    }
+
+    return result;
+  }, [allSites, searchQuery, activeTag, siteTags]);
 
   const sortedSites = useMemo(() => {
     const sorted = [...filteredSites];
-    sorted.sort((a, b) => {
+    sorted.sort((a: { site_name: string; overall_score: number; last_analyzed: string }, b: { site_name: string; overall_score: number; last_analyzed: string }) => {
       let cmp = 0;
       if (sortField === "site_name") {
         cmp = (a.site_name ?? "").localeCompare(b.site_name ?? "");
       } else if (sortField === "overall_score") {
         cmp = (a.overall_score ?? 0) - (b.overall_score ?? 0);
       } else if (sortField === "last_analyzed") {
-        cmp =
-          new Date(a.last_analyzed ?? 0).getTime() -
-          new Date(b.last_analyzed ?? 0).getTime();
+        const aTime = new Date(a.last_analyzed ?? 0).getTime();
+        const bTime = new Date(b.last_analyzed ?? 0).getTime();
+        // Invalid dates produce NaN — sort them to the end consistently
+        if (Number.isNaN(aTime) && Number.isNaN(bTime)) cmp = 0;
+        else if (Number.isNaN(aTime)) cmp = 1;
+        else if (Number.isNaN(bTime)) cmp = -1;
+        else cmp = aTime - bTime;
       }
       return sortDir === "asc" ? cmp : -cmp;
     });
@@ -123,6 +169,14 @@ export default function SitesDirectory() {
     currentPage * ITEMS_PER_PAGE,
   );
 
+  const clearTagFilter = () => {
+    const url = new URL(window.location.href);
+    url.searchParams.delete("tag");
+    router.replace(url.pathname, { scroll: false });
+    setSearchQuery("");
+    setPage(1);
+  };
+
   const SortIcon = ({ field }: { field: SortField }) => {
     if (sortField !== field) return <ArrowUpDown className="size-3 opacity-40" />;
     return sortDir === "asc" ? (
@@ -132,74 +186,109 @@ export default function SitesDirectory() {
     );
   };
 
+  /** Escape a single CSV field — handles commas, quotes, and newlines */
+  const csvField = (value: unknown): string => {
+    const str = String(value ?? "");
+    // RFC 4180: wrap in quotes if contains comma, quote, or newline
+    if (/[",\n\r]/.test(str)) {
+      return `"${str.replace(/"/g, '""')}"`;
+    }
+    return str;
+  };
+
   const downloadCSV = () => {
     if (!exportData || exportData.length === 0) return;
 
-    const headers = [
-      "Site Name",
-      "Domain",
-      "Overall Score",
-      "Reasoning",
-      "Last Analyzed",
-      "Data Collection",
-      "Data Sharing",
-      "Data Retention and Security",
-      "User Rights and Controls",
-      "Transparency and Clarity",
-      "Policy Documents",
-    ];
-
-    const rows = exportData.map((site: {
-          _id: Id<"sites">;
-          site_name?: string;
-          normalized_base_url: string;
-          overall_score: number;
-          last_analyzed: string;
-          reasoning?: string;
-          policy_documents_urls?: string[];
-          category_scores?: { category_name: string; category_score: number }[];
-        }) => {
-      const domain = (() => {
-        try {
-          return new URL(site.normalized_base_url).hostname.replace(/^www\./, "");
-        } catch {
-          return site.normalized_base_url;
-        }
-      })();
-
-      const catScores: Record<string, number | string> = {};
-      for (const c of site.category_scores ?? []) {
-        catScores[c.category_name] = c.category_score;
-      }
-
-      return [
-        site.site_name,
-        domain,
-        site.overall_score,
-        `"${(site.reasoning ?? "").replace(/"/g, '""')}"`,
-        site.last_analyzed,
-        catScores["Data Collection"] ?? "",
-        catScores["Data Sharing"] ?? "",
-        catScores["Data Retention and Security"] ?? "",
-        catScores["User Rights and Controls"] ?? "",
-        catScores["Transparency and Clarity"] ?? "",
-        `"${(site.policy_documents_urls ?? []).join("; ")}"`,
+    try {
+      const headers = [
+        "Site Name",
+        "Domain",
+        "Overall Score",
+        "Reasoning",
+        "Last Analyzed",
+        "Data Collection",
+        "Data Sharing",
+        "Data Retention and Security",
+        "User Rights and Controls",
+        "Transparency and Clarity",
+        "Policy Documents",
       ];
-    });
 
-    const csvContent = [
-      headers.join(","),
-      ...rows.map((row: (string | number | undefined)[]) => row.join(",")),
-    ].join("\n");
+      const rows = exportData.map((site: { _id: string; site_name: string; normalized_base_url: string; overall_score: number; reasoning: string; last_analyzed: string; category_scores: Array<{ category_name: string; category_score: number; reasoning: string; supporting_clauses: string[] }>; policy_documents_urls: string[] }) => {
+        const catScores: Record<string, number | string> = {};
+        for (const c of site.category_scores ?? []) {
+          catScores[c.category_name] = c.category_score;
+        }
 
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `privacy-peek-sites-${new Date().toISOString().split("T")[0]}.csv`;
-    link.click();
-    // Delay revocation so the browser has time to initiate the download
-    setTimeout(() => URL.revokeObjectURL(url), 100);
+        return [
+          csvField(site.site_name),
+          csvField(getDomainLabel(site.normalized_base_url || "")),
+          csvField(site.overall_score),
+          csvField(site.reasoning ?? ""),
+          csvField(site.last_analyzed),
+          csvField(catScores["Data Collection"] ?? ""),
+          csvField(catScores["Data Sharing"] ?? ""),
+          csvField(catScores["Data Retention and Security"] ?? ""),
+          csvField(catScores["User Rights and Controls"] ?? ""),
+          csvField(catScores["Transparency and Clarity"] ?? ""),
+          csvField((site.policy_documents_urls ?? []).join("; ")),
+        ];
+      });
+
+      const csvContent = [
+        headers.join(","),
+        ...rows.map((row: string[]) => row.join(",")),
+      ].join("\n");
+
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `privacy-peek-sites-${new Date().toISOString().split("T")[0]}.csv`;
+      const cleanup = () => URL.revokeObjectURL(url);
+      link.addEventListener("click", () => requestAnimationFrame(cleanup), {
+        once: true,
+      });
+      link.click();
+      setTimeout(cleanup, 10000);
+    } catch (err) {
+      console.error("Failed to export CSV:", err);
+    }
+
+        return [
+          csvField(site.site_name),
+          csvField(getDomainLabel(site.normalized_base_url || "")),
+          csvField(site.overall_score),
+          csvField(site.reasoning ?? ""),
+          csvField(site.last_analyzed),
+          csvField(catScores["Data Collection"] ?? ""),
+          csvField(catScores["Data Sharing"] ?? ""),
+          csvField(catScores["Data Retention and Security"] ?? ""),
+          csvField(catScores["User Rights and Controls"] ?? ""),
+          csvField(catScores["Transparency and Clarity"] ?? ""),
+          csvField((site.policy_documents_urls ?? []).join("; ")),
+        ];
+      });
+
+      const csvContent = [
+        headers.join(","),
+        ...rows.map((row: string[]) => row.join(",")),
+      ].join("\n");
+
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `privacy-peek-sites-${new Date().toISOString().split("T")[0]}.csv`;
+      const cleanup = () => URL.revokeObjectURL(url);
+      link.addEventListener("click", () => requestAnimationFrame(cleanup), {
+        once: true,
+      });
+      link.click();
+      setTimeout(cleanup, 10000);
+    } catch (err) {
+      console.error("Failed to export CSV:", err);
+    }
   };
 
   const renderPageNumbers = () => {
@@ -207,7 +296,7 @@ export default function SitesDirectory() {
     const maxVisible = 5;
 
     let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
-    let end = Math.min(totalPages, start + maxVisible - 1);
+    const end = Math.min(totalPages, start + maxVisible - 1);
     if (end - start + 1 < maxVisible) {
       start = Math.max(1, end - maxVisible + 1);
     }
@@ -286,6 +375,47 @@ export default function SitesDirectory() {
           </p>
         </div>
 
+        {/* Active tag filter chip */}
+        {activeTag && (
+          <div className="flex items-center gap-2 rounded-2xl border bg-accent/30 px-4 py-2.5">
+            <Tags className="size-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">
+              Filtering by tag:
+            </span>
+            <Badge variant="secondary" className="text-xs font-normal">
+              {activeTag}
+            </Badge>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearTagFilter}
+              className="ml-auto h-7 gap-1 text-xs"
+            >
+              <X className="size-3" />
+              Clear
+            </Button>
+          </div>
+        )}
+
+        {/* Popular tags cloud */}
+        {!activeTag && allTags && allTags.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2 rounded-2xl border bg-card px-4 py-2.5">
+            <Tags className="size-4 text-muted-foreground shrink-0" />
+            <span className="text-xs text-muted-foreground mr-1">Browse by tag:</span>
+            {allTags.slice(0, 15).map(({ tag, count }: { tag: string; count: number }) => (
+              <Link key={tag} href={`/sites?tag=${encodeURIComponent(tag)}`}>
+                <Badge
+                  variant="secondary"
+                  className="cursor-pointer text-xs font-normal hover:bg-secondary/80 transition-colors"
+                >
+                  {tag}
+                  <span className="ml-1 text-muted-foreground/60">{count}</span>
+                </Badge>
+              </Link>
+            ))}
+          </div>
+        )}
+
         {/* Stats summary */}
         {stats && stats.total > 0 && (
           <div className="flex flex-wrap items-center gap-4 rounded-2xl border bg-card px-5 py-3">
@@ -357,16 +487,31 @@ export default function SitesDirectory() {
             <ListIcon className="size-12 opacity-40" />
             <div className="max-w-sm">
               <p className="font-medium text-foreground">
-                {searchQuery
-                  ? "No sites match your search"
-                  : "No sites analyzed yet"}
+                {activeTag
+                  ? `No sites tagged "${activeTag}"`
+                  : searchQuery
+                    ? "No sites match your search"
+                    : "No sites analyzed yet"}
               </p>
               <p className="text-sm">
-                {searchQuery
-                  ? "Try a different search term or browse all sites."
-                  : "Search for a site on the home page to get started."}
+                {activeTag
+                  ? "Try a different tag or browse all sites."
+                  : searchQuery
+                    ? "Try a different search term or browse all sites."
+                    : "Search for a site on the home page to get started."}
               </p>
             </div>
+            {activeTag && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={clearTagFilter}
+                className="gap-1"
+              >
+                <X className="size-3.5" />
+                Clear tag filter
+              </Button>
+            )}
           </div>
         )}
 
@@ -375,7 +520,8 @@ export default function SitesDirectory() {
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <span>
               {sortedSites.length} site{sortedSites.length !== 1 ? "s" : ""}
-              {searchQuery && ` matching "${searchQuery}"`}
+              {searchQuery && !activeTag && ` matching "${searchQuery}"`}
+              {activeTag && ` tagged "${activeTag}"`}
             </span>
             {totalPages > 1 && (
               <span>
@@ -401,6 +547,7 @@ export default function SitesDirectory() {
                         <SortIcon field="site_name" />
                       </button>
                     </TableHead>
+                    <TableHead>Tags</TableHead>
                     <TableHead>
                       <button
                         onClick={() => toggleSort("last_analyzed")}
@@ -431,6 +578,7 @@ export default function SitesDirectory() {
                     last_analyzed: string;
                   }) => {
                     const safeScore = getOverallScoreDisplay(site.overall_score);
+                    const tags = siteTags?.[site._id] ?? [];
                     return (
                       <TableRow key={site._id}>
                         <TableCell className="font-medium whitespace-normal">
@@ -443,6 +591,9 @@ export default function SitesDirectory() {
                           <div className="text-xs text-muted-foreground truncate max-w-72">
                             {getDomainLabel(site.normalized_base_url)}
                           </div>
+                        </TableCell>
+                        <TableCell>
+                          <TagBadges tags={tags} variant="compact" />
                         </TableCell>
                         <TableCell className="text-muted-foreground">
                           {formatRelativeTime(site.last_analyzed)}
@@ -476,7 +627,7 @@ export default function SitesDirectory() {
                               <GitCompareArrowsIcon className="size-3.5" />
                             </Link>
                             <Link
-                              href={site.normalized_base_url || "#"}
+                              href={safeUrl(site.normalized_base_url)}
                               target="_blank"
                               rel="noreferrer"
                               className={cn(
@@ -508,6 +659,7 @@ export default function SitesDirectory() {
                 last_analyzed: string;
               }) => {
                 const safeScore = getOverallScoreDisplay(site.overall_score);
+                const tags = siteTags?.[site._id] ?? [];
                 return (
                   <Link
                     key={site._id}
@@ -548,22 +700,27 @@ export default function SitesDirectory() {
                           </div>
                         </div>
                       </CardHeader>
-                      <CardContent className="py-2 px-4 flex items-center justify-between">
-                        <span className="text-xs text-muted-foreground">
-                          Analyzed {formatRelativeTime(site.last_analyzed)}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            router.push(`/compare?add=${site._id}`);
-                          }}
-                          className="inline-flex items-center justify-center size-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                          aria-label={`Compare ${site.site_name}`}
-                        >
-                          <GitCompareArrowsIcon className="size-3.5" />
-                        </button>
+                      <CardContent className="py-2 px-4 flex flex-col gap-2">
+                        {tags.length > 0 && (
+                          <TagBadges tags={tags} variant="compact" />
+                        )}
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-muted-foreground">
+                            Analyzed {formatRelativeTime(site.last_analyzed)}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              router.push(`/compare?add=${site._id}`);
+                            }}
+                            className="inline-flex items-center justify-center size-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                            aria-label={`Compare ${site.site_name}`}
+                          >
+                            <GitCompareArrowsIcon className="size-3.5" />
+                          </button>
+                        </div>
                       </CardContent>
                     </Card>
                   </Link>
@@ -607,5 +764,3 @@ export default function SitesDirectory() {
     </>
   );
 }
-
-

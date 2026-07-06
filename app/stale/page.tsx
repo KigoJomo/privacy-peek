@@ -5,6 +5,7 @@ import { useAction, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -32,6 +33,7 @@ import {
 
 export default function StaleAnalysesPage() {
   const allSites = useQuery(api.sites.getSitesBrief, { limit: 500 });
+  const router = useRouter();
   const [batchState, setBatchState] = useState<
     "idle" | "analyzing" | "done"
   >("idle");
@@ -43,13 +45,7 @@ export default function StaleAnalysesPage() {
 
   const staleSites = useMemo(() => {
     if (!allSites) return [];
-    return allSites.filter((site: {
-      _id: Id<"sites">;
-      site_name?: string;
-      normalized_base_url: string;
-      overall_score: number;
-      last_analyzed: string;
-    }) =>
+    return allSites.filter((site: { last_analyzed: string }) =>
       isAnalysisStale(site.last_analyzed ?? ""),
     );
   }, [allSites]);
@@ -58,13 +54,7 @@ export default function StaleAnalysesPage() {
     if (staleSites.length === 0) return null;
     const avgScore =
       staleSites.reduce(
-        (sum: number, s: {
-          _id: Id<"sites">;
-          site_name?: string;
-          normalized_base_url: string;
-          overall_score: number;
-          last_analyzed: string;
-        }) => sum + getOverallScoreDisplay(s.overall_score),
+        (sum: number, s: { overall_score: number }) => sum + getOverallScoreDisplay(s.overall_score),
         0,
       ) / staleSites.length;
     return { avgScore: Math.round(avgScore * 10) / 10 };
@@ -73,7 +63,7 @@ export default function StaleAnalysesPage() {
   const oldestDays = useMemo(() => {
     if (staleSites.length === 0) return null;
     const sorted = [...staleSites].sort(
-      (a, b) =>
+      (a: { last_analyzed: string }, b: { last_analyzed: string }) =>
         new Date(a.last_analyzed ?? 0).getTime() -
         new Date(b.last_analyzed ?? 0).getTime(),
     );
@@ -99,6 +89,10 @@ export default function StaleAnalysesPage() {
 
     setBatchState("done");
     setProgress({ current: staleSites.length, total: staleSites.length });
+    // Refresh the page data so Convex refetches and stale status updates
+    setTimeout(() => {
+      router.refresh();
+    }, 500);
   };
 
   const handleIndividualReanalyze = async (siteId: Id<"sites">) => {
@@ -286,13 +280,7 @@ export default function StaleAnalysesPage() {
 
             {/* Stale sites list */}
             <div className="grid grid-cols-1 gap-3">
-              {staleSites.map((site: {
-                _id: Id<"sites">;
-                site_name?: string;
-                normalized_base_url: string;
-                overall_score: number;
-                last_analyzed: string;
-              }, i: number) => {
+              {staleSites.map((site: { _id: Id<"sites">; site_name: string; overall_score: number; last_analyzed: string; normalized_base_url: string }, i: number) => {
                 const safeScore = getOverallScoreDisplay(site.overall_score);
                 const daysStale = getAnalysisAgeInDays(
                   site.last_analyzed ?? "",
@@ -322,7 +310,7 @@ export default function StaleAnalysesPage() {
                           </Link>
                           <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
                             <span className="truncate max-w-48">
-                              {getDomainLabel(site.normalized_base_url) || "—"}
+                              {getDomainLabel(site.normalized_base_url || "") || "—"}
                             </span>
                             <span className="hidden xs:inline">·</span>
                             <span>

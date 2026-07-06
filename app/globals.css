@@ -361,19 +361,6 @@ html {
   scrollbar-width: none; /* Firefox */
 }
 
-@keyframes blob-drift {
-  0%,
-  100% {
-    transform: translate(0, 0) rotate(0deg);
-  }
-  33% {
-    transform: translate(30px, -25px) rotate(2deg);
-  }
-  66% {
-    transform: translate(-25px, 20px) rotate(-1deg);
-  }
-}
-
 @keyframes shimmer {
   0% {
     background-position: -200% center;
@@ -394,14 +381,6 @@ html {
   }
 }
 
-.animate-blob {
-  animation: blob-drift 24s ease-in-out infinite;
-}
-
-.animate-blob-delayed {
-  animation: blob-drift 28s ease-in-out 6s infinite;
-}
-
 .animate-scale-in-up {
   animation: scale-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
@@ -417,13 +396,12 @@ html {
   animation: shimmer 2s ease-in-out infinite;
 }
 
+/* Respect OS-level reduced motion preferences */
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-in-up,
   .animate-fade-in,
   .animate-scale-in,
   .animate-scale-in-up,
-  .animate-blob,
-  .animate-blob-delayed,
   .animate-shimmer {
     animation: none !important;
     opacity: 1 !important;

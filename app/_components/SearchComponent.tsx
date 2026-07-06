@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { api } from "@/convex/_generated/api";
-import { cn, safeSiteName } from "@/lib/utils";
+import { cn, getOverallScoreDisplay, safeSiteName } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAction, useMutation, useQuery } from "convex/react";
 import {
@@ -134,7 +134,7 @@ export default function SearchComponent() {
   useEffect(() => {
     if (!jobId) return;
 
-    const status = ongoingJob?.status;
+    const status: AnalysisStatus | undefined = ongoingJob?.status;
     if (status !== "complete" && status !== "error") return;
 
     const timeout = window.setTimeout(() => {
@@ -175,10 +175,10 @@ export default function SearchComponent() {
                 </FormLabel>
                 <FormControl>
                   <div className="relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-muted-foreground pointer-events-none" />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
                     <Input
                       placeholder="Enter a name or url..."
-                      className="text-lg! text-center h-fit! px-6! py-3! rounded-full pr-12! pl-12!"
+                      className="text-lg! h-fit! py-3! rounded-full pl-12! pr-10!"
                       autoFocus
                       {...field}
                     />
@@ -297,7 +297,7 @@ export default function SearchComponent() {
 
 function JobStatus({ job_id }: { job_id: Id<"analysisJobs"> }) {
   const ongoingJob = useQuery(api.analysisJobs.getJob, { job_id });
-  const status = ongoingJob?.status as AnalysisStatus | undefined;
+  const status: AnalysisStatus | undefined = ongoingJob?.status;
 
   type StatusColor =
     | "text-muted-foreground"
@@ -380,6 +380,10 @@ function JobStatus({ job_id }: { job_id: Id<"analysisJobs"> }) {
 
 export function ResultCard({ site }: { site: ResultItem }) {
   const { site_name, overall_score, reasoning } = site;
+  const displayScore =
+    typeof overall_score === "number" && Number.isFinite(overall_score)
+      ? getOverallScoreDisplay(overall_score)
+      : "—";
   return (
     <Link
       href={`/site/${site._id}`}
@@ -405,15 +409,17 @@ export function ResultCard({ site }: { site: ResultItem }) {
           <CardAction className="flex items-center gap-2">
             <span className="text-sm">Overall Score /100</span>
             <ScoreVisualizer
-              value={(overall_score ?? 0) / 100}
-              displayNumber={Math.round(overall_score)}
+              value={typeof displayScore === "number" ? displayScore / 100 : 0}
+              displayNumber={displayScore}
               className="md:mr-1"
               size={48}
             />
           </CardAction>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          <span className="text-foreground/80">{reasoning}</span>
+          <span className="text-foreground/80">
+            {reasoning || "No analysis summary available."}
+          </span>
 
           <span className="text-accent-foreground text-sm font-medium">
             Click for more details &rarr;

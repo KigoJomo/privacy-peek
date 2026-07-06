@@ -24,7 +24,7 @@ const BROWSER_SEARCH_MODEL = "openai/gpt-oss-120b";
 // Model with generous limits for non-web-search calls
 const STANDARD_MODEL = "moonshotai/kimi-k2-instruct-0905";
 
-export const getSiteAnalysis = action({
+export const getSiteAnalysis: ReturnType<typeof action<any, any>> = action({
   args: { user_input: v.string(), job_id: v.id("analysisJobs") },
   handler: async (ctx, { user_input, job_id }) => {
     if (!user_input) {
@@ -70,8 +70,15 @@ export const getSiteAnalysis = action({
           console.log("\nFound Matching Record");
           console.log(`\nAdded new tags for site ${site._id} => ${new_tag}`);
           await statusUpdate("complete");
-          sites.push(site as any);
-          return sites;
+          return [
+            {
+              _id: site._id,
+              normalized_base_url: site.normalized_base_url,
+              site_name: site.site_name,
+              overall_score: site.overall_score,
+              reasoning: site.reasoning,
+            } as ResultItem,
+          ];
         } else {
           console.log("\nNo Matching Records. Beginning Analysis.");
           await statusUpdate("reading_policies");

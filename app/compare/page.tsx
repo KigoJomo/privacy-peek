@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -29,9 +28,11 @@ import ScoreVisualizer from "@/components/ui/score-visualizer";
 import {
   cn,
   getCategoryScoreDisplay,
+  getCategoryScoreToneClass,
   getOverallScoreDisplay,
   formatRelativeTime,
   getUrlFilename,
+  safeUrl,
 } from "@/lib/utils";
 import {
   Check,
@@ -45,15 +46,7 @@ import {
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import type { Doc } from "@/convex/_generated/dataModel";
-
-type SiteBrief = {
-  _id: Id<"sites">;
-  site_name: string;
-  normalized_base_url: string;
-  overall_score: number;
-  last_analyzed: string;
-};
+import type { Doc, Id } from "@/convex/_generated/dataModel";
 
 export default function ComparePageWrapper() {
   return (
@@ -87,19 +80,28 @@ function ComparePageContent() {
     ids: selectedIds,
   });
 
+  // Ref ensures we only handle ?add= once per mount — prevents the race
+  // where allSites is still loading and the URL param gets cleaned up before
+  // the site can be added.
+  const handledAdd = useRef(false);
+
   // Handle ?add= param from other pages — only add if the ID actually exists
   useEffect(() => {
+    if (handledAdd.current) return;
     const addId = searchParams.get("add") as Id<"sites"> | null;
-    if (addId && allSites && !selectedIds.includes(addId)) {
-      const exists = allSites.some((s: { _id: Id<"sites"> }) => s._id === addId);
-      if (exists) {
-        setSelectedIds((prev) => [...prev, addId]);
-      }
-      // Clean the URL without a full navigation
-      const url = new URL(window.location.href);
-      url.searchParams.delete("add");
-      router.replace(url.pathname, { scroll: false });
+    if (!addId) return;
+    // Wait until allSites has loaded before making a decision
+    if (!allSites) return;
+
+    handledAdd.current = true;
+    const exists = allSites.some((s: { _id: Id<"sites"> }) => s._id === addId);
+    if (exists && !selectedIds.includes(addId)) {
+      setSelectedIds((prev) => [...prev, addId]);
     }
+    // Clean the URL without a full navigation
+    const url = new URL(window.location.href);
+    url.searchParams.delete("add");
+    router.replace(url.pathname, { scroll: false });
   }, [searchParams, allSites, selectedIds, router]);
 
   const availableSites = useMemo(() => {
@@ -144,29 +146,39 @@ function ComparePageContent() {
           </p>
         </div>
 
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              role="combobox"
-              aria-expanded={open}
-              className="w-full max-w-md justify-between"
-              disabled={!allSites || selectedIds.length >= 4}
-            >
-              <span className="flex items-center gap-2">
-                <Plus className="size-4" />
-                {selectedIds.length >= 4 ? "Maximum 4 sites" : "Add site to compare"}
-              </span>
-              <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
-            </Button>
-          </PopoverTrigger>
+        {allSites && allSites.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-3 rounded-2xl border border-dashed px-5 py-4 text-sm text-muted-foreground max-w-md"
+          >
+            <BarChart3Icon className="size-5 shrink-0 opacity-40" />
+            <span>No sites analyzed yet — search for a site on the home page to get started.</span>
+          </motion.div>
+        ) : (
+          <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={open}
+                className="w-full max-w-md justify-between"
+                disabled={!allSites || selectedIds.length >= 4}
+              >
+                <span className="flex items-center gap-2">
+                  <Plus className="size-4" />
+                  {selectedIds.length >= 4 ? "Maximum 4 sites" : "Add site to compare"}
+                </span>
+                <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
           <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
             <Command>
               <CommandInput placeholder="Search analyzed sites..." />
               <CommandList>
                 <CommandEmpty>No sites found.</CommandEmpty>
                 <CommandGroup>
-                  {availableSites.map((site: { _id: Id<"sites">; site_name: string; normalized_base_url: string; overall_score: number }) => (
+                  {availableSites.map((site: { _id: Id<"sites">; site_name: string; normalized_base_url: string; overall_score: number; last_analyzed: string }) => (
                     <CommandItem
                       key={site._id}
                       value={`${site.site_name} ${site.normalized_base_url}`}
@@ -193,6 +205,7 @@ function ComparePageContent() {
             </Command>
           </PopoverContent>
         </Popover>
+        )}
 
         {selectedSites && selectedSites.length === 0 && (
           <motion.div
@@ -212,6 +225,23 @@ function ComparePageContent() {
               </p>
             </div>
           </motion.div>
+        )}
+
+        {/* Loading state when sites are selected but data hasn't arrived yet */}
+        {!selectedSites && selectedIds.length > 0 && (
+          <div className="flex-1 flex items-center justify-center">
+            <p className="text-muted-foreground animate-pulse">
+              Loading selected sites...
+            </p>
+          </div>
+        )}
+
+        {!selectedSites && selectedIds.length === 0 && (
+          <div className="flex-1 flex items-center justify-center">
+            <p className="text-muted-foreground animate-pulse">
+              Loading available sites...
+            </p>
+          </div>
         )}
 
         {selectedSites && selectedSites.length === 1 && (
@@ -241,14 +271,6 @@ function ComparePageContent() {
           >
             <ComparisonGrid sites={selectedSites} onRemove={removeSite} />
           </motion.div>
-        )}
-
-        {!selectedSites && (
-          <div className="flex-1 flex items-center justify-center">
-            <p className="text-muted-foreground animate-pulse">
-              Loading sites...
-            </p>
-          </div>
         )}
       </section>
     </motion.div>
@@ -373,11 +395,7 @@ function ComparisonGrid({
                           <span
                             className={cn(
                               "text-xs font-mono tabular-nums",
-                              cat.category_score >= 7 && "text-chart-1",
-                              cat.category_score >= 4 &&
-                                cat.category_score < 7 &&
-                                "text-chart-3",
-                              cat.category_score < 4 && "text-destructive",
+                              getCategoryScoreToneClass(cat.category_score),
                             )}
                           >
                             {cat.category_score}
@@ -402,7 +420,7 @@ function ComparisonGrid({
                         {site.policy_documents_urls.slice(0, 2).map((url) => (
                           <Link
                             key={url}
-                            href={url}
+                            href={safeUrl(url)}
                             target="_blank"
                             rel="noreferrer"
                             className="text-xs inline-flex items-center gap-1 truncate hover:underline"

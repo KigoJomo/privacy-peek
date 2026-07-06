@@ -1,7 +1,8 @@
 'use client';
 
 import { motion } from "framer-motion";
-import { AlertTriangle, RotateCcw } from "lucide-react";
+import { AlertTriangle, RotateCcw, ArrowLeft } from "lucide-react";
+import Link from "next/link";
 
 export default function Error({
   error,
@@ -44,6 +45,7 @@ export default function Error({
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.35, duration: 0.4 }}
+        className="flex flex-wrap items-center justify-center gap-3"
       >
         <button
           onClick={() => reset()}
@@ -53,6 +55,13 @@ export default function Error({
           <RotateCcw className="size-4" />
           Try again
         </button>
+        <Link
+          href="/"
+          className="inline-flex items-center justify-center gap-2 rounded-xl border px-5 py-2.5 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground !no-underline"
+        >
+          <ArrowLeft className="size-4" />
+          Go home
+        </Link>
       </motion.div>
     </section>
   );
