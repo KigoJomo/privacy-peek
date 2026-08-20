@@ -1,76 +1,50 @@
-# 🕵️‍♂️ Privacy Peek
+# Privacy Peek
 
-**Privacy Peek** is an open-source initiative aimed at enhancing digital transparency. It comprises a browser extension and a web dashboard that provide users with clear, concise insights into how websites handle personal data.
+Privacy Peek reads a website's public privacy documents and scores five parts of its data practices. The result is a short report you can inspect or compare with up to three other sites.
 
-## Objectives Summary
+[Open Privacy Peek](https://privacy.experiments.kigo.ke)
 
-### Privacy Peek (Overall Project)
+## What it does
 
-Analyze and rate websites’ data privacy practices using AI.
+- Finds a site's official privacy policy and related legal pages.
+- Extracts clauses about data collection, sharing, retention and security, user controls, and clarity.
+- Scores each category and calculates a weighted overall score.
+- Stores reports so repeat searches return an existing result instead of running another analysis.
+- Shows the clauses behind each score and supports side-by-side comparison for four sites.
+- Allows an old report to be analysed again when its source policies change.
 
-Present privacy information in a simplified, accessible format.
+The score is a reading aid, not legal advice. Language models can miss context or interpret vague policy text differently from a lawyer. The report keeps its supporting clauses visible for that reason.
 
-Empower users to make informed choices about which sites they trust.
+## How it is put together
 
+The web app uses Next.js and React. Convex stores sites, tags, category scores, and analysis job state. Groq models find current policy URLs, extract clauses, and produce structured scores.
 
+The browser extension lives in the separate [privacy-peek-extension](https://github.com/KigoJomo/privacy-peek-extension) repository.
 
----
+## Run it locally
 
-### Browser Extension
+You need Node.js, npm, a Convex deployment, and a Groq API key.
 
-Instantly analyze privacy policies and terms on any website.
+```bash
+npm install
+npx convex dev
+npm run dev
+```
 
-Display a summarized privacy score and key flags during signup or browsing.
+Set these values in `.env.local`.
 
-Allow users to request or trigger updated scans for outdated sites.
+```dotenv
+NEXT_PUBLIC_CONVEX_URL=https://your-deployment.convex.cloud
+GROQ_API_KEY=your-key
+```
 
+Convex may also write deployment metadata to `.env.local` when you run `npx convex dev`.
 
+## Checks
 
----
+```bash
+npm run lint
+node --test tests/*.spec.mjs
+```
 
-### Website Platform
-
-Provide a searchable dashboard of analyzed websites with their scores.
-
-Show detailed breakdowns, category-wise scores, and report history.
-
-Act as the open-source home and public face of the Privacy Peek project.
-
-
-
----
-
-
-## 🔍 Features
-
-* **Real-Time Analysis**: Automatically detects and summarizes privacy policies and terms of service on visited websites.
-* **Privacy Nutrition Labels**: Presents an overall privacy score along with category-specific ratings (e.g., data collection, sharing, user rights).
-* **On-Demand Checks**: Allows users to manually trigger analyses on any website, even post-login.
-* **Historical Data**: Access previously analyzed reports and track changes over time.
-* **Community Feedback**: Users can contribute insights and flag concerns, fostering a collaborative approach to digital privacy.
-
-## 🧠 How It Works
-
-1. **Detection**: The browser extension identifies relevant pages or allows manual activation.
-2. **Extraction**: It extracts the site's privacy-related content.
-3. **Analysis**: Utilizes AI and rule-based NLP techniques to assess and score the content.
-4. **Presentation**: Displays a user-friendly summary and detailed breakdown on both the extension and the web dashboard.
-
-## 🌐 Web Dashboard
-
-The companion website serves as a centralized hub where users can:
-
-* Search and view detailed privacy reports of various websites.
-* Compare privacy practices across different platforms.
-* Submit new websites for analysis.
-* Engage with the community through feedback and discussions.
-
-## 🛠️ Technologies Used
-
-* **Frontend & Backend**: Next.js (App Router), TypeScript
-* **NLP & AI**: Integration with language models for content analysis
-* **Browser Extension**: Built using WebExtension APIs for cross-browser compatibility
-
-## 📄 License
-
-This project is licensed under the [MIT License](LICENSE), promoting open collaboration and transparency.
+The current automated tests cover shared formatting and sidebar state. They do not exercise live policy fetching or model output.
